@@ -1,0 +1,53 @@
+<?php
+
+return [
+    'nav' => [
+        'discover' => '发现',
+        'chat' => '聊天',
+        'points' => '积分',
+        'profile' => '个人资料',
+        'settings' => '设置',
+        'logout' => '登出',
+    ],
+    'title' => 'CMG 跟我聊天吧 邂逅心动的TA',
+    'Settings' => '设置',
+    'Language' => '语言',
+    'Save Settings' => '保存设置',
+    'Settings saved successfully' => '设置保存成功',
+    'auth' => [
+        'login' => '登录',
+        'register' => '注册',
+        'email' => '邮箱',
+        'password' => '密码',
+        'remember' => '记住我',
+        'forgot' => '忘记密码?',
+    ],
+    'profile' => [
+        'title' => '个人资料',
+        'update' => '更新资料',
+        'name' => '姓名',
+        'email' => '邮箱',
+        'phone' => '电话',
+        'gender' => '性别',
+        'age' => '年龄',
+        'height' => '身高',
+        'weight' => '体重',
+        'hobbies' => '爱好',
+        'specialty' => '特长',
+        'love_declaration' => '爱情宣言',
+        'male' => '男',
+        'female' => '女',
+        'select' => '请选择',
+    ],
+    'users' => [
+        'title' => '交友列表',
+        'view_profile' => '查看详情',
+        'no_users' => '暂无会员信息',
+    ],
+    'settings' => [
+        'title' => '设置',
+        'language' => '语言',
+        'save' => '保存设置',
+        'success' => '设置保存成功',
+    ],
+];

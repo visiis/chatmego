@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/b3kxi5lpp7kr/public_html/
+    - /bin/cp -R ./ $DEPLOYPATH
+    - /bin/chmod 755 $DEPLOYPATH/storage
+    - /bin/chmod 755 $DEPLOYPATH/bootstrap/cache

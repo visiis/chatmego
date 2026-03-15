@@ -1,0 +1,53 @@
+<?php
+
+return [
+    'nav' => [
+        'discover' => 'Discover',
+        'chat' => 'Chat',
+        'points' => 'Points',
+        'profile' => 'Profile',
+        'settings' => 'Settings',
+        'logout' => 'Logout',
+    ],
+    'title' => 'CMG Chat with me and meet your perfect match',
+    'Settings' => 'Settings',
+    'Language' => 'Language',
+    'Save Settings' => 'Save Settings',
+    'Settings saved successfully' => 'Settings saved successfully',
+    'auth' => [
+        'login' => 'Login',
+        'register' => 'Register',
+        'email' => 'Email',
+        'password' => 'Password',
+        'remember' => 'Remember me',
+        'forgot' => 'Forgot your password?',
+    ],
+    'profile' => [
+        'title' => 'Profile',
+        'update' => 'Update Profile',
+        'name' => 'Name',
+        'email' => 'Email',
+        'phone' => 'Phone',
+        'gender' => 'Gender',
+        'age' => 'Age',
+        'height' => 'Height',
+        'weight' => 'Weight',
+        'hobbies' => 'Hobbies',
+        'specialty' => 'Specialty',
+        'love_declaration' => 'Love Declaration',
+        'male' => 'Male',
+        'female' => 'Female',
+        'select' => 'Select',
+    ],
+    'users' => [
+        'title' => 'User List',
+        'view_profile' => 'View Profile',
+        'no_users' => 'No users found',
+    ],
+    'settings' => [
+        'title' => 'Settings',
+        'language' => 'Language',
+        'save' => 'Save Settings',
+        'success' => 'Settings saved successfully',
+    ],
+];
