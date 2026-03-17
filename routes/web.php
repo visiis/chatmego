@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\FriendshipController;
+use App\Http\Controllers\ChatController;
 
 Route::get('/test-locale', function () {
     return response()->json([
@@ -25,6 +27,14 @@ Route::get('/test-locale', function () {
     ]);
 });
 
+Route::get('/test', function () {
+    return view('test');
+});
+
+Route::get('/blank', function () {
+    return view('blank');
+})->name('blank');
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -33,9 +43,32 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+Route::get('/profile/{id?}', [UserController::class, 'profile'])->name('profile');
+
 Route::middleware(['auth'])->group(function () {
-    Route::get('/profile/{id?}', [UserController::class, 'profile'])->name('profile');
     Route::match(['put', 'post'], '/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    
+    // 好友相关路由
+    Route::post('/friends/request/{user}', [FriendshipController::class, 'sendRequest'])->name('friends.request');
+    Route::post('/friends/accept/{friendship}', [FriendshipController::class, 'acceptRequest'])->name('friends.accept');
+    Route::post('/friends/reject/{friendship}', [FriendshipController::class, 'rejectRequest'])->name('friends.reject');
+    Route::post('/friends/remove/{user}', [FriendshipController::class, 'removeFriend'])->name('friends.remove');
+    Route::get('/friends', [FriendshipController::class, 'myFriends'])->name('friends');
+    Route::get('/friend-requests', [FriendshipController::class, 'pendingRequests'])->name('friend.requests');
+    
+    // 聊天相关路由
+    Route::get('/chats', [ChatController::class, 'index'])->name('chats');
+    Route::get('/chat/{user}', [ChatController::class, 'show'])->name('chat.show');
+    Route::post('/chat/{user}/message', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/chat/{user}/read', [ChatController::class, 'markAsRead'])->name('chat.read');
+    
+    // 环信测试路由
+    Route::get('/easemob-test', [App\Http\Controllers\EasemobTestController::class, 'index'])->name('easemob.test');
+    Route::post('/easemob/test-token', [App\Http\Controllers\EasemobTestController::class, 'testToken']);
+    Route::post('/easemob/test-register', [App\Http\Controllers\EasemobTestController::class, 'testRegister']);
+    Route::post('/easemob/test-send-message', [App\Http\Controllers\EasemobTestController::class, 'testSendMessage']);
+    Route::post('/easemob/test-user-info', [App\Http\Controllers\EasemobTestController::class, 'testGetUserInfo']);
+    Route::post('/easemob/sync-users', [App\Http\Controllers\EasemobTestController::class, 'syncUsers']);
 });

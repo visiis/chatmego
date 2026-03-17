@@ -4,261 +4,374 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <?php echo e($user->id == auth()->id() ? '个人资料' : $user->name . '的资料'); ?>
+                    <?php echo e($user->id == auth()->id() ? __('messages.profile.title') : $user->name . '\'s ' . __('messages.profile.title')); ?>
 
                 </div>
+
                 <div class="card-body">
-                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->id == auth()->id()): ?>
-                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
-                            <div class="alert alert-success">
-                                <?php echo e(session('success')); ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
+                        <div class="alert alert-success" role="alert">
+                            <?php echo e(session('success')); ?>
 
-                            </div>
-                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-                        <div class="alert alert-info mb-4">
-                            为了更加匹配到心意的那个TA，请真实填写自己的交友情况
                         </div>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->id == auth()->id()): ?>
                         <form method="POST" action="<?php echo e(route('profile.update')); ?>" enctype="multipart/form-data">
                             <?php echo csrf_field(); ?>
                             <?php echo method_field('PUT'); ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                            <div class="form-group row mb-4">
-                                <label class="col-md-4 col-form-label text-md-right">当前头像</label>
-                                <div class="col-md-6">
+                    <!-- 基本信息 -->
+                    <div class="mb-4 pb-4 border-bottom">
+                        <h5 class="mb-3"><?php echo e(__('messages.profile.title')); ?></h5>
+                        
+                        <div class="form-group row mb-4">
+                            <label class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.avatar')); ?></label>
+                            <div class="col-md-6">
+                                <div class="text-center mb-3">
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->avatar): ?>
-                                        <img src="<?php echo e(asset('storage/' . $user->avatar)); ?>" alt="头像" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                        <div class="ratio ratio-1x1 d-inline-block" style="width: 180px; height: 180px;">
+                                            <img src="<?php echo e(asset('storage/' . $user->avatar)); ?>" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+                                        </div>
                                     <?php else: ?>
-                                        <img src="<?php echo e(asset('images/default-avatar.svg')); ?>" alt="默认头像" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                        <div class="ratio ratio-1x1 d-inline-block" style="width: 180px; height: 180px;">
+                                            <img src="<?php echo e(asset('images/default-avatar.svg')); ?>" alt="Default Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+                                        </div>
                                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </div>
-                            </div>
-
-                            <div class="form-group row mb-4">
-                                <label for="avatar" class="col-md-4 col-form-label text-md-right">上传头像</label>
-                                <div class="col-md-6">
-                                    <input id="avatar" type="file" class="form-control-file" name="avatar" accept="image/*">
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['avatar'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                        <span class="invalid-feedback" role="alert">
-                                            <?php echo e($message); ?>
-
-                                        </span>
-                                    <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-4">
-                                <label for="name" class="col-md-4 col-form-label text-md-right">姓名</label>
-                                <div class="col-md-6">
-                                    <input id="name" type="text" class="form-control <?php $__errorArgs = ['name'];
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->id == auth()->id()): ?>
+                                    <div class="custom-file">
+                                        <input type="file" class="form-control <?php $__errorArgs = ['avatar'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" name="name" value="<?php echo e(old('name', $user->name)); ?>" required autocomplete="name" autofocus>
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['name'];
+unset($__errorArgs, $__bag); ?>" id="avatar" name="avatar">
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['avatar'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?>
-                                        <span class="invalid-feedback" role="alert">
-                                            <?php echo e($message); ?>
-
-                                        </span>
-                                    <?php unset($message);
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong><?php echo e($message); ?></strong>
+                                            </span>
+                                        <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                </div>
+                                    </div>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
-
-                            <div class="form-group row mb-4">
-                                <label for="email" class="col-md-4 col-form-label text-md-right">邮箱</label>
-                                <div class="col-md-6">
-                                    <input id="email" type="email" class="form-control <?php $__errorArgs = ['email'];
+                        </div>
+                        
+                        <div class="form-group row mb-4">
+                            <label for="name" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.name')); ?></label>
+                            <div class="col-md-6">
+                                <input id="name" type="text" class="form-control <?php $__errorArgs = ['name'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" name="email" value="<?php echo e(old('email', $user->email)); ?>" required autocomplete="email">
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['email'];
+unset($__errorArgs, $__bag); ?>" name="name" value="<?php echo e(old('name', $user->name)); ?>" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?> required>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['name'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?>
-                                        <span class="invalid-feedback" role="alert">
-                                            <?php echo e($message); ?>
-
-                                        </span>
-                                    <?php unset($message);
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                </div>
                             </div>
+                        </div>
 
-                            <div class="form-group row mb-4">
-                                <label for="phone" class="col-md-4 col-form-label text-md-right">电话</label>
-                                <div class="col-md-6">
-                                    <input id="phone" type="tel" class="form-control <?php $__errorArgs = ['phone'];
+                        <div class="form-group row mb-4">
+                            <label for="email" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.email')); ?></label>
+                            <div class="col-md-6">
+                                <input id="email" type="email" class="form-control <?php $__errorArgs = ['email'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" name="phone" value="<?php echo e(old('phone', $user->phone)); ?>" autocomplete="tel">
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['phone'];
+unset($__errorArgs, $__bag); ?>" name="email" value="<?php echo e(old('email', $user->email)); ?>" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?> required>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['email'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?>
-                                        <span class="invalid-feedback" role="alert">
-                                            <?php echo e($message); ?>
-
-                                        </span>
-                                    <?php unset($message);
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                </div>
                             </div>
+                        </div>
 
-                            <hr class="my-4">
-
-                            <div class="form-group row mb-4">
-                                <label for="gender" class="col-md-4 col-form-label text-md-right">性别</label>
-                                <div class="col-md-6">
-                                    <select id="gender" class="form-control" name="gender">
-                                        <option value="">请选择</option>
-                                        <option value="male" <?php echo e(old('gender', $user->gender) == 'male' ? 'selected' : ''); ?>>男</option>
-                                        <option value="female" <?php echo e(old('gender', $user->gender) == 'female' ? 'selected' : ''); ?>>女</option>
-                                    </select>
-                                </div>
+                        <div class="form-group row mb-4">
+                            <label for="phone" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.phone')); ?></label>
+                            <div class="col-md-6">
+                                <input id="phone" type="text" class="form-control <?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="phone" value="<?php echo e(old('phone', $user->phone)); ?>" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?>>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
+                        </div>
+                    </div>
 
-                            <div class="form-group row mb-4">
-                                <label for="age" class="col-md-4 col-form-label text-md-right">年龄</label>
-                                <div class="col-md-6">
-                                    <input id="age" type="number" class="form-control" name="age" value="<?php echo e(old('age', $user->age)); ?>">
-                                </div>
+                    <!-- 个人信息 -->
+                    <div class="mb-4 pb-4 border-bottom">
+                        <h5 class="mb-3"><?php echo e(__('messages.profile.personal_info')); ?></h5>
+                        
+                        <div class="form-group row mb-4">
+                            <label for="gender" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.gender')); ?></label>
+                            <div class="col-md-6">
+                                <select id="gender" class="form-control <?php $__errorArgs = ['gender'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="gender" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?> required>
+                                    <option value=""><?php echo e(__('messages.profile.select')); ?></option>
+                                    <option value="male" <?php echo e(old('gender', $user->gender) == 'male' ? 'selected' : ''); ?>><?php echo e(__('messages.profile.male')); ?></option>
+                                    <option value="female" <?php echo e(old('gender', $user->gender) == 'female' ? 'selected' : ''); ?>><?php echo e(__('messages.profile.female')); ?></option>
+                                </select>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['gender'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
+                        </div>
 
-                            <div class="form-group row mb-4">
-                                <label for="height" class="col-md-4 col-form-label text-md-right">身高</label>
-                                <div class="col-md-6">
-                                    <input id="height" type="text" class="form-control" name="height" value="<?php echo e(old('height', $user->height)); ?>">
+                        <div class="form-group row mb-4">
+                            <label for="age" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.age')); ?></label>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input id="age" type="number" min="18" max="120" class="form-control <?php $__errorArgs = ['age'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="age" value="<?php echo e(old('age', $user->age)); ?>" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?> placeholder="18">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><?php echo e(__('messages.profile.years')); ?></span>
+                                    </div>
                                 </div>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['age'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
+                        </div>
 
-                            <div class="form-group row mb-4">
-                                <label for="weight" class="col-md-4 col-form-label text-md-right">体重</label>
-                                <div class="col-md-6">
-                                    <input id="weight" type="text" class="form-control" name="weight" value="<?php echo e(old('weight', $user->weight)); ?>">
+                        <div class="form-group row mb-4">
+                            <label for="height" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.height')); ?></label>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input id="height" type="number" min="100" max="250" class="form-control <?php $__errorArgs = ['height'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="height" value="<?php echo e(old('height', $user->height)); ?>" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?> placeholder="170">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">cm</span>
+                                    </div>
                                 </div>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['height'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
+                        </div>
 
-                            <hr class="my-4">
-
-                            <div class="form-group row mb-4">
-                                <label for="hobbies" class="col-md-4 col-form-label text-md-right">爱好</label>
-                                <div class="col-md-6">
-                                    <textarea id="hobbies" class="form-control" name="hobbies" rows="3"><?php echo e(old('hobbies', $user->hobbies)); ?></textarea>
+                        <div class="form-group row mb-4">
+                            <label for="weight" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.weight')); ?></label>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input id="weight" type="number" min="30" max="300" class="form-control <?php $__errorArgs = ['weight'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="weight" value="<?php echo e(old('weight', $user->weight)); ?>" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?> placeholder="60">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">kg</span>
+                                    </div>
                                 </div>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['weight'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
+                        </div>
+                    </div>
 
-                            <div class="form-group row mb-4">
-                                <label for="specialty" class="col-md-4 col-form-label text-md-right">特长</label>
-                                <div class="col-md-6">
-                                    <textarea id="specialty" class="form-control" name="specialty" rows="3"><?php echo e(old('specialty', $user->specialty)); ?></textarea>
-                                </div>
+                    <!-- 兴趣爱好 -->
+                    <div class="mb-4 pb-4 border-bottom">
+                        <h5 class="mb-3"><?php echo e(__('messages.profile.hobbies')); ?></h5>
+                        
+                        <div class="form-group row mb-4">
+                            <label for="hobbies" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.hobbies')); ?></label>
+                            <div class="col-md-6">
+                                <textarea id="hobbies" class="form-control <?php $__errorArgs = ['hobbies'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="hobbies" rows="3" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?>><?php echo e(old('hobbies', $user->hobbies)); ?></textarea>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['hobbies'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
+                        </div>
 
-                            <div class="form-group row mb-4">
-                                <label for="love_declaration" class="col-md-4 col-form-label text-md-right">爱情宣言</label>
-                                <div class="col-md-6">
-                                    <textarea id="love_declaration" class="form-control" name="love_declaration" rows="3"><?php echo e(old('love_declaration', $user->love_declaration)); ?></textarea>
-                                </div>
+                        <div class="form-group row mb-4">
+                            <label for="specialty" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.specialty')); ?></label>
+                            <div class="col-md-6">
+                                <textarea id="specialty" class="form-control <?php $__errorArgs = ['specialty'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="specialty" rows="3" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?>><?php echo e(old('specialty', $user->specialty)); ?></textarea>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['specialty'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
+                        </div>
+                    </div>
 
-                            <div class="form-group row mb-0">
-                                <div class="col-md-6 offset-md-4">
-                                    <button type="submit" class="btn btn-primary">
-                                        更新资料
-                                    </button>
-                                </div>
+                    <!-- 爱情宣言 -->
+                    <div class="mb-4">
+                        <h5 class="mb-3"><?php echo e(__('messages.profile.love_declaration')); ?></h5>
+                        
+                        <div class="form-group row mb-4">
+                            <label for="love_declaration" class="col-md-4 col-form-label text-md-right"><?php echo e(__('messages.profile.love_declaration')); ?></label>
+                            <div class="col-md-6">
+                                <textarea id="love_declaration" class="form-control <?php $__errorArgs = ['love_declaration'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="love_declaration" rows="4" <?php if($user->id != auth()->id()): ?> disabled <?php endif; ?>><?php echo e(old('love_declaration', $user->love_declaration)); ?></textarea>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['love_declaration'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong><?php echo e($message); ?></strong>
+                                    </span>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
+                        </div>
+                    </div>
+
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->id == auth()->id()): ?>
+                        <div class="form-group row mb-0">
+                            <div class="col-md-6 offset-md-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <?php echo e(__('messages.profile.update')); ?>
+
+                                </button>
+                            </div>
+                        </div>
                         </form>
-                    <?php else: ?>
-                        <!-- 查看其他用户资料 -->
-                        <div class="text-center mb-4">
-                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->avatar): ?>
-                                <img src="<?php echo e(asset('storage/' . $user->avatar)); ?>" 
-                                     class="rounded-circle" 
-                                     style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #f8f9fa;">
-                            <?php else: ?>
-                                <img src="<?php echo e(asset('images/default-avatar.svg')); ?>" 
-                                     class="rounded-circle" 
-                                     style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #f8f9fa;">
-                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                            <h3 class="mt-3"><?php echo e($user->name); ?></h3>
-                        </div>
-
-                        <div class="mt-4">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p class="mb-2"><strong>性别：</strong><?php echo e($user->gender == 'male' ? '男' : '女'); ?></p>
-                                    <p class="mb-2"><strong>年龄：</strong><?php echo e($user->age); ?>岁</p>
-                                    <p class="mb-2"><strong>身高：</strong><?php echo e($user->height); ?>cm</p>
-                                    <p class="mb-2"><strong>体重：</strong><?php echo e($user->weight); ?>kg</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p class="mb-2"><strong>邮箱：</strong><?php echo e($user->email); ?></p>
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->phone): ?>
-                                        <p class="mb-2"><strong>电话：</strong><?php echo e($user->phone); ?></p>
-                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-
-                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->hobbies): ?>
-                            <div class="mt-4">
-                                <h5>爱好</h5>
-                                <p><?php echo e($user->hobbies); ?></p>
-                            </div>
-                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->specialty): ?>
-                            <div class="mt-4">
-                                <h5>特长</h5>
-                                <p><?php echo e($user->specialty); ?></p>
-                            </div>
-                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->love_declaration): ?>
-                            <div class="mt-4">
-                                <h5>爱情宣言</h5>
-                                <p><?php echo e($user->love_declaration); ?></p>
-                            </div>
-                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-                        <div class="mt-4 text-center">
-                            <button class="btn btn-primary">
-                                发起聊天
-                            </button>
-                        </div>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </div>
@@ -266,5 +379,4 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
     </div>
 </div>
 <?php $__env->stopSection(); ?>
-
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Volumes/MyWork/APP/ChatMeGo/resources/views/profile.blade.php ENDPATH**/ ?>

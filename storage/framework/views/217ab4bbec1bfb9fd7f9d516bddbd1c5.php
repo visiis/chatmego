@@ -34,10 +34,16 @@
                             <a class="nav-link" href="<?php echo e(url('/home')); ?>"><?php echo e(__('messages.nav.discover')); ?></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#"><?php echo e(__('messages.nav.chat')); ?></a>
+                            <a class="nav-link" href="<?php echo e(route('chats')); ?>"><?php echo e(__('messages.nav.chat')); ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?php echo e(route('friends')); ?>"><?php echo e(__('messages.nav.friends')); ?></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#"><?php echo e(__('messages.nav.points')); ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?php echo e(route('blank')); ?>">空白页</a>
                         </li>
                     </ul>
 
@@ -86,5 +92,7 @@
             <?php echo $__env->yieldContent('content'); ?>
         </main>
     </div>
+    <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
-</html><?php /**PATH /Volumes/MyWork/APP/ChatMeGo/resources/views/layouts/app.blade.php ENDPATH**/ ?>
+</html>
+<?php /**PATH /Volumes/MyWork/APP/ChatMeGo/resources/views/layouts/app.blade.php ENDPATH**/ ?>

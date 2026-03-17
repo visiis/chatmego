@@ -44,6 +44,14 @@
                                 <a href="{{ route('profile', $user->id) }}" class="btn btn-primary">
                                     {{ __('messages.users.view_profile') }}
                                 </a>
+                                @if(auth()->id() != $user->id)
+                                    <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success mt-2">
+                                            <i class="fas fa-user-plus"></i> 加入好友
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </div>

@@ -34,10 +34,16 @@
                             <a class="nav-link" href="{{ url('/home') }}">{{ __('messages.nav.discover') }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">{{ __('messages.nav.chat') }}</a>
+                            <a class="nav-link" href="{{ route('chats') }}">{{ __('messages.nav.chat') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('friends') }}">{{ __('messages.nav.friends') }}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">{{ __('messages.nav.points') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('blank') }}">空白页</a>
                         </li>
                     </ul>
 
@@ -84,5 +90,6 @@
             @yield('content')
         </main>
     </div>
+    @stack('scripts')
 </body>
 </html>

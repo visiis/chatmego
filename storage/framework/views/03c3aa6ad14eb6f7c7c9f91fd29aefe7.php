@@ -14,9 +14,15 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="text-center mb-3">
-                                <div class="rounded-circle bg-light w-24 h-24 mx-auto d-flex align-items-center justify-content-center border">
-                                    <span class="text-2xl font-bold"><?php echo e(strtoupper(substr($user->name, 0, 1))); ?></span>
-                                </div>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->avatar): ?>
+                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 180px; height: 180px;">
+                                        <img src="<?php echo e(asset('storage/' . $user->avatar)); ?>" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+                                    </div>
+                                <?php else: ?>
+                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 180px; height: 180px;">
+                                        <img src="<?php echo e(asset('images/default-avatar.svg')); ?>" alt="Default Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+                                    </div>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <h3 class="mt-3"><?php echo e($user->name); ?></h3>
                             </div>
                             
@@ -40,6 +46,14 @@
                                     <?php echo e(__('messages.users.view_profile')); ?>
 
                                 </a>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->id() != $user->id): ?>
+                                    <form action="<?php echo e(route('friends.request', $user->id)); ?>" method="POST" class="d-inline">
+                                        <?php echo csrf_field(); ?>
+                                        <button type="submit" class="btn btn-success mt-2">
+                                            <i class="fas fa-user-plus"></i> 加入好友
+                                        </button>
+                                    </form>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                         </div>
                     </div>
