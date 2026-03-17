@@ -173,4 +173,37 @@ class ChatController extends Controller
             'success' => true,
         ]);
     }
+
+    /**
+     * 获取新消息（轮询用）
+     */
+    public function fetchMessages(Request $request, User $user)
+    {
+        $authUser = auth()->user();
+        $lastMessageId = $request->get('last_message_id', 0);
+
+        // 获取最后一条消息之后的新消息
+        $messages = Message::where(function ($query) use ($authUser, $user) {
+                $query->where('from_user_id', $authUser->id)
+                      ->where('to_user_id', $user->id);
+            })->orWhere(function ($query) use ($authUser, $user) {
+                $query->where('from_user_id', $user->id)
+                      ->where('to_user_id', $authUser->id);
+            })
+            ->where('id', '>', $lastMessageId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // 标记来自对方的消息为已读
+        Message::where('from_user_id', $user->id)
+            ->where('to_user_id', $authUser->id)
+            ->where('is_read', false)
+            ->where('id', '>', $lastMessageId)
+            ->update(['is_read' => true, 'read_at' => now()]);
+
+        return response()->json([
+            'success' => true,
+            'messages' => $messages,
+        ]);
+    }
 }

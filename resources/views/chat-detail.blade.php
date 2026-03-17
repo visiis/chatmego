@@ -127,9 +127,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chat-messages');
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
+    
+    // 存储最后一条消息的 ID（确保是正数）
+    let lastMessageId = {{ $messages->isNotEmpty() ? $messages->last()->id : 0 }};
+    if (lastMessageId < 0) lastMessageId = 0;  // 防止负数
+    let isSendingMessage = false;
+    
+    // 头像 URL
+    const myAvatar = "{{ asset('storage/' . auth()->user()->avatar) }}";
+    const userAvatar = "{{ asset('storage/' . $user->avatar) }}";
+    const defaultAvatar = "{{ asset('images/default-avatar.svg') }}";
 
     // 滚动到底部
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // 定时检查新消息（每 1 秒）
+    setInterval(function() {
+        if (isSendingMessage) return;
+        
+        // 如果 lastMessageId 是 0 或负数，设置为 0
+        if (lastMessageId <= 0) {
+            lastMessageId = 0;
+        }
+        
+        fetch('{{ route("chat.fetch", $user->id) }}?last_message_id=' + lastMessageId)
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success && data.messages && data.messages.length > 0) {
+                    // 有新消息，逐个添加
+                    for (var i = 0; i < data.messages.length; i++) {
+                        var message = data.messages[i];
+                        
+                        // 跳过自己发送的消息
+                        if (message.from_user_id == {{ auth()->id() }}) {
+                            lastMessageId = Math.max(lastMessageId, message.id);
+                            continue;
+                        }
+                        
+                        // 添加对方的消息
+                        addMessage(message);
+                        lastMessageId = Math.max(lastMessageId, message.id);
+                    }
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+            });
+    }, 1000);
 
     // 发送消息
     messageForm.addEventListener('submit', function(e) {
@@ -138,8 +184,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(this);
         const messageText = messageInput.value.trim();
         
-        // 如果消息为空，不发送
         if (!messageText) return;
+        
+        isSendingMessage = true;
         
         fetch(this.action, {
             method: 'POST',
@@ -149,55 +196,70 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
-        .then(data => {
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
             if (data.success) {
-                // 清空输入框
                 messageInput.value = '';
-                
-                // 动态添加新消息到聊天窗口
-                const message = data.message;
-                const messageHtml = createMessageElement(message, true);
-                chatMessages.appendChild(messageHtml);
-                
-                // 滚动到底部
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                // 添加自己发送的消息
+                addMessage(data.message, true);
+                lastMessageId = data.message.id;
+                isSendingMessage = false;
             } else {
                 alert(data.message || '发送失败');
+                isSendingMessage = false;
             }
         })
-        .catch(error => {
+        .catch(function(error) {
             console.error('Error:', error);
             alert('发送失败，请重试');
+            isSendingMessage = false;
         });
     });
     
-    // 创建消息元素
-    function createMessageElement(message, isMe) {
+    // 添加消息到聊天窗口
+    function addMessage(message, isMe = false) {
         const div = document.createElement('div');
-        div.className = 'd-flex justify-content-end mb-3';
-        
         const now = new Date();
         const timeString = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
         
-        div.innerHTML = `
-            <div class="bg-primary text-white rounded p-3 shadow-sm" style="max-width: 70%;">
-                ${escapeHtml(message.message)}
-                <div class="text-end mt-2">
-                    <small class="text-light">
-                        ${timeString}
-                        <i class="fas fa-check-double text-light"></i>
-                    </small>
+        if (isMe || message.from_user_id == {{ auth()->id() }}) {
+            // 我的消息 - 显示在右侧
+            div.className = 'd-flex justify-content-end mb-3';
+            div.innerHTML = `
+                <div class="bg-primary text-white rounded p-3 shadow-sm" style="max-width: 70%;">
+                    ${escapeHtml(message.message)}
+                    <div class="text-end mt-2">
+                        <small class="text-light">${timeString}</small>
+                    </div>
                 </div>
-            </div>
-            <div class="ms-2">
-                <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
-                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover" onerror="this.src='{{ asset('images/default-avatar.svg') }}'">
+                <div class="ms-2">
+                    <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
+                        <img src="${myAvatar}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover" onerror="this.src='${defaultAvatar}'">
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            // 对方的消息 - 显示在左侧
+            div.className = 'd-flex justify-content-start mb-3';
+            div.innerHTML = `
+                <div class="me-2">
+                    <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
+                        <img src="${userAvatar}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover" onerror="this.src='${defaultAvatar}'">
+                    </div>
+                </div>
+                <div class="bg-light rounded p-3 shadow-sm" style="max-width: 70%;">
+                    ${escapeHtml(message.message)}
+                    <div class="text-end mt-2">
+                        <small class="text-muted">${timeString}</small>
+                    </div>
+                </div>
+            `;
+        }
         
-        return div;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
     
     // HTML 转义防止 XSS

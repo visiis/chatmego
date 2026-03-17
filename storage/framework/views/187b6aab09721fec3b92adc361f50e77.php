@@ -127,9 +127,65 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chat-messages');
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
+    
+    // 存储最后一条消息的 ID 和时间
+    let lastMessageId = <?php echo e($messages->isNotEmpty() ? $messages->last()->id : 0); ?>;
+    let lastMessageTime = '<?php echo e($messages->isNotEmpty() ? $messages->last()->created_at->timestamp : 0); ?>';
 
     // 滚动到底部
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // 定时轮询获取新消息（每 2 秒）
+    function fetchNewMessages() {
+        fetch('<?php echo e(route("chat.fetch", $user->id)); ?>?last_message_id=' + lastMessageId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.messages.length > 0) {
+                    // 添加新消息
+                    data.messages.forEach(message => {
+                        const messageHtml = createMessageElement(message, message.from_user_id === <?php echo e(auth()->id()); ?>);
+                        chatMessages.appendChild(messageHtml);
+                        lastMessageId = message.id;
+                        lastMessageTime = new Date(message.created_at).getTime() / 1000;
+                    });
+                    
+                    // 滚动到底部
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // 标记消息为已读
+                    markMessagesAsRead();
+                }
+            })
+            .catch(error => console.error('Error fetching messages:', error));
+    }
+    
+    // 启动轮询（每 2 秒检查一次新消息）
+    const pollInterval = setInterval(fetchNewMessages, 2000);
+    
+    // 标记消息为已读
+    function markMessagesAsRead() {
+        fetch('<?php echo e(route("chat.read", $user->id)); ?>', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'Accept': 'application/json'
+            }
+        }).catch(error => console.error('Error marking messages as read:', error));
+    }
+    
+    // 页面可见时立即检查一次
+    setTimeout(fetchNewMessages, 1000);
+    
+    // 页面隐藏时停止轮询，可见时恢复
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            clearInterval(pollInterval);
+        } else {
+            fetchNewMessages();
+            // 重新启动轮询
+            setInterval(fetchNewMessages, 2000);
+        }
+    });
 
     // 发送消息
     messageForm.addEventListener('submit', function(e) {
@@ -160,8 +216,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const messageHtml = createMessageElement(message, true);
                 chatMessages.appendChild(messageHtml);
                 
+                // 更新最后消息 ID
+                lastMessageId = message.id;
+                
                 // 滚动到底部
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // 立即标记为已读
+                markMessagesAsRead();
             } else {
                 alert(data.message || '发送失败');
             }
