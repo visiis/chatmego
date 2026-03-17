@@ -12,7 +12,7 @@ class UserController extends Controller
         if ($id) {
             $user = \App\Models\User::findOrFail($id);
         } else {
-            $user = auth()->user();
+            $user = auth()->user() ?: \App\Models\User::first();
         }
         return view('profile', compact('user'));
     }
@@ -34,6 +34,11 @@ class UserController extends Controller
         ]);
 
         $user = auth()->user();
+        
+        if ($request->has('delete_avatar') && $user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+            $validated['avatar'] = null;
+        }
         
         if ($request->hasFile('avatar')) {
             if ($user->avatar) {

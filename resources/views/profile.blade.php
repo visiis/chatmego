@@ -27,7 +27,7 @@
                         <h5 class="mb-3">{{ __('messages.profile.title') }}</h5>
                         
                         <div class="form-group row mb-4">
-                            <label class="col-md-4 col-form-label text-md-right">头像</label>
+                            <label class="col-md-4 col-form-label text-md-right">{{ __('messages.profile.avatar') }}</label>
                             <div class="col-md-6">
                                 <div class="text-center mb-3">
                                     @if($user->avatar)
@@ -92,7 +92,7 @@
 
                     <!-- 个人信息 -->
                     <div class="mb-4 pb-4 border-bottom">
-                        <h5 class="mb-3">个人信息</h5>
+                        <h5 class="mb-3">{{ __('messages.profile.personal_info') }}</h5>
                         
                         <div class="form-group row mb-4">
                             <label for="gender" class="col-md-4 col-form-label text-md-right">{{ __('messages.profile.gender') }}</label>
@@ -116,7 +116,7 @@
                                 <div class="input-group">
                                     <input id="age" type="number" min="18" max="120" class="form-control @error('age') is-invalid @enderror" name="age" value="{{ old('age', $user->age) }}" @if($user->id != auth()->id()) disabled @endif placeholder="18">
                                     <div class="input-group-append">
-                                        <span class="input-group-text">岁</span>
+                                        <span class="input-group-text">{{ __('messages.profile.years') }}</span>
                                     </div>
                                 </div>
                                 @error('age')
@@ -164,7 +164,7 @@
 
                     <!-- 兴趣爱好 -->
                     <div class="mb-4 pb-4 border-bottom">
-                        <h5 class="mb-3">兴趣爱好</h5>
+                        <h5 class="mb-3">{{ __('messages.profile.hobbies') }}</h5>
                         
                         <div class="form-group row mb-4">
                             <label for="hobbies" class="col-md-4 col-form-label text-md-right">{{ __('messages.profile.hobbies') }}</label>
@@ -193,7 +193,7 @@
 
                     <!-- 爱情宣言 -->
                     <div class="mb-4">
-                        <h5 class="mb-3">爱情宣言</h5>
+                        <h5 class="mb-3">{{ __('messages.profile.love_declaration') }}</h5>
                         
                         <div class="form-group row mb-4">
                             <label for="love_declaration" class="col-md-4 col-form-label text-md-right">{{ __('messages.profile.love_declaration') }}</label>

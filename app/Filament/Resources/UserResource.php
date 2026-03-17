@@ -94,7 +94,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('avatar')
-                    ->getStateUsing(fn ($record) => $record->avatar ? asset('storage/' . $record->avatar) : null)
+                    ->disk('public')
                     ->circular()
                     ->size(40),
                 Tables\Columns\TextColumn::make('gender')
