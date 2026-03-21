@@ -19,7 +19,7 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'language' => 'required|in:zh_TW,zh_CN,en',
+            'language' => 'required|in:zh_TW,zh_CN,en,ja,ko',
         ]);
 
         session()->put('locale', $request->language);
