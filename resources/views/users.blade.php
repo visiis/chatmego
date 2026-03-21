@@ -86,13 +86,12 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const button = form.querySelector('.friend-request-btn');
-            const originalText = button.innerHTML;
             const formData = new FormData();
             formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
             
             // 禁用按钮
             button.disabled = true;
-            button.innerHTML = '<i class="fas fa-check"></i> 申请已发送';
+            button.innerHTML = '<i class="fas fa-clock"></i> 申请已发送';
             button.classList.remove('btn-success');
             button.classList.add('btn-secondary');
             
@@ -110,12 +109,13 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(function(data) {
                 if (data.success) {
-                    // 显示成功提示
+                    // 显示成功提示，保持按钮禁用状态
                     alert('好友申请已经提交！');
+                    // 不恢复按钮，保持灰色状态
                 } else {
-                    // 恢复按钮
+                    // 只有失败时才恢复按钮
                     button.disabled = false;
-                    button.innerHTML = originalText;
+                    button.innerHTML = '<i class="fas fa-user-plus"></i> 加入好友';
                     button.classList.remove('btn-secondary');
                     button.classList.add('btn-success');
                     alert(data.message || '发送失败');
@@ -123,9 +123,9 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                // 恢复按钮
+                // 网络错误时恢复按钮
                 button.disabled = false;
-                button.innerHTML = originalText;
+                button.innerHTML = '<i class="fas fa-user-plus"></i> 加入好友';
                 button.classList.remove('btn-secondary');
                 button.classList.add('btn-success');
                 alert('发送失败，请重试');
