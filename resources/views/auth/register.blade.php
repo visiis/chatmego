@@ -61,6 +61,28 @@
                             </div>
                         </div>
 
+                        <div class="row mb-3">
+                            <label for="gender" class="col-md-4 col-form-label text-md-end">{{ __('Gender') }}</label>
+
+                            <div class="col-md-6">
+                                <select id="gender" class="form-select @error('gender') is-invalid @enderror" name="gender" required>
+                                    <option value="male">{{ __('Male') }}</option>
+                                    <option value="female">{{ __('Female') }}</option>
+                                </select>
+
+                                @error('gender')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                                
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> 
+                                    男性用户将自动激活账号，女性用户需要后台审核激活
+                                </small>
+                            </div>
+                        </div>
+
                         <div class="row mb-0">
                             <div class="col-md-6 offset-md-4">
                                 <button type="submit" class="btn btn-primary">

@@ -51,6 +51,7 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'gender' => ['nullable', 'in:male,female'],
         ]);
     }
 
@@ -61,10 +62,17 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        // 根据性别设置账号激活状态
+        // 男性：直接激活
+        // 女性：需要后台审核，默认不激活
+        $isActive = isset($data['gender']) && $data['gender'] === 'male' ? 1 : 0;
+        
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'gender' => $data['gender'] ?? null,
+            'is_active' => $isActive,
         ]);
     }
 }
