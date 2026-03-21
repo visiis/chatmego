@@ -35,27 +35,27 @@
                             </p>
                             
                             <!-- 操作按钮 -->
-                            <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
-                                <a href="{{ route('profile', $user->id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-user"></i> {{ __('messages.users.view_profile') }}
+                            <div class="mt-4 text-center">
+                                <a href="{{ route('profile', $user->id) }}" class="btn btn-primary">
+                                    {{ __('messages.users.view_profile') }}
                                 </a>
                                 @if(auth()->id() != $user->id)
-                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-sm btn-outline-success">
-                                        <i class="fas fa-comments"></i> {{ __('messages.chat_now') }}
+                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-success">
+                                        <i class="fas fa-comments"></i> 立即聊天
                                     </a>
                                     @if(isset($user->friendship_status) && $user->friendship_status === 'accepted')
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
-                                            <i class="fas fa-check"></i> {{ __('messages.friends.accepted') }}
+                                        <button type="button" class="btn btn-secondary" disabled>
+                                            <i class="fas fa-check"></i> 已是好友
                                         </button>
                                     @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === $user->id)
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
-                                            <i class="fas fa-clock"></i> {{ __('messages.friends.pending') }}
+                                        <button type="button" class="btn btn-secondary" disabled>
+                                            <i class="fas fa-clock"></i> 申请已发送
                                         </button>
                                     @else
                                         <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-success friend-request-btn">
-                                                <i class="fas fa-user-plus"></i> {{ __('messages.friends.add') }}
+                                            <button type="submit" class="btn btn-success friend-request-btn">
+                                                <i class="fas fa-user-plus"></i> 加入好友
                                             </button>
                                         </form>
                                     @endif
@@ -81,6 +81,7 @@
         transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
         border-radius: 15px;
         overflow: hidden;
+        position: relative;
     }
     
     .card:hover {
@@ -95,11 +96,8 @@
         border: 5px solid #fff;
         margin-top: -60px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
+        position: relative;
+        z-index: 1;
     }
 </style>
 @endpush
