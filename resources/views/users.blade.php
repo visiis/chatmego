@@ -48,12 +48,22 @@
                                     <a href="{{ route('chat.show', $user->id) }}" class="btn btn-info mt-2">
                                         <i class="fas fa-comments"></i> 立即聊天
                                     </a>
-                                    <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success mt-2 friend-request-btn">
-                                            <i class="fas fa-user-plus"></i> 加入好友
+                                    @if(isset($user->friendship_status) && $user->friendship_status === 'accepted')
+                                        <button type="button" class="btn btn-secondary mt-2" disabled>
+                                            <i class="fas fa-check"></i> 已是好友
                                         </button>
-                                    </form>
+                                    @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === $user->id)
+                                        <button type="button" class="btn btn-secondary mt-2" disabled>
+                                            <i class="fas fa-clock"></i> 申请已发送
+                                        </button>
+                                    @else
+                                        <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success mt-2 friend-request-btn">
+                                                <i class="fas fa-user-plus"></i> 加入好友
+                                            </button>
+                                        </form>
+                                    @endif
                                 @endif
                             </div>
                         </div>

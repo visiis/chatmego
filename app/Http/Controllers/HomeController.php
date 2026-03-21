@@ -46,6 +46,27 @@ class HomeController extends Controller
                     ->whereNotIn('id', $friendIds)
                     ->get();
         
+        // 为每个用户添加好友状态信息
+        foreach ($users as $user) {
+            $friendship = \DB::table('friendships')
+                ->where(function($query) use ($authUserId, $user) {
+                    $query->where(function($q) use ($authUserId, $user) {
+                        $q->where('user_id', $authUserId)
+                          ->where('friend_id', $user->id);
+                    })->orWhere(function($q) use ($authUserId, $user) {
+                        $q->where('user_id', $user->id)
+                          ->where('friend_id', $authUserId);
+                    });
+                })
+                ->whereIn('status', ['pending', 'accepted'])
+                ->first();
+            
+            if ($friendship) {
+                $user->friendship_status = $friendship->status;
+                $user->requester_id = $friendship->user_id;
+            }
+        }
+        
         return view('users', compact('users'));
     }
 }
