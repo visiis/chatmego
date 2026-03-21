@@ -77,6 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const button = form.querySelector('.friend-request-btn');
             const originalText = button.innerHTML;
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
             
             // 禁用按钮
             button.disabled = true;
@@ -87,9 +89,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // 发送请求
             fetch(form.action, {
                 method: 'POST',
-                body: new FormData(form),
+                body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
                 }
             })
