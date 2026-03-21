@@ -109,11 +109,16 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(function(data) {
                 if (data.success) {
-                    // 显示成功提示，保持按钮禁用状态
+                    // 成功：替换整个表单为静态文本
+                    const staticButton = document.createElement('button');
+                    staticButton.type = 'button';
+                    staticButton.className = 'btn btn-secondary mt-2';
+                    staticButton.disabled = true;
+                    staticButton.innerHTML = '<i class="fas fa-clock"></i> 申请已发送';
+                    form.parentNode.replaceChild(staticButton, form);
                     alert('好友申请已经提交！');
-                    // 不恢复按钮，保持灰色状态
                 } else {
-                    // 只有失败时才恢复按钮
+                    // 失败：恢复按钮
                     button.disabled = false;
                     button.innerHTML = '<i class="fas fa-user-plus"></i> 加入好友';
                     button.classList.remove('btn-secondary');
@@ -123,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                // 网络错误时恢复按钮
+                // 网络错误：恢复按钮
                 button.disabled = false;
                 button.innerHTML = '<i class="fas fa-user-plus"></i> 加入好友';
                 button.classList.remove('btn-secondary');
