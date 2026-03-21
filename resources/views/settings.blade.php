@@ -25,6 +25,8 @@
                                     <option value="zh_TW" {{ session('locale', config('app.locale')) == 'zh_TW' ? 'selected' : '' }}>中文（繁體）</option>
                                     <option value="zh_CN" {{ session('locale', config('app.locale')) == 'zh_CN' ? 'selected' : '' }}>中文（简体）</option>
                                     <option value="en" {{ session('locale', config('app.locale')) == 'en' ? 'selected' : '' }}>English</option>
+                                    <option value="ja" {{ session('locale', config('app.locale')) == 'ja' ? 'selected' : '' }}>日本語</option>
+                                    <option value="ko" {{ session('locale', config('app.locale')) == 'ko' ? 'selected' : '' }}>한국어</option>
                                 </select>
                             </div>
                         </div>
