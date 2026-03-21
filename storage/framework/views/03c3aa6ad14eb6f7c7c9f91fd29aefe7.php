@@ -47,15 +47,25 @@
 
                                 </a>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->id() != $user->id): ?>
-                                    <a href="<?php echo e(route('chat.show', $user->id)); ?>" class="btn btn-info mt-2">
+                                    <a href="<?php echo e(route('chat.show', $user->id)); ?>" class="btn btn-info">
                                         <i class="fas fa-comments"></i> 立即聊天
                                     </a>
-                                    <form action="<?php echo e(route('friends.request', $user->id)); ?>" method="POST" class="d-inline friend-request-form">
-                                        <?php echo csrf_field(); ?>
-                                        <button type="submit" class="btn btn-success mt-2 friend-request-btn">
-                                            <i class="fas fa-user-plus"></i> 加入好友
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($user->friendship_status) && $user->friendship_status === 'accepted'): ?>
+                                        <button type="button" class="btn btn-secondary" disabled>
+                                            <i class="fas fa-check"></i> 已是好友
                                         </button>
-                                    </form>
+                                    <?php elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === $user->id): ?>
+                                        <button type="button" class="btn btn-secondary" disabled>
+                                            <i class="fas fa-clock"></i> 申请已发送
+                                        </button>
+                                    <?php else: ?>
+                                        <form action="<?php echo e(route('friends.request', $user->id)); ?>" method="POST" class="d-inline friend-request-form">
+                                            <?php echo csrf_field(); ?>
+                                            <button type="submit" class="btn btn-success friend-request-btn">
+                                                <i class="fas fa-user-plus"></i> 加入好友
+                                            </button>
+                                        </form>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                         </div>
@@ -66,6 +76,21 @@
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 </div>
 <?php $__env->stopSection(); ?>
+
+<?php $__env->startPush('styles'); ?>
+<style>
+    .btn-user-action {
+        min-width: 120px;
+        padding: 8px 16px;
+        margin: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        text-align: center;
+        display: inline-block;
+        white-space: nowrap;
+    }
+</style>
+<?php $__env->stopPush(); ?>
 
 <?php $__env->startPush('scripts'); ?>
 <script>
@@ -78,20 +103,21 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const button = form.querySelector('.friend-request-btn');
-            const originalText = button.innerHTML;
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
             
             // 禁用按钮
             button.disabled = true;
-            button.innerHTML = '<i class="fas fa-check"></i> 申请已发送';
+            button.innerHTML = '<i class="fas fa-clock"></i> 申请已发送';
             button.classList.remove('btn-success');
             button.classList.add('btn-secondary');
             
             // 发送请求
             fetch(form.action, {
                 method: 'POST',
-                body: new FormData(form),
+                body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
                 }
             })
@@ -99,13 +125,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(function(data) {
+                console.log('Response data:', data);
                 if (data.success) {
-                    // 显示成功提示
+                    console.log('Success: replacing form with static button');
+                    // 成功：替换整个表单为静态文本
+                    const staticButton = document.createElement('button');
+                    staticButton.type = 'button';
+                    staticButton.className = 'btn btn-secondary btn-user-action';
+                    staticButton.disabled = true;
+                    staticButton.innerHTML = '<i class="fas fa-clock"></i> 申请已发送';
+                    form.parentNode.replaceChild(staticButton, form);
                     alert('好友申请已经提交！');
                 } else {
-                    // 恢复按钮
+                    console.log('Failed:', data.message);
+                    // 失败：恢复按钮
                     button.disabled = false;
-                    button.innerHTML = originalText;
+                    button.innerHTML = '<i class="fas fa-user-plus"></i> 加入好友';
                     button.classList.remove('btn-secondary');
                     button.classList.add('btn-success');
                     alert(data.message || '发送失败');
@@ -113,9 +148,9 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                // 恢复按钮
+                // 网络错误：恢复按钮
                 button.disabled = false;
-                button.innerHTML = originalText;
+                button.innerHTML = '<i class="fas fa-user-plus"></i> 加入好友';
                 button.classList.remove('btn-secondary');
                 button.classList.add('btn-success');
                 alert('发送失败，请重试');

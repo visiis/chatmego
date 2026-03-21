@@ -41,25 +41,25 @@
                             </div>
                             
                             <div class="mt-4 text-center">
-                                <a href="{{ route('profile', $user->id) }}" class="btn btn-user-action">
+                                <a href="{{ route('profile', $user->id) }}" class="btn btn-primary">
                                     {{ __('messages.users.view_profile') }}
                                 </a>
                                 @if(auth()->id() != $user->id)
-                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-user-action">
+                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-info">
                                         <i class="fas fa-comments"></i> 立即聊天
                                     </a>
                                     @if(isset($user->friendship_status) && $user->friendship_status === 'accepted')
-                                        <button type="button" class="btn btn-user-action" disabled>
+                                        <button type="button" class="btn btn-secondary" disabled>
                                             <i class="fas fa-check"></i> 已是好友
                                         </button>
                                     @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === $user->id)
-                                        <button type="button" class="btn btn-user-action" disabled>
+                                        <button type="button" class="btn btn-secondary" disabled>
                                             <i class="fas fa-clock"></i> 申请已发送
                                         </button>
                                     @else
                                         <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
                                             @csrf
-                                            <button type="submit" class="btn btn-user-action friend-request-btn">
+                                            <button type="submit" class="btn btn-success friend-request-btn">
                                                 <i class="fas fa-user-plus"></i> 加入好友
                                             </button>
                                         </form>
@@ -78,45 +78,14 @@
 @push('styles')
 <style>
     .btn-user-action {
-        min-width: 120px !important;
-        padding: 10px 20px !important;
-        margin: 4px !important;
-        font-size: 16px !important;
-        font-weight: 500 !important;
-        text-align: center !important;
-        display: inline-block !important;
-        white-space: nowrap !important;
-        background-color: #007bff !important;
-        border-color: #007bff !important;
-        color: #ffffff !important;
-        border-radius: 8px !important;
-        transition: all 0.3s ease !important;
-        border: 1px solid #007bff !important;
-    }
-    
-    .btn-user-action:hover {
-        background-color: #0056b3 !important;
-        border-color: #0056b3 !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3) !important;
-    }
-    
-    .btn-user-action:active {
-        transform: translateY(0) !important;
-    }
-    
-    .btn-user-action[disabled] {
-        background-color: #6c757d !important;
-        border-color: #6c757d !important;
-        cursor: not-allowed !important;
-        opacity: 0.65 !important;
-    }
-    
-    .btn-user-action[disabled]:hover {
-        background-color: #6c757d !important;
-        border-color: #6c757d !important;
-        transform: none !important;
-        box-shadow: none !important;
+        min-width: 120px;
+        padding: 8px 16px;
+        margin: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        text-align: center;
+        display: inline-block;
+        white-space: nowrap;
     }
 </style>
 @endpush
