@@ -13,23 +13,21 @@
             @foreach($users as $user)
                 <div class="col-md-4 col-lg-3">
                     <div class="card text-center shadow-sm h-100">
-                        <!-- 背景图片 -->
-                        <img src="https://picsum.photos/id/{{ $user->id + 10 }}/400/200" class="card-img-top" alt="背景图片">
-                        
-                        <!-- 头像 -->
-                        @if($user->avatar)
-                            <img src="{{ asset('storage/' . $user->avatar) }}" class="rounded-circle mx-auto profile-img" alt="{{ $user->name }}">
-                        @else
-                            <img src="{{ asset('images/default-avatar.svg') }}" class="rounded-circle mx-auto profile-img" alt="{{ $user->name }}">
-                        @endif
-                        
-                        <div class="card-body pt-0">
-                            <h5 class="card-title mt-3">{{ $user->name }}</h5>
-                            <p class="text-muted small">
-                                {{ $user->gender == 'male' ? __('messages.profile.male') : __('messages.profile.female') }} · 
-                                {{ $user->age }} {{ __('messages.profile.age') }}
+                        <div class="card-body">
+                            <!-- 头像 -->
+                            <div class="mb-3">
+                                @if($user->avatar)
+                                    <img src="{{ asset('storage/' . $user->avatar) }}" class="rounded-circle mx-auto d-block" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #e9ecef;" alt="{{ $user->name }}">
+                                @else
+                                    <img src="{{ asset('images/default-avatar.svg') }}" class="rounded-circle mx-auto d-block" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #e9ecef;" alt="{{ $user->name }}">
+                                @endif
+                            </div>
+                            
+                            <h5 class="card-title">{{ $user->name }}</h5>
+                            <p class="text-muted small mb-1">
+                                {{ $user->gender == 'male' ? __('messages.profile.male') : __('messages.profile.female') }} · {{ $user->age }} {{ __('messages.profile.age') }}
                             </p>
-                            <p class="card-text small text-muted">
+                            <p class="text-muted small mb-3">
                                 <i class="fas fa-ruler-vertical"></i> {{ $user->height }} cm · 
                                 <i class="fas fa-weight"></i> {{ $user->weight }} kg
                             </p>
@@ -73,31 +71,18 @@
 @push('styles')
 <style>
     body {
-        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+        background: #f8f9fa;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
     .card {
-        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
         border-radius: 15px;
-        overflow: hidden;
-        position: relative;
+        transition: transform 0.3s, box-shadow 0.3s;
     }
     
     .card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 12px 20px rgba(0,0,0,0.15);
-    }
-    
-    .profile-img {
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border: 5px solid #fff;
-        margin-top: -60px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        position: relative;
-        z-index: 1;
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
 </style>
 @endpush
