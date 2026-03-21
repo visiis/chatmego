@@ -78,44 +78,45 @@
 @push('styles')
 <style>
     .btn-user-action {
-        min-width: 120px;
-        padding: 10px 20px;
-        margin: 4px;
-        font-size: 16px;
-        font-weight: 500;
-        text-align: center;
-        display: inline-block;
-        white-space: nowrap;
-        background-color: #007bff;
-        border-color: #007bff;
-        color: #fff !important;
-        border-radius: 8px;
-        transition: all 0.3s ease;
+        min-width: 120px !important;
+        padding: 10px 20px !important;
+        margin: 4px !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        text-align: center !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+        background-color: #007bff !important;
+        border-color: #007bff !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
+        transition: all 0.3s ease !important;
+        border: 1px solid #007bff !important;
     }
     
     .btn-user-action:hover {
-        background-color: #0056b3;
-        border-color: #0056b3;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        background-color: #0056b3 !important;
+        border-color: #0056b3 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3) !important;
     }
     
     .btn-user-action:active {
-        transform: translateY(0);
+        transform: translateY(0) !important;
     }
     
     .btn-user-action[disabled] {
-        background-color: #6c757d;
-        border-color: #6c757d;
-        cursor: not-allowed;
-        opacity: 0.65;
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        cursor: not-allowed !important;
+        opacity: 0.65 !important;
     }
     
     .btn-user-action[disabled]:hover {
-        background-color: #6c757d;
-        border-color: #6c757d;
-        transform: none;
-        box-shadow: none;
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        transform: none !important;
+        box-shadow: none !important;
     }
 </style>
 @endpush
