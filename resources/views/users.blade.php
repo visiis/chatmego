@@ -41,25 +41,25 @@
                             </div>
                             
                             <div class="mt-4 text-center">
-                                <a href="{{ route('profile', $user->id) }}" class="btn btn-primary btn-user-action">
+                                <a href="{{ route('profile', $user->id) }}" class="btn btn-user-action">
                                     {{ __('messages.users.view_profile') }}
                                 </a>
                                 @if(auth()->id() != $user->id)
-                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-user-action" style="background-color: #17a2b8; border-color: #17a2b8; color: #fff;">
+                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-user-action">
                                         <i class="fas fa-comments"></i> 立即聊天
                                     </a>
                                     @if(isset($user->friendship_status) && $user->friendship_status === 'accepted')
-                                        <button type="button" class="btn btn-secondary btn-user-action" disabled>
+                                        <button type="button" class="btn btn-user-action" disabled>
                                             <i class="fas fa-check"></i> 已是好友
                                         </button>
                                     @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === $user->id)
-                                        <button type="button" class="btn btn-secondary btn-user-action" disabled>
+                                        <button type="button" class="btn btn-user-action" disabled>
                                             <i class="fas fa-clock"></i> 申请已发送
                                         </button>
                                     @else
                                         <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
                                             @csrf
-                                            <button type="submit" class="btn btn-success btn-user-action friend-request-btn">
+                                            <button type="submit" class="btn btn-user-action friend-request-btn">
                                                 <i class="fas fa-user-plus"></i> 加入好友
                                             </button>
                                         </form>
@@ -79,24 +79,43 @@
 <style>
     .btn-user-action {
         min-width: 120px;
-        padding: 8px 16px;
+        padding: 10px 20px;
         margin: 4px;
         font-size: 16px;
         font-weight: 500;
         text-align: center;
         display: inline-block;
         white-space: nowrap;
-    }
-    
-    .btn-user-action.btn-info {
+        background-color: #007bff;
+        border-color: #007bff;
         color: #fff !important;
-        background-color: #17a2b8 !important;
-        border-color: #17a2b8 !important;
+        border-radius: 8px;
+        transition: all 0.3s ease;
     }
     
-    .btn-user-action.btn-info:hover {
-        background-color: #138496 !important;
-        border-color: #117a8b !important;
+    .btn-user-action:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    }
+    
+    .btn-user-action:active {
+        transform: translateY(0);
+    }
+    
+    .btn-user-action[disabled] {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+    
+    .btn-user-action[disabled]:hover {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        transform: none;
+        box-shadow: none;
     }
 </style>
 @endpush
