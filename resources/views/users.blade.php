@@ -108,16 +108,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(function(data) {
+                console.log('Response data:', data);
                 if (data.success) {
+                    console.log('Success: replacing form with static button');
                     // 成功：替换整个表单为静态文本
                     const staticButton = document.createElement('button');
                     staticButton.type = 'button';
                     staticButton.className = 'btn btn-secondary mt-2';
                     staticButton.disabled = true;
+                    staticButton.style.minWidth = '100px';
                     staticButton.innerHTML = '<i class="fas fa-clock"></i> 申请已发送';
                     form.parentNode.replaceChild(staticButton, form);
                     alert('好友申请已经提交！');
                 } else {
+                    console.log('Failed:', data.message);
                     // 失败：恢复按钮
                     button.disabled = false;
                     button.innerHTML = '<i class="fas fa-user-plus"></i> 加入好友';
