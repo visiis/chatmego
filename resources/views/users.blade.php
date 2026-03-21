@@ -47,7 +47,7 @@
                                         </button>
                                     @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === $user->id)
                                         <button type="button" class="btn btn-secondary" disabled>
-                                            <i class="fas fa-clock"></i> 申请已发送
+                                            <i class="fas fa-clock"></i> 已发送
                                         </button>
                                     @else
                                         <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
