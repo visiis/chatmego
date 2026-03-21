@@ -26,7 +26,7 @@ class FriendshipController extends Controller
 
         // 不能添加自己为好友
         if ($authUser->id === $user->id) {
-            return redirect()->back()->with('error', '不能添加自己为好友');
+            return response()->json(['success' => false, 'message' => '不能添加自己为好友']);
         }
 
         // 检查是否已经是好友
@@ -39,11 +39,11 @@ class FriendshipController extends Controller
 
         if ($existingFriendship) {
             if ($existingFriendship->status === 'accepted') {
-                return redirect()->back()->with('error', '已经是好友了');
+                return response()->json(['success' => false, 'message' => '已经是好友了']);
             } elseif ($existingFriendship->status === 'pending') {
-                return redirect()->back()->with('error', '好友请求已发送，等待对方接受');
+                return response()->json(['success' => false, 'message' => '好友请求已发送，等待对方接受']);
             } elseif ($existingFriendship->status === 'blocked') {
-                return redirect()->back()->with('error', '无法添加该用户为好友');
+                return response()->json(['success' => false, 'message' => '无法添加该用户为好友']);
             }
         }
 
@@ -54,7 +54,7 @@ class FriendshipController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->back()->with('success', '好友请求已发送');
+        return response()->json(['success' => true, 'message' => '好友请求已发送']);
     }
 
     /**

@@ -45,6 +45,9 @@
                                     {{ __('messages.users.view_profile') }}
                                 </a>
                                 @if(auth()->id() != $user->id)
+                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-info mt-2">
+                                        <i class="fas fa-comments"></i> 立即聊天
+                                    </a>
                                     <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
                                         @csrf
                                         <button type="submit" class="btn btn-success mt-2 friend-request-btn">
