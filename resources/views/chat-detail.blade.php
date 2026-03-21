@@ -109,12 +109,16 @@
                         @csrf
                         <input type="hidden" name="type" value="text">
                         <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" id="emoji-btn">
+                                <i class="far fa-smile"></i>
+                            </button>
                             <input type="text" name="message" id="message-input" class="form-control" placeholder="输入消息..." autocomplete="off" required>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-paper-plane"></i> 发送
                             </button>
                         </div>
                     </form>
+                    <div id="emoji-picker-container" style="display: none; position: absolute; bottom: 60px; left: 20px; z-index: 1000;"></div>
                 </div>
             </div>
         </div>
@@ -122,11 +126,17 @@
 </div>
 
 @push('scripts')
+<!-- 引入 Emoji Mart -->
+<script src="https://cdn.jsdelivr.net/npm/@emoji-mart/react"></script>
+<script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chat-messages');
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
+    const emojiBtn = document.getElementById('emoji-btn');
+    const emojiPickerContainer = document.getElementById('emoji-picker-container');
     
     // 存储最后一条消息的 ID（确保是正数）
     let lastMessageId = {{ $messages->isNotEmpty() ? $messages->last()->id : 0 }};
@@ -143,6 +153,57 @@ document.addEventListener('DOMContentLoaded', function() {
     const myAvatar = "{{ asset('storage/' . auth()->user()->avatar) }}";
     const userAvatar = "{{ asset('storage/' . $user->avatar) }}";
     const defaultAvatar = "{{ asset('images/default-avatar.svg') }}";
+    
+    // 初始化 Emoji Mart 表情选择器
+    let emojiPicker = null;
+    const initEmojiPicker = () => {
+        if (!emojiPicker) {
+            emojiPicker = new EmojiMart.Picker({
+                theme: 'light',
+                locale: 'zh',
+                emojiSize: 24,
+                maxFrequentRows: 2,
+                onEmojiSelect: (emoji) => {
+                    // 将表情插入到输入框光标位置
+                    const startPos = messageInput.selectionStart;
+                    const endPos = messageInput.selectionEnd;
+                    const text = messageInput.value;
+                    messageInput.value = text.substring(0, startPos) + emoji.native + text.substring(endPos);
+                    messageInput.focus();
+                    messageInput.selectionStart = messageInput.selectionEnd = startPos + emoji.native.length;
+                    
+                    // 隐藏表情选择器
+                    emojiPickerContainer.style.display = 'none';
+                }
+            });
+            
+            // 将表情选择器添加到容器中
+            emojiPickerContainer.innerHTML = '';
+            emojiPickerContainer.appendChild(emojiPicker);
+        }
+    };
+    
+    // 点击表情按钮显示/隐藏表情选择器
+    emojiBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // 初始化表情选择器（如果还没初始化）
+        initEmojiPicker();
+        
+        // 切换显示状态
+        const isDisplayed = emojiPickerContainer.style.display === 'block';
+        emojiPickerContainer.style.display = isDisplayed ? 'none' : 'block';
+    });
+    
+    // 点击其他地方关闭表情选择器
+    document.addEventListener('click', function(e) {
+        if (emojiPickerContainer.style.display === 'block' && 
+            !emojiPickerContainer.contains(e.target) && 
+            e.target !== emojiBtn) {
+            emojiPickerContainer.style.display = 'none';
+        }
+    });
 
     // 滚动到底部
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -202,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 isLoadingHistory = false;
             });
     }
-
+    
     // 定时检查新消息（每 1 秒）
     setInterval(function() {
         if (isSendingMessage) return;
