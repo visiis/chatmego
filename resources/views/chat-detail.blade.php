@@ -118,8 +118,73 @@
                             </button>
                         </div>
                     </form>
-                    <div id="emoji-picker-container" style="display: none; position: absolute; bottom: 60px; left: 20px; z-index: 1000;"></div>
+                    <!-- 桌面端 Emoji Mart 容器 -->
+                    <div id="emoji-picker-container" style="display: none; position: absolute; bottom: 60px; left: 20px; z-index: 1000; max-width: 350px; max-height: 450px; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
+                    <!-- 移动端简化表情容器 -->
+                    <div id="simple-emoji-picker" style="display: none;">
+                        <div class="emoji-grid" id="emoji-grid"></div>
+                    </div>
                 </div>
+
+<style>
+/* 移动端简化表情面板样式 */
+@media (max-width: 768px) {
+    #simple-emoji-picker {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 16px 16px 0 0;
+        padding: 12px;
+        max-height: 50vh;
+        overflow-y: auto;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+    
+    .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 8px;
+        font-size: 24px;
+    }
+    
+    .emoji-item {
+        cursor: pointer;
+        text-align: center;
+        padding: 4px;
+        border-radius: 4px;
+        transition: background 0.2s;
+        user-select: none;
+    }
+    
+    .emoji-item:hover {
+        background: #f0f0f0;
+    }
+    
+    .emoji-item:active {
+        background: #e0e0e0;
+    }
+    
+    .emoji-category {
+        grid-column: 1 / -1;
+        font-size: 13px;
+        color: #666;
+        margin: 8px 0 4px;
+        font-weight: 600;
+    }
+    
+    /* 移动端优化桌面端容器 */
+    #emoji-picker-container {
+        left: 10px;
+        right: 10px;
+        max-width: calc(100% - 20px);
+        max-height: 40vh;
+        bottom: 70px;
+    }
+}
+</style>
             </div>
         </div>
     </div>
@@ -154,7 +219,68 @@ document.addEventListener('DOMContentLoaded', function() {
     const userAvatar = "{{ asset('storage/' . $user->avatar) }}";
     const defaultAvatar = "{{ asset('images/default-avatar.svg') }}";
     
-    // 初始化 Emoji Mart 表情选择器
+    // 检测是否为移动设备
+    function isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+            || window.innerWidth <= 768;
+    }
+    
+    // 常用表情列表（移动端使用）
+    const commonEmojis = [
+        { category: '最近使用', emojis: ['😀', '😃', '', '😁', '', '😅', '', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩'] },
+        { category: '情感', emojis: ['😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '', '🤩', '🤔', '🤨', '', '😎', '😏'] },
+        { category: '爱意', emojis: ['🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😝', '😜', '🤪', '😚', '😙'] },
+        { category: '开心', emojis: ['😀', '😃', '', '😁', '', '😅', '', '😂', '🙂', '🙃', '😉', '😊', '😇', '', '😛', '😝'] },
+        { category: '手势', emojis: ['👍', '👎', '', '', '🤜', '🤞', '✌️', '🤟', '🤘', '👌', '🤏', '', '👉', '👆'] },
+        { category: '动物', emojis: ['🐶', '🐱', '', '🐹', '🐰', '🦊', '', '🐼', '🐨', '🐯', '', '🐮', '🐷', '🐸'] }
+    ];
+    
+    // 初始化移动端表情面板
+    function initMobileEmojiPicker() {
+        const grid = document.getElementById('emoji-grid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        commonEmojis.forEach(category => {
+            // 添加分类标题
+            const categoryDiv = document.createElement('div');
+            categoryDiv.className = 'emoji-category';
+            categoryDiv.textContent = category.category;
+            grid.appendChild(categoryDiv);
+            
+            // 添加表情
+            category.emojis.forEach(emoji => {
+                const emojiDiv = document.createElement('div');
+                emojiDiv.className = 'emoji-item';
+                emojiDiv.textContent = emoji;
+                emojiDiv.addEventListener('click', function() {
+                    insertEmoji(emoji);
+                });
+                grid.appendChild(emojiDiv);
+            });
+        });
+    }
+    
+    // 插入表情到输入框
+    function insertEmoji(emoji) {
+        const messageInput = document.getElementById('message-input');
+        const startPos = messageInput.selectionStart;
+        const endPos = messageInput.selectionEnd;
+        const text = messageInput.value;
+        messageInput.value = text.substring(0, startPos) + emoji + text.substring(endPos);
+        messageInput.focus();
+        messageInput.selectionStart = messageInput.selectionEnd = startPos + emoji.length;
+        
+        // 隐藏表情面板
+        if (isMobile()) {
+            document.getElementById('simple-emoji-picker').style.display = 'none';
+        } else {
+            document.getElementById('emoji-picker-container').style.display = 'none';
+        }
+    }
+    
+    // 初始化 Emoji Mart 表情选择器（桌面端）
     let emojiPicker = null;
     const initEmojiPicker = () => {
         if (!emojiPicker) {
@@ -164,16 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 emojiSize: 24,
                 maxFrequentRows: 2,
                 onEmojiSelect: (emoji) => {
-                    // 将表情插入到输入框光标位置
-                    const startPos = messageInput.selectionStart;
-                    const endPos = messageInput.selectionEnd;
-                    const text = messageInput.value;
-                    messageInput.value = text.substring(0, startPos) + emoji.native + text.substring(endPos);
-                    messageInput.focus();
-                    messageInput.selectionStart = messageInput.selectionEnd = startPos + emoji.native.length;
-                    
-                    // 隐藏表情选择器
-                    emojiPickerContainer.style.display = 'none';
+                    insertEmoji(emoji.native);
                 }
             });
             
@@ -188,12 +305,22 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         e.stopPropagation();
         
-        // 初始化表情选择器（如果还没初始化）
-        initEmojiPicker();
-        
-        // 切换显示状态
-        const isDisplayed = emojiPickerContainer.style.display === 'block';
-        emojiPickerContainer.style.display = isDisplayed ? 'none' : 'block';
+        if (isMobile()) {
+            // 移动端使用简化版
+            initMobileEmojiPicker();
+            const picker = document.getElementById('simple-emoji-picker');
+            picker.style.display = picker.style.display === 'block' ? 'none' : 'block';
+            
+            // 隐藏桌面版
+            emojiPickerContainer.style.display = 'none';
+        } else {
+            // 桌面端使用 Emoji Mart
+            initEmojiPicker();
+            emojiPickerContainer.style.display = emojiPickerContainer.style.display === 'block' ? 'none' : 'block';
+            
+            // 隐藏移动版
+            document.getElementById('simple-emoji-picker').style.display = 'none';
+        }
     });
     
     // 点击其他地方关闭表情选择器
@@ -202,6 +329,12 @@ document.addEventListener('DOMContentLoaded', function() {
             !emojiPickerContainer.contains(e.target) && 
             e.target !== emojiBtn) {
             emojiPickerContainer.style.display = 'none';
+        }
+        
+        if (document.getElementById('simple-emoji-picker').style.display === 'block' &&
+            !document.getElementById('simple-emoji-picker').contains(e.target) &&
+            e.target !== emojiBtn) {
+            document.getElementById('simple-emoji-picker').style.display = 'none';
         }
     });
 
