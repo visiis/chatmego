@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 禁用按钮
             button.disabled = true;
-            button.innerHTML = '<i class="fas fa-clock"></i> 申请已发送';
+            button.innerHTML = '<i class="fas fa-clock"></i> 已发送';
             button.classList.remove('btn-success');
             button.classList.add('btn-secondary');
             
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     staticButton.type = 'button';
                     staticButton.className = 'btn btn-secondary btn-user-action';
                     staticButton.disabled = true;
-                    staticButton.innerHTML = '<i class="fas fa-clock"></i> 申请已发送';
+                    staticButton.innerHTML = '<i class="fas fa-clock"></i> 已发送';
                     form.parentNode.replaceChild(staticButton, form);
                     alert('好友申请已经提交！');
                 } else {
