@@ -83,18 +83,6 @@ class ChatController extends Controller
     {
         $authUser = auth()->user();
 
-        // 检查是否是好友
-        $friendship = Friendship::where(function ($query) use ($authUser, $user) {
-            $query->where('user_id', $authUser->id)
-                  ->where('friend_id', $user->id)
-                  ->orWhere('user_id', $user->id)
-                  ->where('friend_id', $authUser->id);
-        })->where('status', 'accepted')->first();
-
-        if (!$friendship) {
-            return redirect()->route('friends')->with('error', '只能与好友聊天');
-        }
-
         // 获取聊天记录（只获取最近 50 条）
         $messages = Message::where(function ($query) use ($authUser, $user) {
             $query->where('from_user_id', $authUser->id)
