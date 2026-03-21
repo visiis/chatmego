@@ -41,25 +41,25 @@
                             </div>
                             
                             <div class="mt-4 text-center">
-                                <a href="{{ route('profile', $user->id) }}" class="btn btn-primary">
+                                <a href="{{ route('profile', $user->id) }}" class="btn btn-primary btn-user-action">
                                     {{ __('messages.users.view_profile') }}
                                 </a>
                                 @if(auth()->id() != $user->id)
-                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-info mt-2">
+                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-info btn-user-action">
                                         <i class="fas fa-comments"></i> 立即聊天
                                     </a>
                                     @if(isset($user->friendship_status) && $user->friendship_status === 'accepted')
-                                        <button type="button" class="btn btn-secondary mt-2" disabled>
+                                        <button type="button" class="btn btn-secondary btn-user-action" disabled>
                                             <i class="fas fa-check"></i> 已是好友
                                         </button>
                                     @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === $user->id)
-                                        <button type="button" class="btn btn-secondary mt-2" disabled>
+                                        <button type="button" class="btn btn-secondary btn-user-action" disabled>
                                             <i class="fas fa-clock"></i> 申请已发送
                                         </button>
                                     @else
                                         <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
                                             @csrf
-                                            <button type="submit" class="btn btn-success mt-2 friend-request-btn">
+                                            <button type="submit" class="btn btn-success btn-user-action friend-request-btn">
                                                 <i class="fas fa-user-plus"></i> 加入好友
                                             </button>
                                         </form>
@@ -74,6 +74,32 @@
     @endif
 </div>
 @endsection
+
+@push('styles')
+<style>
+    .btn-user-action {
+        min-width: 120px;
+        padding: 8px 16px;
+        margin: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        text-align: center;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    
+    .btn-user-action.btn-info {
+        color: #fff !important;
+        background-color: #17a2b8 !important;
+        border-color: #17a2b8 !important;
+    }
+    
+    .btn-user-action.btn-info:hover {
+        background-color: #138496 !important;
+        border-color: #117a8b !important;
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script>
@@ -114,9 +140,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 成功：替换整个表单为静态文本
                     const staticButton = document.createElement('button');
                     staticButton.type = 'button';
-                    staticButton.className = 'btn btn-secondary mt-2';
+                    staticButton.className = 'btn btn-secondary btn-user-action';
                     staticButton.disabled = true;
-                    staticButton.style.minWidth = '100px';
                     staticButton.innerHTML = '<i class="fas fa-clock"></i> 申请已发送';
                     form.parentNode.replaceChild(staticButton, form);
                     alert('好友申请已经提交！');
