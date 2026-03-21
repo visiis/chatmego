@@ -1,66 +1,61 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1 class="text-center mb-4">{{ __('messages.users.title') }}</h1>
+<div class="container py-5">
+    <h2 class="text-center mb-4">{{ __('messages.users.title') }}</h2>
     
     @if($users->isEmpty())
         <div class="alert alert-info text-center">
             {{ __('messages.users.no_users') }}
         </div>
     @else
-        <div class="row">
+        <div class="row g-4">
             @foreach($users as $user)
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="text-center mb-3">
-                                @if($user->avatar)
-                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 180px; height: 180px;">
-                                        <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
-                                    </div>
-                                @else
-                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 180px; height: 180px;">
-                                        <img src="{{ asset('images/default-avatar.svg') }}" alt="Default Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
-                                    </div>
-                                @endif
-                                <h3 class="mt-3">{{ $user->name }}</h3>
-                            </div>
+                <div class="col-md-4 col-lg-3">
+                    <div class="card text-center shadow-sm h-100">
+                        <!-- 背景图片 -->
+                        <img src="https://picsum.photos/id/{{ $user->id + 10 }}/400/200" class="card-img-top" alt="背景图片">
+                        
+                        <!-- 头像 -->
+                        @if($user->avatar)
+                            <img src="{{ asset('storage/' . $user->avatar) }}" class="rounded-circle mx-auto profile-img" alt="{{ $user->name }}">
+                        @else
+                            <img src="{{ asset('images/default-avatar.svg') }}" class="rounded-circle mx-auto profile-img" alt="{{ $user->name }}">
+                        @endif
+                        
+                        <div class="card-body pt-0">
+                            <h5 class="card-title mt-3">{{ $user->name }}</h5>
+                            <p class="text-muted small">
+                                {{ $user->gender == 'male' ? __('messages.profile.male') : __('messages.profile.female') }} · 
+                                {{ $user->age }} {{ __('messages.profile.age') }}
+                            </p>
+                            <p class="card-text small text-muted">
+                                <i class="fas fa-ruler-vertical"></i> {{ $user->height }} cm · 
+                                <i class="fas fa-weight"></i> {{ $user->weight }} kg
+                            </p>
                             
-                            <div class="mb-2">
-                                <strong>{{ __('messages.profile.gender') }}:</strong> {{ $user->gender == 'male' ? __('messages.profile.male') : __('messages.profile.female') }}
-                            </div>
-                            <div class="mb-2">
-                                <strong>{{ __('messages.profile.age') }}:</strong> {{ $user->age }}
-                            </div>
-                            <div class="mb-2">
-                                <strong>{{ __('messages.profile.height') }}:</strong> {{ $user->height }} cm
-                            </div>
-                            <div class="mb-2">
-                                <strong>{{ __('messages.profile.weight') }}:</strong> {{ $user->weight }} kg
-                            </div>
-                            
-                            <div class="mt-4 text-center">
-                                <a href="{{ route('profile', $user->id) }}" class="btn btn-primary">
-                                    {{ __('messages.users.view_profile') }}
+                            <!-- 操作按钮 -->
+                            <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+                                <a href="{{ route('profile', $user->id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-user"></i> {{ __('messages.users.view_profile') }}
                                 </a>
                                 @if(auth()->id() != $user->id)
-                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-success">
-                                        <i class="fas fa-comments"></i> 立即聊天
+                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-comments"></i> {{ __('messages.chat_now') }}
                                     </a>
                                     @if(isset($user->friendship_status) && $user->friendship_status === 'accepted')
-                                        <button type="button" class="btn btn-secondary" disabled>
-                                            <i class="fas fa-check"></i> 已是好友
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                                            <i class="fas fa-check"></i> {{ __('messages.friends.accepted') }}
                                         </button>
                                     @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === $user->id)
-                                        <button type="button" class="btn btn-secondary" disabled>
-                                            <i class="fas fa-clock"></i> 申请已发送
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                                            <i class="fas fa-clock"></i> {{ __('messages.friends.pending') }}
                                         </button>
                                     @else
                                         <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
                                             @csrf
-                                            <button type="submit" class="btn btn-success friend-request-btn">
-                                                <i class="fas fa-user-plus"></i> 加入好友
+                                            <button type="submit" class="btn btn-sm btn-outline-success friend-request-btn">
+                                                <i class="fas fa-user-plus"></i> {{ __('messages.friends.add') }}
                                             </button>
                                         </form>
                                     @endif
@@ -77,15 +72,34 @@
 
 @push('styles')
 <style>
-    .btn-user-action {
-        min-width: 120px;
-        padding: 8px 16px;
-        margin: 4px;
-        font-size: 16px;
-        font-weight: 500;
-        text-align: center;
-        display: inline-block;
-        white-space: nowrap;
+    body {
+        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    }
+    
+    .profile-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 5px solid #fff;
+        margin-top: -60px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
     }
 </style>
 @endpush
