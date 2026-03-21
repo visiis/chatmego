@@ -45,9 +45,9 @@
                                     {{ __('messages.users.view_profile') }}
                                 </a>
                                 @if(auth()->id() != $user->id)
-                                    <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
                                         @csrf
-                                        <button type="submit" class="btn btn-success mt-2">
+                                        <button type="submit" class="btn btn-success mt-2 friend-request-btn">
                                             <i class="fas fa-user-plus"></i> 加入好友
                                         </button>
                                     </form>
@@ -61,3 +61,62 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 处理好友申请表单提交
+    const forms = document.querySelectorAll('.friend-request-form');
+    
+    forms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const button = form.querySelector('.friend-request-btn');
+            const originalText = button.innerHTML;
+            
+            // 禁用按钮
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-check"></i> 申请已发送';
+            button.classList.remove('btn-success');
+            button.classList.add('btn-secondary');
+            
+            // 发送请求
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    // 显示成功提示
+                    alert('好友申请已经提交！');
+                } else {
+                    // 恢复按钮
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-secondary');
+                    button.classList.add('btn-success');
+                    alert(data.message || '发送失败');
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                // 恢复按钮
+                button.disabled = false;
+                button.innerHTML = originalText;
+                button.classList.remove('btn-secondary');
+                button.classList.add('btn-success');
+                alert('发送失败，请重试');
+            });
+        });
+    });
+});
+</script>
+@endpush

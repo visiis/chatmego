@@ -95,7 +95,7 @@ class ChatController extends Controller
             return redirect()->route('friends')->with('error', '只能与好友聊天');
         }
 
-        // 获取聊天记录
+        // 获取聊天记录（只获取最近 50 条）
         $messages = Message::where(function ($query) use ($authUser, $user) {
             $query->where('from_user_id', $authUser->id)
                   ->where('to_user_id', $user->id);
@@ -103,8 +103,10 @@ class ChatController extends Controller
             $query->where('from_user_id', $user->id)
                   ->where('to_user_id', $authUser->id);
         })
-        ->orderBy('created_at', 'asc')
-        ->get();
+        ->orderBy('created_at', 'desc')
+        ->limit(50)
+        ->get()
+        ->reverse(); // 反转回正序显示
 
         // 标记所有来自对方的消息为已读
         Message::where('from_user_id', $user->id)
@@ -204,6 +206,36 @@ class ChatController extends Controller
         return response()->json([
             'success' => true,
             'messages' => $messages,
+        ]);
+    }
+
+    /**
+     * 加载更多历史消息
+     */
+    public function loadHistory(Request $request, User $user)
+    {
+        $authUser = auth()->user();
+        $beforeId = $request->get('before_id'); // 获取此 ID 之前的消息
+        $limit = $request->get('limit', 50); // 默认每次加载 50 条
+
+        // 获取历史消息
+        $messages = Message::where(function ($query) use ($authUser, $user) {
+                $query->where('from_user_id', $authUser->id)
+                      ->where('to_user_id', $user->id);
+            })->orWhere(function ($query) use ($authUser, $user) {
+                $query->where('from_user_id', $user->id)
+                      ->where('to_user_id', $authUser->id);
+            })
+            ->where('id', '<', $beforeId)
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get()
+            ->reverse();
+
+        return response()->json([
+            'success' => true,
+            'messages' => $messages,
+            'has_more' => $messages->count() >= $limit,
         ]);
     }
 }

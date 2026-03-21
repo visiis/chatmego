@@ -128,64 +128,116 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
     
-    // 存储最后一条消息的 ID 和时间
+    // 存储最后一条消息的 ID（确保是正数）
     let lastMessageId = <?php echo e($messages->isNotEmpty() ? $messages->last()->id : 0); ?>;
-    let lastMessageTime = '<?php echo e($messages->isNotEmpty() ? $messages->last()->created_at->timestamp : 0); ?>';
+    if (lastMessageId < 0) lastMessageId = 0;
+    
+    // 存储最早的消息 ID，用于加载历史
+    let oldestMessageId = <?php echo e($messages->isNotEmpty() ? $messages->first()->id : 0); ?>;
+    let isLoadingHistory = false;
+    let hasMoreHistory = true;
+    
+    let isSendingMessage = false;
+    
+    // 头像 URL
+    const myAvatar = "<?php echo e(asset('storage/' . auth()->user()->avatar)); ?>";
+    const userAvatar = "<?php echo e(asset('storage/' . $user->avatar)); ?>";
+    const defaultAvatar = "<?php echo e(asset('images/default-avatar.svg')); ?>";
 
     // 滚动到底部
     chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    // 定时轮询获取新消息（每 2 秒）
-    function fetchNewMessages() {
-        fetch('<?php echo e(route("chat.fetch", $user->id)); ?>?last_message_id=' + lastMessageId)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.messages.length > 0) {
-                    // 添加新消息
-                    data.messages.forEach(message => {
-                        const messageHtml = createMessageElement(message, message.from_user_id === <?php echo e(auth()->id()); ?>);
-                        chatMessages.appendChild(messageHtml);
-                        lastMessageId = message.id;
-                        lastMessageTime = new Date(message.created_at).getTime() / 1000;
-                    });
-                    
-                    // 滚动到底部
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                    
-                    // 标记消息为已读
-                    markMessagesAsRead();
-                }
-            })
-            .catch(error => console.error('Error fetching messages:', error));
-    }
     
-    // 启动轮询（每 2 秒检查一次新消息）
-    const pollInterval = setInterval(fetchNewMessages, 2000);
-    
-    // 标记消息为已读
-    function markMessagesAsRead() {
-        fetch('<?php echo e(route("chat.read", $user->id)); ?>', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                'Accept': 'application/json'
-            }
-        }).catch(error => console.error('Error marking messages as read:', error));
-    }
-    
-    // 页面可见时立即检查一次
-    setTimeout(fetchNewMessages, 1000);
-    
-    // 页面隐藏时停止轮询，可见时恢复
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            clearInterval(pollInterval);
-        } else {
-            fetchNewMessages();
-            // 重新启动轮询
-            setInterval(fetchNewMessages, 2000);
+    // 监听滚动事件，向上滚动时加载历史消息
+    chatMessages.addEventListener('scroll', function() {
+        // 如果滚动到顶部附近（50px 以内）
+        if (chatMessages.scrollTop < 50 && !isLoadingHistory && hasMoreHistory) {
+            loadHistory();
         }
     });
+    
+    // 加载历史消息
+    function loadHistory() {
+        if (isLoadingHistory || !hasMoreHistory) return;
+        
+        isLoadingHistory = true;
+        
+        // 记录当前滚动高度
+        const oldScrollHeight = chatMessages.scrollHeight;
+        
+        fetch('<?php echo e(route("chat.history", $user->id)); ?>?before_id=' + oldestMessageId + '&limit=50')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success && data.messages && data.messages.length > 0) {
+                    // 在顶部添加历史消息
+                    for (var i = 0; i < data.messages.length; i++) {
+                        var message = data.messages[i];
+                        
+                        // 跳过自己发送的消息
+                        if (message.from_user_id == <?php echo e(auth()->id()); ?>) {
+                            oldestMessageId = Math.min(oldestMessageId, message.id);
+                            continue;
+                        }
+                        
+                        // 添加对方的消息到顶部
+                        var messageHtml = createMessageElement(message, false);
+                        chatMessages.insertBefore(messageHtml, chatMessages.firstChild);
+                        oldestMessageId = Math.min(oldestMessageId, message.id);
+                    }
+                    
+                    // 保持滚动位置
+                    const newScrollHeight = chatMessages.scrollHeight;
+                    chatMessages.scrollTop = newScrollHeight - oldScrollHeight;
+                    
+                    hasMoreHistory = data.has_more;
+                } else {
+                    hasMoreHistory = false;
+                }
+                
+                isLoadingHistory = false;
+            })
+            .catch(function(error) {
+                console.error('Error loading history:', error);
+                isLoadingHistory = false;
+            });
+    }
+
+    // 定时检查新消息（每 1 秒）
+    setInterval(function() {
+        if (isSendingMessage) return;
+        
+        // 如果 lastMessageId 是 0 或负数，设置为 0
+        if (lastMessageId <= 0) {
+            lastMessageId = 0;
+        }
+        
+        fetch('<?php echo e(route("chat.fetch", $user->id)); ?>?last_message_id=' + lastMessageId)
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success && data.messages && data.messages.length > 0) {
+                    // 有新消息，逐个添加
+                    for (var i = 0; i < data.messages.length; i++) {
+                        var message = data.messages[i];
+                        
+                        // 跳过自己发送的消息
+                        if (message.from_user_id == <?php echo e(auth()->id()); ?>) {
+                            lastMessageId = Math.max(lastMessageId, message.id);
+                            continue;
+                        }
+                        
+                        // 添加对方的消息
+                        addMessage(message);
+                        lastMessageId = Math.max(lastMessageId, message.id);
+                    }
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+            });
+    }, 1000);
 
     // 发送消息
     messageForm.addEventListener('submit', function(e) {
@@ -194,8 +246,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(this);
         const messageText = messageInput.value.trim();
         
-        // 如果消息为空，不发送
         if (!messageText) return;
+        
+        isSendingMessage = true;
         
         fetch(this.action, {
             method: 'POST',
@@ -205,59 +258,74 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
-        .then(data => {
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
             if (data.success) {
-                // 清空输入框
                 messageInput.value = '';
-                
-                // 动态添加新消息到聊天窗口
-                const message = data.message;
-                const messageHtml = createMessageElement(message, true);
-                chatMessages.appendChild(messageHtml);
-                
-                // 更新最后消息 ID
-                lastMessageId = message.id;
-                
-                // 滚动到底部
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                
-                // 立即标记为已读
-                markMessagesAsRead();
+                // 添加自己发送的消息
+                addMessage(data.message, true);
+                lastMessageId = Math.max(lastMessageId, data.message.id);
+                isSendingMessage = false;
             } else {
                 alert(data.message || '发送失败');
+                isSendingMessage = false;
             }
         })
-        .catch(error => {
+        .catch(function(error) {
             console.error('Error:', error);
             alert('发送失败，请重试');
+            isSendingMessage = false;
         });
     });
     
+    // 添加消息到聊天窗口
+    function addMessage(message, isMe = false) {
+        const div = createMessageElement(message, isMe);
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
     // 创建消息元素
-    function createMessageElement(message, isMe) {
+    function createMessageElement(message, isMe = false) {
         const div = document.createElement('div');
-        div.className = 'd-flex justify-content-end mb-3';
-        
         const now = new Date();
         const timeString = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
         
-        div.innerHTML = `
-            <div class="bg-primary text-white rounded p-3 shadow-sm" style="max-width: 70%;">
-                ${escapeHtml(message.message)}
-                <div class="text-end mt-2">
-                    <small class="text-light">
-                        ${timeString}
-                        <i class="fas fa-check-double text-light"></i>
-                    </small>
+        if (isMe || message.from_user_id == <?php echo e(auth()->id()); ?>) {
+            // 我的消息 - 显示在右侧
+            div.className = 'd-flex justify-content-end mb-3';
+            div.innerHTML = `
+                <div class="bg-primary text-white rounded p-3 shadow-sm" style="max-width: 70%;">
+                    ${escapeHtml(message.message)}
+                    <div class="text-end mt-2">
+                        <small class="text-light">${timeString}</small>
+                    </div>
                 </div>
-            </div>
-            <div class="ms-2">
-                <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
-                    <img src="<?php echo e(asset('storage/' . auth()->user()->avatar)); ?>" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover" onerror="this.src='<?php echo e(asset('images/default-avatar.svg')); ?>'">
+                <div class="ms-2">
+                    <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
+                        <img src="${myAvatar}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover" onerror="this.src='${defaultAvatar}'">
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            // 对方的消息 - 显示在左侧
+            div.className = 'd-flex justify-content-start mb-3';
+            div.innerHTML = `
+                <div class="me-2">
+                    <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
+                        <img src="${userAvatar}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover" onerror="this.src='${defaultAvatar}'">
+                    </div>
+                </div>
+                <div class="bg-light rounded p-3 shadow-sm" style="max-width: 70%;">
+                    ${escapeHtml(message.message)}
+                    <div class="text-end mt-2">
+                        <small class="text-muted">${timeString}</small>
+                    </div>
+                </div>
+            `;
+        }
         
         return div;
     }

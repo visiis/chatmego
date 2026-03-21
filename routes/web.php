@@ -64,6 +64,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/chat/{user}/message', [ChatController::class, 'sendMessage'])->name('chat.send');
     Route::post('/chat/{user}/read', [ChatController::class, 'markAsRead'])->name('chat.read');
     Route::get('/chat/{user}/fetch', [ChatController::class, 'fetchMessages'])->name('chat.fetch');
+    Route::get('/chat/{user}/history', [ChatController::class, 'loadHistory'])->name('chat.history');
     
     // 环信测试路由
     Route::get('/easemob-test', [App\Http\Controllers\EasemobTestController::class, 'index'])->name('easemob.test');
