@@ -45,7 +45,7 @@
                                     {{ __('messages.users.view_profile') }}
                                 </a>
                                 @if(auth()->id() != $user->id)
-                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-info btn-user-action">
+                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-user-action" style="background-color: #17a2b8; border-color: #17a2b8; color: #fff;">
                                         <i class="fas fa-comments"></i> 立即聊天
                                     </a>
                                     @if(isset($user->friendship_status) && $user->friendship_status === 'accepted')
