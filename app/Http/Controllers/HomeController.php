@@ -63,6 +63,7 @@ class HomeController extends Controller
             
             if ($friendship) {
                 $user->friendship_status = $friendship->status;
+                // requester_id 是发起好友请求的人的 ID
                 $user->requester_id = $friendship->user_id;
             }
         }

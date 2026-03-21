@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     staticButton.disabled = true;
                     staticButton.innerHTML = '<i class="fas fa-clock"></i> 已发送';
                     form.parentNode.replaceChild(staticButton, form);
-                    // 移除 alert，避免页面刷新导致按钮状态丢失
+                    alert('好友申请已经提交！');
                 } else {
                     console.log('Failed:', data.message);
                     // 失败：恢复按钮
