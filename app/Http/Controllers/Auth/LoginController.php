@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -35,5 +37,20 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * 处理登录后的重定向
+     */
+    protected function authenticated(Request $request, $user)
+    {
+        // 检查账户是否激活
+        if (!$user->is_active) {
+            // 未激活，显示待激活页面
+            return redirect()->route('account.pending');
+        }
+        
+        // 已激活，正常跳转到首页
+        return redirect()->intended($this->redirectTo);
     }
 }

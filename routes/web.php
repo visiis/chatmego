@@ -41,6 +41,9 @@ Route::get('/', function () {
 
 Auth::routes();
 
+// 账户待激活页面
+Route::get('/account/pending', [App\Http\Controllers\AccountPendingController::class, 'index'])->name('account.pending');
+
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::get('/profile/{id?}', [UserController::class, 'profile'])->name('profile');
