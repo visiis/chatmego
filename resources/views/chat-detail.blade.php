@@ -157,6 +157,14 @@
         border-radius: 4px;
         transition: background 0.2s;
         user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .emoji-item img {
+        width: 28px;
+        height: 28px;
     }
     
     .emoji-item:hover {
@@ -192,8 +200,9 @@
 
 @push('scripts')
 <!-- 引入 Emoji Mart -->
-<script src="https://cdn.jsdelivr.net/npm/@emoji-mart/react"></script>
 <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
+<!-- 引入 Twemoji 用于渲染表情图片 -->
+<script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -225,18 +234,26 @@ document.addEventListener('DOMContentLoaded', function() {
             || window.innerWidth <= 768;
     }
     
-    // 常用表情列表（移动端使用）- 使用 iOS 兼容的基础表情
+    // 常用表情列表（移动端使用）- 使用 Unicode 编码，通过 Twemoji 渲染为图片
     const commonEmojis = [
-        { category: '最近使用', emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '', '😍', '🤩'] },
+        { category: '最近使用', emojis: ['😀', '😃', '', '😁', '', '😅', '', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩'] },
         { category: '情感', emojis: ['😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '😎', ''] },
-        { category: '爱意', emojis: ['🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😝', '😜', '🤪'] },
-        { category: '开心', emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '', '😝'] },
-        { category: '手势', emojis: ['👍', '👎', '👊', '🤜', '🤞', '️', '🤟', '🤘', '👌', '', '👉', '👆'] },
+        { category: '爱意', emojis: ['🥰', '', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😝', '😜', '🤪'] },
+        { category: '开心', emojis: ['😀', '😃', '', '😁', '', '😅', '', '😂', '🙂', '🙃', '😉', '😊', '😇', '', '😛'] },
+        { category: '手势', emojis: ['👍', '👎', '', '', '', '✌️', '🤟', '🤘', '👌', '', '👉', '👆'] },
         { category: '动物', emojis: ['🐶', '🐱', '', '🐹', '🐰', '🦊', '', '🐼', '🐨', '🐯', '', '🐮'] },
-        { category: '自然', emojis: ['🌞', '🌙', '⭐', '🌈', '️', '🔥', '💧', '🌸', '🌺', '🌻', '', '🌷'] },
-        { category: '食物', emojis: ['🍎', '🍊', '🍋', '', '🍉', '🍇', '🍓', '', '🍑', '🍍', '🥝', ''] },
-        { category: '庆祝', emojis: ['🎉', '🎊', '🎈', '🎁', '', '', '🍰', '', '🍭', '🍬', '', ''] }
+        { category: '自然', emojis: ['🌞', '🌙', '⭐', '🌈', '️', '🔥', '💧', '🌸', '🌺', '', '🌹', '🌷'] },
+        { category: '食物', emojis: ['🍎', '🍊', '', '🍌', '🍉', '🍇', '', '', '🍑', '🍍', '🥝', '🍒'] },
+        { category: '庆祝', emojis: ['🎉', '🎊', '', '🎁', '🎂', '🎄', '', '🧁', '🍭', '🍬', '🎃', '🎆'] }
     ];
+    
+    // 渲染 Twemoji 图片
+    function renderTwemoji(emoji) {
+        return twemoji.parse(emoji, {
+            folder: 'svg',
+            ext: '.svg'
+        });
+    }
     
     // 初始化移动端表情面板
     function initMobileEmojiPicker() {
@@ -252,11 +269,11 @@ document.addEventListener('DOMContentLoaded', function() {
             categoryDiv.textContent = category.category;
             grid.appendChild(categoryDiv);
             
-            // 添加表情
+            // 添加表情（使用 Twemoji 渲染）
             category.emojis.forEach(emoji => {
                 const emojiDiv = document.createElement('div');
                 emojiDiv.className = 'emoji-item';
-                emojiDiv.textContent = emoji;
+                emojiDiv.innerHTML = renderTwemoji(emoji);
                 emojiDiv.addEventListener('click', function() {
                     insertEmoji(emoji);
                 });
