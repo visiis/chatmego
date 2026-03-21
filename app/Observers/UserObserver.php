@@ -28,9 +28,13 @@ class UserObserver
      */
     public function updated(User $user)
     {
-        // 如果用户名或昵称发生变化，更新环信用户信息
-        if ($user->isDirty('name')) {
-            $this->updateEasemobUser($user);
+        // 只在用户名或昵称发生变化时，才更新环信用户信息
+        // 避免登录时频繁调用环信 API 导致登录变慢
+        if ($user->isDirty('name') || $user->isDirty('nickname')) {
+            // 异步更新，不阻塞主线程
+            dispatch(function () use ($user) {
+                $this->updateEasemobUser($user);
+            });
         }
     }
 
