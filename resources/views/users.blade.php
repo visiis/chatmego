@@ -45,7 +45,7 @@
                                         <button type="button" class="btn btn-secondary" disabled>
                                             <i class="fas fa-check"></i> 已是好友
                                         </button>
-                                    @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === $user->id)
+                                    @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === auth()->id())
                                         <button type="button" class="btn btn-secondary" disabled>
                                             <i class="fas fa-clock"></i> 已发送
                                         </button>

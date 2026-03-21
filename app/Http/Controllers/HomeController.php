@@ -67,8 +67,27 @@ class HomeController extends Controller
                 $user->friendship_status = $friendship->status;
                 // requester_id 是发起好友请求的人的 ID
                 $user->requester_id = $friendship->user_id;
+            } else {
+                // 没有好友关系，用于调试
+                $user->friendship_status = null;
             }
         }
+        
+        // 调试：输出当前用户 ID
+        \Log::info('Home page loaded', [
+            'auth_user_id' => $authUserId,
+            'users_count' => $users->count(),
+            'users_with_status' => $users->filter(function($u) {
+                return $u->friendship_status !== null;
+            })->map(function($u) {
+                return [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'status' => $u->friendship_status,
+                    'requester_id' => $u->requester_id,
+                ];
+            })->values()->toArray()
+        ]);
         
         return view('users', compact('users'));
     }
