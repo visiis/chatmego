@@ -118,21 +118,6 @@ class ChatController extends Controller
 
         $authUser = auth()->user();
 
-        // 检查是否是好友
-        $friendship = Friendship::where(function ($query) use ($authUser, $user) {
-            $query->where('user_id', $authUser->id)
-                  ->where('friend_id', $user->id)
-                  ->orWhere('user_id', $user->id)
-                  ->where('friend_id', $authUser->id);
-        })->where('status', 'accepted')->first();
-
-        if (!$friendship) {
-            return response()->json([
-                'success' => false,
-                'message' => '只能与好友聊天',
-            ], 403);
-        }
-
         $message = Message::create([
             'from_user_id' => $authUser->id,
             'to_user_id' => $user->id,

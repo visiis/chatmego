@@ -109,8 +109,8 @@
                         @csrf
                         <input type="hidden" name="type" value="text">
                         <div class="input-group">
-                            <button type="button" class="btn btn-outline-secondary" id="emoji-btn">
-                                <i class="far fa-smile"></i>
+                            <button type="button" class="btn btn-outline-secondary" id="emoji-btn" style="font-size: 20px; padding: 6px 12px;">
+                                😀
                             </button>
                             <input type="text" name="message" id="message-input" class="form-control" placeholder="输入消息..." autocomplete="off" required>
                             <button type="submit" class="btn btn-primary">
