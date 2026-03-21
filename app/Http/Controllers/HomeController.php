@@ -48,15 +48,17 @@ class HomeController extends Controller
         
         // 为每个用户添加好友状态信息
         foreach ($users as $user) {
+            // 查询当前用户与该用户之间的好友关系
             $friendship = \DB::table('friendships')
                 ->where(function($query) use ($authUserId, $user) {
-                    $query->where(function($q) use ($authUserId, $user) {
-                        $q->where('user_id', $authUserId)
+                    // 情况 1：当前用户是发起者
+                    $query->where('user_id', $authUserId)
                           ->where('friend_id', $user->id);
-                    })->orWhere(function($q) use ($authUserId, $user) {
-                        $q->where('user_id', $user->id)
+                })
+                ->orWhere(function($query) use ($authUserId, $user) {
+                    // 情况 2：对方是发起者
+                    $query->where('user_id', $user->id)
                           ->where('friend_id', $authUserId);
-                    });
                 })
                 ->whereIn('status', ['pending', 'accepted'])
                 ->first();
