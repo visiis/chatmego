@@ -26,27 +26,24 @@ class HomeController extends Controller
     public function index()
     {
         // 获取已是好友的用户 ID 列表（包括 pending 和 accepted 状态）
+        $authUserId = auth()->id();
+        
+        // 获取所有相关的好友关系 ID（包括自己和对方）
         $friendIds = \DB::table('friendships')
-            ->where(function($query) {
-                $query->where('user_id', auth()->id())
-                      ->orWhere('friend_id', auth()->id());
-            })
+            ->where('user_id', $authUserId)
             ->whereIn('status', ['pending', 'accepted'])
-            ->pluck('user_id')
+            ->pluck('friend_id')
             ->merge(
                 \DB::table('friendships')
-                    ->where(function($query) {
-                        $query->where('user_id', auth()->id())
-                              ->orWhere('friend_id', auth()->id());
-                    })
+                    ->where('friend_id', $authUserId)
                     ->whereIn('status', ['pending', 'accepted'])
-                    ->pluck('friend_id')
+                    ->pluck('user_id')
             )
             ->unique()
             ->toArray();
         
         // 获取非好友用户（排除自己和已是好友/已发送请求的用户）
-        $users = User::where('id', '!=', auth()->id())
+        $users = User::where('id', '!=', $authUserId)
                     ->whereNotIn('id', $friendIds)
                     ->get();
         
