@@ -66,7 +66,7 @@
                             <h4 class="mb-0 text-warning">💰 {{ $user->coins }}</h4>
                         </div>
                         <div class="col-6">
-                            <small class="text-muted">{{ __('messages.nav.points') }}</small>
+                            <small class="text-muted">{{ __('messages.nav.activity_points') }}</small>
                             <h4 class="mb-0 text-info">💎 {{ $user->points }}</h4>
                         </div>
                     </div>
