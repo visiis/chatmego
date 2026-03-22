@@ -95,5 +95,10 @@ return [
         'enter_activity_points' => '輸入活躍度數量',
         'will_get_coins' => '可獲得金幣',
         'convert_now' => '立即兌換',
+        'plans' => [
+            'basic' => '基礎會員',
+            'vip' => '高級會員',
+            'svip' => '至尊會員',
+        ],
     ],
 ];

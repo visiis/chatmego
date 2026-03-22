@@ -115,7 +115,7 @@
                             <div class="card-body">
                                 <div class="text-center mb-3">
                                     <span class="badge" style="background-color: {{ $plan['badge_color'] }}; font-size: 1.5rem; padding: 12px 24px;">
-                                        {{ $plan['icon'] }} {{ $plan['name'] }}
+                                        {{ $plan['icon'] }} {{ __('messages.membership.plans.' . $plan['code']) }}
                                     </span>
                                 </div>
                                 

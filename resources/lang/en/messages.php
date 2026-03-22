@@ -95,5 +95,10 @@ return [
         'enter_activity_points' => 'Enter activity points amount',
         'will_get_coins' => 'Will get coins',
         'convert_now' => 'Convert Now',
+        'plans' => [
+            'basic' => 'Basic Member',
+            'vip' => 'VIP Member',
+            'svip' => 'SVIP Member',
+        ],
     ],
 ];

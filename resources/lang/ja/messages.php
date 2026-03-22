@@ -95,5 +95,10 @@ return [
         'enter_activity_points' => 'アクティビティポイントを入力',
         'will_get_coins' => '獲得できるコイン',
         'convert_now' => '今すぐ交換',
+        'plans' => [
+            'basic' => 'ベーシックメンバー',
+            'vip' => 'VIP メンバー',
+            'svip' => 'SVIP メンバー',
+        ],
     ],
 ];

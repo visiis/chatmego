@@ -95,5 +95,10 @@ return [
         'enter_activity_points' => '输入活跃度数量',
         'will_get_coins' => '可获得金币',
         'convert_now' => '立即兑换',
+        'plans' => [
+            'basic' => '基础会员',
+            'vip' => '高级会员',
+            'svip' => '至尊会员',
+        ],
     ],
 ];

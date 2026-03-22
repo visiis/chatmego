@@ -95,5 +95,10 @@ return [
         'enter_activity_points' => '활동 포인트 입력',
         'will_get_coins' => '획득 가능한 코인',
         'convert_now' => '지금 교환',
+        'plans' => [
+            'basic' => '기본 멤버',
+            'vip' => 'VIP 멤버',
+            'svip' => 'SVIP 멤버',
+        ],
     ],
 ];
