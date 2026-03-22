@@ -98,11 +98,19 @@ class MembershipController extends Controller
             'ends_at' => $endsAt,
             'status' => 'active',
             'price_paid' => $totalPrice,
-            'notes' => "购买{$plan->name}，{$months}个月，{$totalDays}天，叠加模式",
+            'notes' => trans('messages.membership.purchase_note', [
+                'plan' => $plan->name,
+                'months' => $months,
+                'days' => $totalDays,
+            ]),
         ]);
         
         return redirect()->back()
-            ->with('success', "成功购买{$plan->name}，{$months}个月，有效期至 {$endsAt->format('Y-m-d')}")
+            ->with('success', trans('messages.membership.purchase_success', [
+                'plan' => $plan->name,
+                'months' => $months,
+                'ends_at' => $endsAt->format('Y-m-d'),
+            ]))
             ->with('ends_at', $endsAt);
     }
     

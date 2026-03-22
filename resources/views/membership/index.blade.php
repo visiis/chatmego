@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container py-5">
-    <h2 class="text-center mb-4">会员中心</h2>
+    <h2 class="text-center mb-4">{{ __('messages.membership.title') }}</h2>
     
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -23,7 +23,7 @@
         <div class="col-lg-4 mb-4">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
-                    <h4 class="card-title mb-3">当前会员状态</h4>
+                    <h4 class="card-title mb-3">{{ __('messages.membership.current_membership') }}</h4>
                     
                     @if($membershipInfo['has_membership'])
                         <div class="mb-3">
@@ -32,10 +32,10 @@
                             </span>
                         </div>
                         <p class="text-muted mb-2">
-                            有效期至：{{ $membershipInfo['ends_at']->format('Y-m-d H:i') }}
+                            {{ __('messages.membership.expires_at') }}：{{ $membershipInfo['ends_at']->format('Y-m-d H:i') }}
                         </p>
                         <p class="text-primary">
-                            剩余天数：<strong>{{ $membershipInfo['days_remaining'] }} 天</strong>
+                            {{ __('messages.membership.days_remaining', ['days' => $membershipInfo['days_remaining']]) }}
                         </p>
                         <hr>
                         <button class="btn btn-outline-danger btn-sm" onclick="confirmCancel()">
@@ -48,10 +48,10 @@
                             </span>
                         </div>
                         <p class="text-muted">
-                            您还不是付费会员，购买会员可享受更多特权
+                            {{ __('messages.membership.no_membership') }}
                         </p>
                         <a href="#plans" class="btn btn-primary">
-                            查看会员计划
+                            {{ __('messages.membership.available_plans') }}
                         </a>
                     @endif
                 </div>
@@ -59,11 +59,11 @@
                 <div class="card-footer bg-light">
                     <div class="row text-center">
                         <div class="col-6 border-end">
-                            <small class="text-muted">当前金币</small>
+                            <small class="text-muted">{{ __('messages.nav.points') }}</small>
                             <h4 class="mb-0 text-warning">💰 {{ $user->coins }}</h4>
                         </div>
                         <div class="col-6">
-                            <small class="text-muted">当前活跃度</small>
+                            <small class="text-muted">{{ __('messages.nav.points') }}</small>
                             <h4 class="mb-0 text-info">💎 {{ $user->points }}</h4>
                         </div>
                     </div>
@@ -73,24 +73,24 @@
             <!-- 活跃度兑换 -->
             <div class="card shadow-sm mt-3">
                 <div class="card-body">
-                    <h5 class="card-title mb-3">💱 活跃度兑换金币</h5>
+                    <h5 class="card-title mb-3">💱 {{ __('messages.membership.purchase_duration') }}</h5>
                     <p class="small text-muted mb-3">
-                        兑换比例：100 活跃度 = 1 金币
+                        100 {{ __('messages.nav.points') }} = 1 💰
                     </p>
                     <form action="{{ route('membership.convertPoints') }}" method="POST">
                         @csrf
                         <div class="mb-3">
-                            <label class="form-label">兑换数量（100 的倍数）</label>
+                            <label class="form-label">{{ __('messages.membership.purchase_duration') }}</label>
                             <input type="number" name="points" class="form-control" 
                                    min="100" step="100" 
                                    max="{{ $user->points }}" 
-                                   placeholder="输入要兑换的活跃度" required>
+                                   placeholder="{{ __('messages.membership.required_coins') }}" required>
                             <small class="text-muted">
-                                可用活跃度：{{ $user->points }}
+                                {{ __('messages.nav.points') }}: {{ $user->points }}
                             </small>
                         </div>
                         <button type="submit" class="btn btn-success w-100">
-                            立即兑换
+                            {{ __('messages.membership.buy_now') }}
                         </button>
                     </form>
                 </div>
@@ -99,6 +99,7 @@
         
         <!-- 右侧：会员计划 -->
         <div class="col-lg-8">
+            <h4 class="mb-3">{{ __('messages.membership.available_plans') }}</h4>
             <div class="row" id="plans">
                 @foreach($availablePlans as $plan)
                     <div class="col-md-6 mb-4">
@@ -112,17 +113,17 @@
                                 
                                 <div class="text-center mb-3">
                                     <h2 class="text-primary mb-0">
-                                        💰 {{ $plan['price'] }} 金币
+                                        💰 {{ $plan['price'] }} {{ __('messages.nav.points') }}
                                     </h2>
                                     <small class="text-muted">
-                                        ≈ ¥{{ $plan['price_yuan'] }} 元
+                                        ≈ ¥{{ $plan['price_yuan'] }}
                                     </small>
                                 </div>
                                 
                                 <ul class="list-unstyled mb-4">
                                     <li class="mb-2">
                                         <i class="fas fa-calendar-alt text-primary me-2"></i>
-                                        有效期：{{ $plan['duration_days'] }} 天
+                                        {{ __('messages.membership.days') }}: {{ $plan['duration_days'] }}
                                     </li>
                                     @foreach($plan['privileges'] as $privilege)
                                         <li class="mb-2">
@@ -134,7 +135,7 @@
                                 
                                 @if($membershipInfo['has_membership'] && $membershipInfo['plan']->code === $plan['code'])
                                     <div class="alert alert-info mb-3">
-                                        <small><i class="fas fa-info-circle"></i> 当前正在使用此会员</small>
+                                        <small><i class="fas fa-info-circle"></i> {{ __('messages.membership.currently_using') }}</small>
                                     </div>
                                 @endif
                                 
@@ -143,18 +144,18 @@
                                     <input type="hidden" name="plan_id" value="{{ $plan['id'] }}">
                                     
                                     <div class="mb-3">
-                                        <label class="form-label small">购买时长</label>
+                                        <label class="form-label small">{{ __('messages.membership.purchase_duration') }}</label>
                                         <select name="months" class="form-select form-select-sm" onchange="updatePrice(this, {{ $plan['price'] }}, {{ $plan['duration_days'] }})">
-                                            <option value="1">1 个月（{{ $plan['duration_days'] }}天）</option>
-                                            <option value="3">3 个月（{{ $plan['duration_days'] * 3 }}天）</option>
-                                            <option value="6">6 个月（{{ $plan['duration_days'] * 6 }}天）</option>
-                                            <option value="12">12 个月（{{ $plan['duration_days'] * 12 }}天）</option>
+                                            <option value="1">1 {{ __('messages.membership.month') }} ({{ $plan['duration_days'] }} {{ __('messages.membership.days') }})</option>
+                                            <option value="3">3 {{ __('messages.membership.months') }} ({{ $plan['duration_days'] * 3 }} {{ __('messages.membership.days') }})</option>
+                                            <option value="6">6 {{ __('messages.membership.months') }} ({{ $plan['duration_days'] * 6 }} {{ __('messages.membership.days') }})</option>
+                                            <option value="12">12 {{ __('messages.membership.months') }} ({{ $plan['duration_days'] * 12 }} {{ __('messages.membership.days') }})</option>
                                         </select>
                                     </div>
                                     
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-muted small">需要金币：</span>
+                                            <span class="text-muted small">{{ __('messages.membership.required_coins') }}:</span>
                                             <span class="text-primary fw-bold" id="price-{{ $plan['id'] }}">{{ $plan['price'] }} 💰</span>
                                         </div>
                                         <input type="hidden" name="total_price" id="hidden-price-{{ $plan['id'] }}" value="{{ $plan['price'] }}">
@@ -163,7 +164,7 @@
                                     <button type="submit" class="btn btn-primary w-100" 
                                             {{ $user->coins < $plan['price'] ? 'disabled' : '' }}
                                             id="btn-{{ $plan['id'] }}">
-                                        {{ $user->coins < $plan['price'] ? '💰 金币不足' : '🛒 立即购买' }}
+                                        {{ $user->coins < $plan['price'] ? '💰 ' . __('messages.membership.insufficient_coins') : '🛒 ' . __('messages.membership.buy_now') }}
                                     </button>
                                 </form>
                             </div>
@@ -179,7 +180,7 @@
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">📋 会员订阅队列（最近 10 条）</h5>
+                    <h5 class="mb-0">📋 {{ __('messages.membership.subscription_queue') }}</h5>
                 </div>
                 <div class="card-body">
                     @if($subscriptionHistory->count() > 0)
@@ -187,12 +188,12 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>会员计划</th>
-                                    <th>开始时间</th>
-                                    <th>到期时间</th>
-                                    <th>状态</th>
-                                    <th>价格</th>
-                                    <th>备注</th>
+                                    <th>{{ __('messages.membership.plan') }}</th>
+                                    <th>{{ __('messages.membership.start_time') }}</th>
+                                    <th>{{ __('messages.membership.end_time') }}</th>
+                                    <th>{{ __('messages.membership.status') }}</th>
+                                    <th>{{ __('messages.membership.price') }}</th>
+                                    <th>{{ __('messages.membership.notes') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -207,11 +208,11 @@
                                     <td>{{ $subscription->ends_at->format('Y-m-d H:i') }}</td>
                                     <td>
                                         @if($subscription->status === 'active')
-                                            <span class="badge bg-success">有效</span>
+                                            <span class="badge bg-success">{{ __('messages.membership.active') }}</span>
                                         @elseif($subscription->status === 'expired')
-                                            <span class="badge bg-secondary">已过期</span>
+                                            <span class="badge bg-secondary">{{ __('messages.membership.expired') }}</span>
                                         @elseif($subscription->status === 'cancelled')
-                                            <span class="badge bg-warning">已取消</span>
+                                            <span class="badge bg-warning">{{ __('messages.membership.cancelled') }}</span>
                                         @endif
                                     </td>
                                     <td>💰 {{ $subscription->price_paid }}</td>
@@ -222,11 +223,11 @@
                         </table>
                     </div>
                     @else
-                    <p class="text-muted text-center mb-0">暂无订阅记录</p>
+                    <p class="text-muted text-center mb-0">{{ __('messages.membership.no_subscription_records') }}</p>
                     @endif
                     <div class="alert alert-info mb-0 mt-3">
                         <i class="fas fa-info-circle"></i>
-                        <strong>叠加模式说明：</strong> 购买的会员将按顺序加入队列，当前会员到期后自动切换到下一个会员。
+                        <strong>{{ __('messages.membership.stacking_info') }}</strong>
                     </div>
                 </div>
             </div>
