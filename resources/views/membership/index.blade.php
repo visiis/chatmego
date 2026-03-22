@@ -28,7 +28,7 @@
                     @if($membershipInfo['has_membership'])
                         <div class="mb-3">
                             <span class="badge" style="background-color: {{ $membershipInfo['plan']->badge_color }}; font-size: 1.2rem; padding: 10px 20px;">
-                                {{ $membershipInfo['plan']->icon }} {{ $membershipInfo['plan']->name }}
+                                {{ $membershipInfo['plan']->icon }} {{ __('messages.membership.plans.' . $membershipInfo['plan']->code) }}
                             </span>
                         </div>
                         <p class="text-muted mb-2">
@@ -209,7 +209,7 @@
                                 <tr>
                                     <td>
                                         <span class="badge" style="background-color: {{ $subscription->plan->badge_color }};">
-                                            {{ $subscription->plan->icon }} {{ $subscription->plan->name }}
+                                            {{ $subscription->plan->icon }} {{ __('messages.membership.plans.' . $subscription->plan->code) }}
                                         </span>
                                     </td>
                                     <td>{{ $subscription->starts_at->format('Y-m-d H:i') }}</td>
