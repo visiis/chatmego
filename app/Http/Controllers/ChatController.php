@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Message;
 use App\Models\Friendship;
+use App\Models\UserGift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -210,5 +211,99 @@ class ChatController extends Controller
             'messages' => $messages,
             'has_more' => $messages->count() >= $limit,
         ]);
+    }
+    
+    /**
+     * 获取用户的虚拟礼物列表（API）
+     */
+    public function getUserGifts()
+    {
+        $user = auth()->user();
+        
+        $userGifts = UserGift::with('gift')
+            ->where('user_id', $user->id)
+            ->where('is_redeemed', false)
+            ->whereHas('gift', function($query) {
+                $query->where('type', 'virtual')
+                      ->where('is_active', true);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'gifts' => $userGifts,
+        ]);
+    }
+    
+    /**
+     * 发送礼物
+     */
+    public function sendGift(Request $request, User $user)
+    {
+        $request->validate([
+            'user_gift_id' => 'required|exists:user_gifts,id',
+            'gift_id' => 'required|exists:gifts,id',
+        ]);
+        
+        $authUser = auth()->user();
+        
+        DB::beginTransaction();
+        try {
+            // 验证礼物属于当前用户
+            $userGift = UserGift::where('id', $request->user_gift_id)
+                ->where('user_id', $authUser->id)
+                ->where('is_redeemed', false)
+                ->lockForUpdate()
+                ->first();
+            
+            if (!$userGift) {
+                return response()->json([
+                    'success' => false,
+                    'message' => '礼物不存在或已使用',
+                ], 400);
+            }
+            
+            // 验证礼物是虚拟礼物
+            if ($userGift->gift->type !== 'virtual') {
+                return response()->json([
+                    'success' => false,
+                    'message' => '只能发送虚拟礼物',
+                ], 400);
+            }
+            
+            // 扣除礼物
+            if ($userGift->quantity > 1) {
+                $userGift->decrement('quantity');
+            } else {
+                $userGift->update(['is_redeemed' => true]);
+            }
+            
+            // 创建礼物消息
+            $message = Message::create([
+                'from_user_id' => $authUser->id,
+                'to_user_id' => $user->id,
+                'message' => json_encode([
+                    'gift_id' => $userGift->gift_id,
+                    'gift_name' => $userGift->gift->name,
+                    'gift_image' => $userGift->gift->image,
+                ]),
+                'type' => 'gift',
+                'attachment_url' => $userGift->gift->image,
+            ]);
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => '发送失败',
+            ], 500);
+        }
     }
 }

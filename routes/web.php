@@ -69,6 +69,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/chat/{user}/fetch', [ChatController::class, 'fetchMessages'])->name('chat.fetch');
     Route::get('/chat/{user}/history', [ChatController::class, 'loadHistory'])->name('chat.history');
     
+    // 聊天礼物相关路由
+    Route::get('/api/user/gifts', [ChatController::class, 'getUserGifts'])->name('user.gifts.api');
+    Route::post('/chat/{user}/gift', [ChatController::class, 'sendGift'])->name('chat.send.gift');
+    
     // 会员中心相关路由
     Route::get('/membership', [App\Http\Controllers\MembershipController::class, 'index'])->name('membership.index');
     Route::post('/membership/purchase', [App\Http\Controllers\MembershipController::class, 'purchase'])->name('membership.purchase');

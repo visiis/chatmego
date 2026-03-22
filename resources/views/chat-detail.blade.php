@@ -112,6 +112,9 @@
                             <button type="button" class="btn btn-outline-secondary" id="emoji-btn" style="font-size: 20px; padding: 6px 12px;">
                                 😀
                             </button>
+                            <button type="button" class="btn btn-outline-danger" id="gift-btn" style="font-size: 20px; padding: 6px 12px;">
+                                🎁
+                            </button>
                             <input type="text" name="message" id="message-input" class="form-control" placeholder="输入消息..." autocomplete="off" required>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-paper-plane"></i> 发送
@@ -199,6 +202,27 @@
     </div>
 </div>
 
+<!-- 礼物选择模态框 -->
+<div class="modal fade" id="giftModal" tabindex="-1" role="dialog" aria-labelledby="giftModalLabel">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="giftModalLabel">🎁 选择礼物</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="gift-list" class="row g-3">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <!-- 引入 Emoji Mart -->
 <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
@@ -210,6 +234,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.getElementById('message-input');
     const emojiBtn = document.getElementById('emoji-btn');
     const emojiPickerContainer = document.getElementById('emoji-picker-container');
+    const giftBtn = document.getElementById('gift-btn');
+    const giftModal = document.getElementById('giftModal');
+    
+    // 礼物列表
+    let userGifts = [];
     
     // 存储最后一条消息的 ID（确保是正数）
     let lastMessageId = {{ $messages->isNotEmpty() ? $messages->last()->id : 0 }};
@@ -501,11 +530,35 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isMe || message.from_user_id == {{ auth()->id() }}) {
             // 我的消息 - 显示在右侧
             div.className = 'd-flex justify-content-end mb-3';
+            
+            let messageContent = '';
+            if (message.type === 'gift') {
+                const giftData = JSON.parse(message.message);
+                messageContent = `
+                    <div class="text-center">
+                        ${giftData.gift_image ? `<img src="/storage/${giftData.gift_image}" alt="${giftData.gift_name}" class="img-fluid rounded mb-2" style="max-height: 150px;">` : ''}
+                        <div class="bg-white bg-opacity-25 rounded p-2">
+                            <i class="fas fa-gift"></i> ${giftData.gift_name}
+                        </div>
+                    </div>
+                `;
+            } else if (message.type === 'image') {
+                messageContent = message.attachment_url 
+                    ? `<img src="${message.attachment_url}" alt="图片" class="img-fluid rounded">`
+                    : escapeHtml(message.message);
+            } else if (message.type === 'emoji') {
+                messageContent = `<span style="font-size: 48px;">${escapeHtml(message.message)}</span>`;
+            } else {
+                messageContent = escapeHtml(message.message);
+            }
+            
             div.innerHTML = `
                 <div class="bg-primary text-white rounded p-3 shadow-sm" style="max-width: 70%;">
-                    ${escapeHtml(message.message)}
+                    ${messageContent}
                     <div class="text-end mt-2">
-                        <small class="text-light">${timeString}</small>
+                        <small class="text-light">${timeString}
+                            ${message.is_read ? '<i class="fas fa-check-double ms-1"></i>' : '<i class="fas fa-check ms-1"></i>'}
+                        </small>
                     </div>
                 </div>
                 <div class="ms-2">
@@ -517,14 +570,36 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // 对方的消息 - 显示在左侧
             div.className = 'd-flex justify-content-start mb-3';
+            
+            let messageContent = '';
+            if (message.type === 'gift') {
+                const giftData = JSON.parse(message.message);
+                messageContent = `
+                    <div class="text-center">
+                        ${giftData.gift_image ? `<img src="/storage/${giftData.gift_image}" alt="${giftData.gift_name}" class="img-fluid rounded mb-2" style="max-height: 150px;">` : ''}
+                        <div class="bg-light rounded p-2">
+                            <i class="fas fa-gift text-danger"></i> ${giftData.gift_name}
+                        </div>
+                    </div>
+                `;
+            } else if (message.type === 'image') {
+                messageContent = message.attachment_url 
+                    ? `<img src="${message.attachment_url}" alt="图片" class="img-fluid rounded">`
+                    : escapeHtml(message.message);
+            } else if (message.type === 'emoji') {
+                messageContent = `<span style="font-size: 48px;">${escapeHtml(message.message)}</span>`;
+            } else {
+                messageContent = escapeHtml(message.message);
+            }
+            
             div.innerHTML = `
                 <div class="me-2">
                     <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
                         <img src="${userAvatar}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover" onerror="this.src='${defaultAvatar}'">
                     </div>
                 </div>
-                <div class="bg-light rounded p-3 shadow-sm" style="max-width: 70%;">
-                    ${escapeHtml(message.message)}
+                <div class="bg-white rounded p-3 shadow-sm" style="max-width: 70%;">
+                    ${messageContent}
                     <div class="text-end mt-2">
                         <small class="text-muted">${timeString}</small>
                     </div>
@@ -540,6 +615,116 @@ document.addEventListener('DOMContentLoaded', function() {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+    
+    // 礼物相关功能
+    // 打开礼物模态框
+    if (giftBtn) {
+        giftBtn.addEventListener('click', function() {
+            loadUserGifts();
+        });
+    }
+    
+    // 加载用户礼物
+    function loadUserGifts() {
+        fetch('{{ route("user.gifts.api") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    userGifts = data.gifts;
+                    renderGiftList(userGifts);
+                    new bootstrap.Modal(giftModal).show();
+                } else {
+                    alert('加载礼物失败');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('加载失败');
+            });
+    }
+    
+    // 渲染礼物列表
+    function renderGiftList(gifts) {
+        const giftList = document.getElementById('gift-list');
+        const giftsIndexUrl = '{{ route('user.gifts.index') }}';
+        
+        if (!gifts || gifts.length === 0) {
+            giftList.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-gift fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">暂无可用礼物，先去<a href="${giftsIndexUrl}" class="text-primary">我的礼物</a>购买吧！</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        gifts.forEach(gift => {
+            const giftImage = gift.gift.image 
+                ? `<img src="/storage/${gift.gift.image}" alt="${gift.gift.name}" class="img-fluid rounded mb-2" style="height: 80px; object-fit: cover;">`
+                : `<div class="bg-light rounded mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-gift fa-2x text-muted"></i></div>`;
+            
+            const quantityBadge = gift.quantity > 1 
+                ? `<span class="badge bg-danger position-absolute top-0 end-0 m-2">×${gift.quantity}</span>` 
+                : '';
+            
+            const giftTypeText = gift.gift.type === 'virtual' ? '虚拟礼物' : '实体礼物';
+            
+            html += `
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100 position-relative" style="cursor: pointer;" onclick="sendGift(${gift.id}, ${gift.gift.id})">
+                        ${quantityBadge}
+                        <div class="card-body text-center p-2">
+                            ${giftImage}
+                            <h6 class="card-title small mb-1">${gift.gift.name}</h6>
+                            <p class="card-text small text-muted mb-0">${giftTypeText}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        giftList.innerHTML = html;
+    }
+    
+    // 发送礼物
+    function sendGift(userGiftId, giftId) {
+        if (!confirm('确定要发送这个礼物吗？')) return;
+        
+        const formData = new FormData();
+        formData.append('_token', document.querySelector('input[name="_token"]').value);
+        formData.append('user_gift_id', userGiftId);
+        formData.append('gift_id', giftId);
+        
+        fetch('{{ route("chat.send.gift", $user->id) }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 关闭模态框
+                const modal = bootstrap.Modal.getInstance(giftModal);
+                modal.hide();
+                
+                // 添加礼物消息到聊天
+                addMessage(data.message, true);
+                lastMessageId = Math.max(lastMessageId, data.message.id);
+                
+                // 重新加载礼物列表
+                loadUserGifts();
+            } else {
+                alert(data.message || '发送失败');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('发送失败，请重试');
+        });
     }
 });
 </script>
