@@ -70,12 +70,19 @@ class MembershipController extends Controller
         
         // 计算有效期（叠加模式）
         $now = Carbon::now();
-        $currentSubscription = UserSubscription::getUserActiveSubscription($user->id);
         
-        // 叠加模式：总是在当前最晚到期时间基础上延长
-        if ($currentSubscription && $currentSubscription->ends_at > $now) {
-            // 有有效会员，在当前到期时间基础上延长
-            $startsAt = $currentSubscription->ends_at;
+        // 获取所有有效的订阅（按到期时间降序）
+        $allActiveSubscriptions = UserSubscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where('ends_at', '>', $now)
+            ->orderBy('ends_at', 'desc')
+            ->get();
+        
+        // 叠加模式：从队列末尾开始（最晚到期时间）
+        if ($allActiveSubscriptions->count() > 0) {
+            // 获取最晚的到期时间
+            $latestEndsAt = $allActiveSubscriptions->max('ends_at');
+            $startsAt = $latestEndsAt;
             $endsAt = (clone $startsAt)->addDays($totalDays);
         } else {
             // 没有有效会员，立即开始
