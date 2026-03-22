@@ -33,6 +33,9 @@ class User extends Authenticatable implements FilamentUser
         'specialty',
         'love_declaration',
         'points',
+        'coins',
+        'total_coins_spent',
+        'total_coins_recharged',
         'is_active',
         'is_admin',
     ];
@@ -59,6 +62,9 @@ class User extends Authenticatable implements FilamentUser
             'is_admin' => 'boolean',
             'is_active' => 'boolean',
             'points' => 'integer',
+            'coins' => 'integer',
+            'total_coins_spent' => 'integer',
+            'total_coins_recharged' => 'integer',
         ];
     }
     
@@ -103,6 +109,98 @@ class User extends Authenticatable implements FilamentUser
         }
         
         return $currentLevel->level_order >= $targetLevel->level_order;
+    }
+    
+    /**
+     * 获取用户的付费会员订阅
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+    
+    /**
+     * 获取当前有效的付费会员计划
+     */
+    public function getCurrentMembershipAttribute()
+    {
+        return UserSubscription::getUserCurrentPlan($this->id);
+    }
+    
+    /**
+     * 检查是否有有效的付费会员
+     */
+    public function hasActiveMembership()
+    {
+        return $this->current_membership !== null;
+    }
+    
+    /**
+     * 检查是否是 VIP
+     */
+    public function isVip()
+    {
+        $membership = $this->current_membership;
+        return $membership && in_array($membership->code, ['vip', 'svip']);
+    }
+    
+    /**
+     * 检查是否是 SVIP
+     */
+    public function isSvip()
+    {
+        $membership = $this->current_membership;
+        return $membership && $membership->code === 'svip';
+    }
+    
+    /**
+     * 增加金币
+     */
+    public function addCoins(int $amount, string $reason = ''): void
+    {
+        $this->increment('coins', $amount);
+        $this->increment('total_coins_recharged', $amount);
+        
+        // TODO: 记录金币日志
+    }
+    
+    /**
+     * 消费金币
+     */
+    public function spendCoins(int $amount, string $reason = ''): bool
+    {
+        if ($this->coins < $amount) {
+            return false;
+        }
+        
+        $this->decrement('coins', $amount);
+        $this->increment('total_coins_spent', $amount);
+        
+        // TODO: 记录金币日志
+        return true;
+    }
+    
+    /**
+     * 活跃度兑换金币（100 活跃度 = 1 金币）
+     */
+    public function convertPointsToCoins(int $points): bool
+    {
+        if ($this->points < $points) {
+            return false;
+        }
+        
+        $coins = floor($points / 100);
+        
+        if ($coins < 1) {
+            return false;
+        }
+        
+        $this->decrement('points', $points);
+        $this->increment('coins', $coins);
+        
+        // TODO: 记录兑换日志
+        
+        return true;
     }
 
     public function canAccessPanel(Panel $panel): bool

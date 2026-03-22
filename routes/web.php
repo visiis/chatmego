@@ -69,6 +69,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/chat/{user}/fetch', [ChatController::class, 'fetchMessages'])->name('chat.fetch');
     Route::get('/chat/{user}/history', [ChatController::class, 'loadHistory'])->name('chat.history');
     
+    // 会员中心相关路由
+    Route::get('/membership', [App\Http\Controllers\MembershipController::class, 'index'])->name('membership.index');
+    Route::post('/membership/purchase', [App\Http\Controllers\MembershipController::class, 'purchase'])->name('membership.purchase');
+    Route::post('/membership/convert-points', [App\Http\Controllers\MembershipController::class, 'convertPoints'])->name('membership.convertPoints');
+    Route::post('/membership/cancel', [App\Http\Controllers\MembershipController::class, 'cancel'])->name('membership.cancel');
+    
     // 环信测试路由
     Route::get('/easemob-test', [App\Http\Controllers\EasemobTestController::class, 'index'])->name('easemob.test');
     Route::post('/easemob/test-token', [App\Http\Controllers\EasemobTestController::class, 'testToken']);
