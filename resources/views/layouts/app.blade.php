@@ -73,13 +73,9 @@
                                     <a class="dropdown-item" href="{{ route('user.gifts.index') }}">{{ __('messages.gifts.nav_gifts') }}</a>
                                     <a class="dropdown-item" href="{{ route('profile') }}">{{ __('messages.nav.profile') }}</a>
                                     <a class="dropdown-item" href="{{ route('settings') }}">{{ __('messages.nav.settings') }}</a>
-                                    <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <a class="dropdown-item" href="{{ route('logout') }}">
                                         {{ __('messages.nav.logout') }}
                                     </a>
-
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
                                 </div>
                             </li>
                         @endguest
@@ -93,5 +89,6 @@
         </main>
     </div>
     @stack('scripts')
+    <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>

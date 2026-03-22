@@ -88,6 +88,10 @@ class GiftRedemptionResource extends Resource
                 Tables\Columns\TextColumn::make('gift.name')
                     ->searchable()
                     ->label('礼物'),
+                Tables\Columns\TextColumn::make('quantity')
+                    ->badge()
+                    ->color('info')
+                    ->label('数量'),
                 Tables\Columns\TextColumn::make('recipient_name')
                     ->searchable()
                     ->label('收件人'),
@@ -98,14 +102,18 @@ class GiftRedemptionResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match($state) {
                         'pending' => 'warning',
+                        'processing' => 'info',
                         'shipped' => 'info',
-                        'delivered' => 'success',
+                        'completed' => 'success',
+                        'cancelled' => 'danger',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match($state) {
                         'pending' => '待处理',
+                        'processing' => '处理中',
                         'shipped' => '已发货',
-                        'delivered' => '已送达',
+                        'completed' => '已完成',
+                        'cancelled' => '已取消',
                         default => $state,
                     })
                     ->label('状态'),

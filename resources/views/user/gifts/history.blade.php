@@ -1,73 +1,98 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">兑换记录</h1>
-    
-    @if($redemptions->isEmpty())
-        <div class="bg-gray-100 rounded-lg p-8 text-center">
-            <p class="text-gray-500">暂无兑换记录</p>
-        </div>
-    @else
-        <div class="space-y-4">
-            @foreach($redemptions as $redemption)
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4">
-                            @if($redemption->gift->image)
-                                <img src="{{ asset('storage/' . $redemption->gift->image) }}" 
-                                     alt="{{ $redemption->gift->name }}" 
-                                     class="w-16 h-16 object-cover rounded">
-                            @else
-                                <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                    </svg>
-                                </div>
-                            @endif
-                            <div>
-                                <h3 class="font-semibold">{{ $redemption->gift->name }}</h3>
-                                <p class="text-sm text-gray-500">
-                                    收件人：{{ $redemption->recipient_name }} | 
-                                    电话：{{ $redemption->phone }}
-                                </p>
-                                <p class="text-xs text-gray-400 mt-1">
-                                    地址：{{ $redemption->address }}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold
-                                @if($redemption->status === 'pending')
-                                    bg-yellow-100 text-yellow-800
-                                @elseif($redemption->status === 'shipped')
-                                    bg-blue-100 text-blue-800
-                                @elseif($redemption->status === 'delivered')
-                                    bg-green-100 text-green-800
-                                @endif
-                            ">
-                                {{ $redemption->getTranslatedStatusAttribute() }}
-                            </span>
-                            <p class="text-xs text-gray-400 mt-2">
-                                {{ $redemption->created_at->format('Y-m-d H:i') }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-        
-        <!-- 分页 -->
-        <div class="mt-6">
-            {{ $redemptions->links() }}
-        </div>
-    @endif
-    
-    <div class="mt-6">
-        <a href="{{ route('user.gifts.index') }}" 
-           class="text-blue-500 hover:text-blue-600">
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">📋 兑换记录</h2>
+        <a href="{{ route('user.gifts.index') }}" class="btn btn-outline-primary">
             ← 返回我的礼物
         </a>
     </div>
+    
+    @if($redemptions->isEmpty())
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-0">暂无兑换记录</p>
+            </div>
+        </div>
+    @else
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="ps-4">礼物</th>
+                                <th scope="col">数量</th>
+                                <th scope="col">收件人</th>
+                                <th scope="col">手机号</th>
+                                <th scope="col" style="max-width: 200px;">地址</th>
+                                <th scope="col">状态</th>
+                                <th scope="col">兑换时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($redemptions as $redemption)
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            @if($redemption->gift->image)
+                                                <img src="{{ asset('storage/' . $redemption->gift->image) }}" 
+                                                     alt="{{ $redemption->gift->name }}" 
+                                                     class="rounded me-3"
+                                                     style="width: 40px; height: 40px; object-fit: cover;">
+                                            @else
+                                                <div class="rounded bg-light d-flex align-items-center justify-content-center me-3"
+                                                     style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-gift text-muted"></i>
+                                                </div>
+                                            @endif
+                                            <span class="fw-medium">{{ $redemption->gift->name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ $redemption->quantity }}</span>
+                                    </td>
+                                    <td>{{ $redemption->recipient_name }}</td>
+                                    <td>{{ $redemption->phone }}</td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ $redemption->address }}">
+                                            {{ $redemption->address }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @php
+                                            $statusConfig = [
+                                                'pending' => ['label' => '待处理', 'color' => 'warning'],
+                                                'processing' => ['label' => '处理中', 'color' => 'info'],
+                                                'shipped' => ['label' => '已发货', 'color' => 'primary'],
+                                                'completed' => ['label' => '已完成', 'color' => 'success'],
+                                                'cancelled' => ['label' => '已取消', 'color' => 'secondary'],
+                                            ];
+                                            $config = $statusConfig[$redemption->status] ?? ['label' => $redemption->status, 'color' => 'secondary'];
+                                        @endphp
+                                        <span class="badge bg-{{ $config['color'] }}">
+                                            {{ $config['label'] }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ $redemption->created_at->format('Y-m-d H:i') }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 分页 -->
+        @if($redemptions->hasPages())
+            <div class="mt-4 d-flex justify-content-center">
+                {{ $redemptions->links() }}
+            </div>
+        @endif
+    @endif
 </div>
 @endsection

@@ -211,10 +211,38 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="gift-list" class="row g-3">
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">加载中...</span>
+                <!-- 礼物分类标签页 -->
+                <ul class="nav nav-tabs mb-3" id="giftTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="virtual-tab" data-bs-toggle="tab" data-bs-target="#virtual" type="button" role="tab">
+                            💎 虚拟礼物
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="physical-tab" data-bs-toggle="tab" data-bs-target="#physical" type="button" role="tab">
+                            🎁 实体礼物
+                        </button>
+                    </li>
+                </ul>
+                
+                <!-- 礼物内容区域 -->
+                <div class="tab-content" id="giftTabsContent">
+                    <div class="tab-pane fade show active" id="virtual" role="tabpanel">
+                        <div id="virtual-gift-list" class="row g-3">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="physical" role="tabpanel">
+                        <div id="physical-gift-list" class="row g-3">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -224,6 +252,8 @@
 </div>
 
 @push('scripts')
+<!-- 引入 Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- 引入 Emoji Mart -->
 <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
 
@@ -632,7 +662,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     userGifts = data.gifts;
-                    renderGiftList(userGifts);
+                    renderGiftLists(userGifts);
                     new bootstrap.Modal(giftModal).show();
                 } else {
                     alert('加载礼物失败');
@@ -644,16 +674,30 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // 渲染礼物列表
-    function renderGiftList(gifts) {
-        const giftList = document.getElementById('gift-list');
-        const giftsIndexUrl = '{{ route('user.gifts.index') }}';
+    // 渲染礼物列表（分虚拟和实体）
+    function renderGiftLists(gifts) {
+        const storageBaseUrl = '{{ asset('storage') }}';
+        
+        // 分离虚拟礼物和实体礼物
+        const virtualGifts = gifts.filter(g => g.type === 'virtual');
+        const physicalGifts = gifts.filter(g => g.type === 'physical');
+        
+        // 渲染虚拟礼物
+        renderGiftCategory('virtual-gift-list', virtualGifts, storageBaseUrl);
+        
+        // 渲染实体礼物
+        renderGiftCategory('physical-gift-list', physicalGifts, storageBaseUrl);
+    }
+    
+    // 渲染单个礼物分类
+    function renderGiftCategory(elementId, gifts, storageBaseUrl) {
+        const giftList = document.getElementById(elementId);
         
         if (!gifts || gifts.length === 0) {
             giftList.innerHTML = `
                 <div class="col-12 text-center py-5">
                     <i class="fas fa-gift fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">暂无可用礼物，先去<a href="${giftsIndexUrl}" class="text-primary">我的礼物</a>购买吧！</p>
+                    <p class="text-muted">暂无此类礼物</p>
                 </div>
             `;
             return;
@@ -661,24 +705,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let html = '';
         gifts.forEach(gift => {
-            const giftImage = gift.gift.image 
-                ? `<img src="/storage/${gift.gift.image}" alt="${gift.gift.name}" class="img-fluid rounded mb-2" style="height: 80px; object-fit: cover;">`
+            const giftImage = gift.image 
+                ? `<img src="${storageBaseUrl}/${gift.image}" alt="${gift.name}" class="img-fluid rounded mb-2" style="height: 80px; object-fit: cover;">`
                 : `<div class="bg-light rounded mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-gift fa-2x text-muted"></i></div>`;
             
-            const quantityBadge = gift.quantity > 1 
-                ? `<span class="badge bg-danger position-absolute top-0 end-0 m-2">×${gift.quantity}</span>` 
-                : '';
-            
-            const giftTypeText = gift.gift.type === 'virtual' ? '虚拟礼物' : '实体礼物';
+            const priceText = gift.price_type === 'activity_points' 
+                ? `💎 ${gift.price} 活跃度` 
+                : `💰 ${gift.price} 金币`;
             
             html += `
                 <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card h-100 position-relative" style="cursor: pointer;" onclick="sendGift(${gift.id}, ${gift.gift.id})">
-                        ${quantityBadge}
+                    <div class="card h-100 position-relative" style="cursor: pointer;" onclick="sendGift(${gift.id})">
                         <div class="card-body text-center p-2">
                             ${giftImage}
-                            <h6 class="card-title small mb-1">${gift.gift.name}</h6>
-                            <p class="card-text small text-muted mb-0">${giftTypeText}</p>
+                            <h6 class="card-title small mb-1">${gift.name}</h6>
+                            <p class="card-text small text-primary mb-0">${priceText}</p>
                         </div>
                     </div>
                 </div>
@@ -688,13 +729,12 @@ document.addEventListener('DOMContentLoaded', function() {
         giftList.innerHTML = html;
     }
     
-    // 发送礼物
-    function sendGift(userGiftId, giftId) {
-        if (!confirm('确定要发送这个礼物吗？')) return;
+    // 发送礼物（购买并发送）- 暴露到全局作用域
+    window.sendGift = function(giftId) {
+        if (!confirm('确定要购买并发送这个礼物吗？')) return;
         
         const formData = new FormData();
         formData.append('_token', document.querySelector('input[name="_token"]').value);
-        formData.append('user_gift_id', userGiftId);
         formData.append('gift_id', giftId);
         
         fetch('{{ route("chat.send.gift", $user->id) }}', {
@@ -715,7 +755,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 addMessage(data.message, true);
                 lastMessageId = Math.max(lastMessageId, data.message.id);
                 
-                // 重新加载礼物列表
+                // 重新加载礼物列表（更新余额）
                 loadUserGifts();
             } else {
                 alert(data.message || '发送失败');

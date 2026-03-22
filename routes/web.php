@@ -39,7 +39,29 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Auth::routes();
+// 认证路由
+Route::get('login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+Route::post('login', [App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login.post');
+Route::post('logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout.post');
+Route::get('register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+Route::post('password/reset', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'reset'])->name('password.reset');
+Route::post('password/email', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('password/reset', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::get('password/reset/{token}', [App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset.token');
+Route::post('password/confirm', [App\Http\Controllers\Auth\ConfirmPasswordController::class, 'confirm'])->name('password.confirm');
+Route::get('password/confirm', [App\Http\Controllers\Auth\ConfirmPasswordController::class, 'showConfirmForm'])->name('password.confirm');
+Route::get('verify', [App\Http\Controllers\Auth\VerificationController::class, 'show'])->name('verification.notice');
+Route::get('verify/{id}/{hash}', [App\Http\Controllers\Auth\VerificationController::class, 'verify'])->name('verification.verify');
+Route::post('verify/resend', [App\Http\Controllers\Auth\VerificationController::class, 'resend'])->name('verification.resend');
+
+// 退出登录路由（GET 方法，简单直接）
+Route::get('/logout', function () {
+    auth()->logout();
+    session()->invalidate();
+    session()->regenerateToken();
+    return redirect('/');
+})->name('logout');
 
 // 账户待激活页面
 Route::get('/account/pending', [App\Http\Controllers\AccountPendingController::class, 'index'])->name('account.pending');
@@ -82,9 +104,17 @@ Route::middleware(['auth'])->group(function () {
     // 礼物相关路由
     Route::get('/user/gifts', [App\Http\Controllers\UserGiftController::class, 'index'])->name('user.gifts.index');
     Route::post('/user/gifts/{gift}/purchase', [App\Http\Controllers\UserGiftController::class, 'purchase'])->name('user.gifts.purchase');
-    Route::get('/user/gifts/{userGift}/redeem', [App\Http\Controllers\GiftRedemptionController::class, 'create'])->name('user.gifts.redeem.create');
-    Route::post('/user/gifts/{userGift}/redeem', [App\Http\Controllers\GiftRedemptionController::class, 'store'])->name('user.gifts.redeem.store');
+    Route::post('/user/gifts/{userGift}/redeem', [App\Http\Controllers\UserGiftController::class, 'storeRedeem'])->name('user.gifts.redeem.store');
+    Route::post('/user/gifts/save-redemption-info', [App\Http\Controllers\UserGiftController::class, 'saveRedemptionInfo'])->name('user.gifts.save-redemption-info');
+    Route::post('/user/gifts/redeem-multiple', [App\Http\Controllers\UserGiftController::class, 'redeemMultiple'])->name('user.gifts.redeem-multiple');
     Route::get('/user/gifts/history', [App\Http\Controllers\GiftRedemptionController::class, 'history'])->name('user.gifts.history');
+    
+    // 后台管理路由
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/redemptions', [App\Http\Controllers\Admin\RedemptionController::class, 'index'])->name('redemptions.index');
+        Route::get('/redemptions/{redemption}', [App\Http\Controllers\Admin\RedemptionController::class, 'show'])->name('redemptions.show');
+        Route::patch('/redemptions/{redemption}/status', [App\Http\Controllers\Admin\RedemptionController::class, 'updateStatus'])->name('redemptions.update-status');
+    });
     
     // 环信测试路由
     Route::get('/easemob-test', [App\Http\Controllers\EasemobTestController::class, 'index'])->name('easemob.test');

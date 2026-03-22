@@ -14,7 +14,10 @@ class GiftRedemption extends Model
         'recipient_name',
         'phone',
         'address',
+        'recipient_phone',
+        'quantity',
         'status',
+        'admin_notes',
     ];
 
     /**
@@ -48,8 +51,10 @@ class GiftRedemption extends Model
     {
         return match($this->status) {
             'pending' => __('messages.gifts.status.pending'),
+            'processing' => __('messages.gifts.status.processing'),
             'shipped' => __('messages.gifts.status.shipped'),
-            'delivered' => __('messages.gifts.status.delivered'),
+            'completed' => __('messages.gifts.status.completed'),
+            'cancelled' => __('messages.gifts.status.cancelled'),
             default => $this->status,
         };
     }

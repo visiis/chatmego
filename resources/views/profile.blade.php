@@ -47,15 +47,15 @@
                                     
                                     @if($user->id == auth()->id())
                                         <div class="mt-2 small text-muted">
-                                            当前积分：{{ $user->points }}
+                                            当前活跃度：{{ $user->points }}
                                             @php
-                                                $nextLevel = \App\Models\MemberLevel::where('min_points', '>', $user->points)
+                                                $nextLevel = \App\Models\MemberLevel::where('min_points', '>', $user->total_points_earned)
                                                     ->orderBy('min_points')
                                                     ->first();
                                             @endphp
                                             @if($nextLevel)
                                                 <br>
-                                                距离{{ $nextLevel->name }}还差 {{ $nextLevel->min_points - $user->points }} 积分
+                                                距离{{ $nextLevel->name }}还差 {{ $nextLevel->min_points - $user->total_points_earned }} 活跃度
                                             @endif
                                         </div>
                                     @endif

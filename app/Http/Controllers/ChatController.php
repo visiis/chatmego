@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Message;
 use App\Models\Friendship;
 use App\Models\UserGift;
+use App\Models\Gift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -214,83 +215,101 @@ class ChatController extends Controller
     }
     
     /**
-     * 获取用户的虚拟礼物列表（API）
+     * 获取可用的虚拟礼物列表（API）
      */
     public function getUserGifts()
     {
         $user = auth()->user();
         
-        $userGifts = UserGift::with('gift')
-            ->where('user_id', $user->id)
-            ->where('is_redeemed', false)
-            ->whereHas('gift', function($query) {
-                $query->where('type', 'virtual')
-                      ->where('is_active', true);
-            })
-            ->orderBy('created_at', 'desc')
+        // 获取所有可用的礼物（包括虚拟和实体）
+        $gifts = Gift::where('is_active', true)
+            ->orderBy('type', 'asc')
+            ->orderBy('price', 'asc')
             ->get();
         
         return response()->json([
             'success' => true,
-            'gifts' => $userGifts,
+            'gifts' => $gifts,
+            'user' => [
+                'points' => $user->points,
+                'coins' => $user->coins,
+            ],
         ]);
     }
     
     /**
-     * 发送礼物
+     * 购买并发送礼物
      */
     public function sendGift(Request $request, User $user)
     {
         $request->validate([
-            'user_gift_id' => 'required|exists:user_gifts,id',
             'gift_id' => 'required|exists:gifts,id',
         ]);
         
         $authUser = auth()->user();
         
+        $gift = Gift::find($request->gift_id);
+        
+        // 检查礼物是否启用
+        if (!$gift->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => '礼物不可用',
+            ], 400);
+        }
+        
         DB::beginTransaction();
         try {
-            // 验证礼物属于当前用户
-            $userGift = UserGift::where('id', $request->user_gift_id)
-                ->where('user_id', $authUser->id)
-                ->where('is_redeemed', false)
-                ->lockForUpdate()
-                ->first();
-            
-            if (!$userGift) {
-                return response()->json([
-                    'success' => false,
-                    'message' => '礼物不存在或已使用',
-                ], 400);
-            }
-            
-            // 验证礼物是虚拟礼物
-            if ($userGift->gift->type !== 'virtual') {
-                return response()->json([
-                    'success' => false,
-                    'message' => '只能发送虚拟礼物',
-                ], 400);
-            }
-            
-            // 扣除礼物
-            if ($userGift->quantity > 1) {
-                $userGift->decrement('quantity');
+            // 检查余额并扣费
+            if ($gift->price_type === 'activity_points') {
+                if ($authUser->points < $gift->price) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => '活跃度不足',
+                    ], 400);
+                }
+                $authUser->points -= $gift->price;
             } else {
-                $userGift->update(['is_redeemed' => true]);
+                if ($authUser->coins < $gift->price) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => '金币不足',
+                    ], 400);
+                }
+                $authUser->coins -= $gift->price;
             }
+            
+            $authUser->save();
             
             // 创建礼物消息
             $message = Message::create([
                 'from_user_id' => $authUser->id,
                 'to_user_id' => $user->id,
                 'message' => json_encode([
-                    'gift_id' => $userGift->gift_id,
-                    'gift_name' => $userGift->gift->name,
-                    'gift_image' => $userGift->gift->image,
+                    'gift_id' => $gift->id,
+                    'gift_name' => $gift->name,
+                    'gift_image' => $gift->image,
                 ]),
                 'type' => 'gift',
-                'attachment_url' => $userGift->gift->image,
+                'attachment_url' => $gift->image,
             ]);
+            
+            // 给接收者添加礼物记录
+            $existingUserGift = UserGift::where('user_id', $user->id)
+                ->where('gift_id', $gift->id)
+                ->where('is_redeemed', false)
+                ->first();
+            
+            if ($existingUserGift) {
+                $existingUserGift->increment('quantity');
+            } else {
+                UserGift::create([
+                    'user_id' => $user->id,
+                    'gift_id' => $gift->id,
+                    'quantity' => 1,
+                    'is_redeemed' => false,
+                ]);
+            }
             
             DB::commit();
             

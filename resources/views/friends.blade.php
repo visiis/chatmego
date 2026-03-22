@@ -32,44 +32,37 @@
     @else
         <div class="row">
             @foreach($friends as $friend)
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="text-center mb-3">
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <!-- 头像 -->
+                            <div class="mb-3">
                                 @if($friend->avatar)
-                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 120px; height: 120px;">
+                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 150px; height: 150px;">
                                         <img src="{{ asset('storage/' . $friend->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
                                     </div>
                                 @else
-                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 120px; height: 120px;">
+                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 150px; height: 150px;">
                                         <img src="{{ asset('images/default-avatar.svg') }}" alt="Default Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
                                     </div>
                                 @endif
-                                <h3 class="mt-3">{{ $friend->name }}</h3>
-                                @if($friend->gender == 'male')
-                                    <span class="badge bg-primary"><i class="fas fa-male"></i> 男</span>
-                                @else
-                                    <span class="badge bg-danger"><i class="fas fa-female"></i> 女</span>
-                                @endif
                             </div>
 
-                            <div class="mb-2 text-center">
-                                @if($friend->age)
-                                    <span class="badge bg-secondary">{{ $friend->age }}岁</span>
-                                @endif
-                            </div>
+                            <!-- 名字 -->
+                            <h3 class="card-title mb-4">{{ $friend->name }}</h3>
 
-                            <div class="mt-4 text-center">
-                                <a href="{{ route('chat.show', $friend->id) }}" class="btn btn-primary">
+                            <!-- 按钮 -->
+                            <div class="d-grid gap-2">
+                                <a href="{{ route('chat.show', $friend->id) }}" class="btn btn-primary btn-lg">
                                     <i class="fas fa-comment"></i> 发消息
                                 </a>
-                                <a href="{{ route('profile', $friend->id) }}" class="btn btn-secondary">
+                                <a href="{{ route('profile', $friend->id) }}" class="btn btn-secondary btn-lg">
                                     <i class="fas fa-user"></i> 资料
                                 </a>
                                 <form action="{{ route('friends.remove', $friend->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger mt-2" onclick="return confirm('确定要删除这位好友吗？')">
+                                    <button type="submit" class="btn btn-outline-danger btn-lg" onclick="return confirm('确定要删除这位好友吗？')">
                                         <i class="fas fa-user-minus"></i> 删除
                                     </button>
                                 </form>
@@ -80,11 +73,5 @@
             @endforeach
         </div>
     @endif
-
-    <div class="text-center mt-4">
-        <a href="{{ route('friend.requests') }}" class="btn btn-warning">
-            <i class="fas fa-clock"></i> 待处理的好友请求
-        </a>
-    </div>
 </div>
 @endsection

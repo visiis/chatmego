@@ -1,110 +1,316 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">{{ __('messages.gifts.title') }}</h1>
+<div class="container py-5">
+    <h2 class="mb-4">🎁 我的礼物</h2>
     
     @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
     
     @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
     
-    <!-- 虚拟礼物 -->
-    <div class="mb-8">
-        <h2 class="text-2xl font-semibold mb-4">{{ __('messages.gifts.virtual_gifts') }}</h2>
-        @if($virtualGifts->isEmpty())
-            <div class="bg-gray-100 rounded-lg p-8 text-center">
-                <p class="text-gray-500">{{ __('messages.gifts.no_gifts') }}</p>
+    <!-- 实体礼物 -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">📦 实体礼物</h5>
+            <div>
+                <button type="button" class="btn btn-light btn-sm me-2" onclick="checkRedemptionInfo()">
+                    📝 填写兑换信息
+                </button>
+                <button type="button" class="btn btn-warning btn-sm" onclick="redeemSelected()" id="redeemBtn" disabled>
+                    ✅ 兑换选中
+                </button>
+                @if($hasRedemptionInfo)
+                    <span class="badge bg-success ms-2">✓ 已填写兑换信息</span>
+                @else
+                    <span class="badge bg-warning ms-2">⚠ 未填写兑换信息</span>
+                @endif
             </div>
-        @else
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                @foreach($virtualGifts as $userGift)
-                    <div class="bg-white rounded-lg shadow p-4 relative">
-                        @if($userGift->gift->image)
-                            <img src="{{ asset('storage/' . $userGift->gift->image) }}" 
-                                 alt="{{ $userGift->gift->name }}" 
-                                 class="w-full h-32 object-cover rounded mb-2">
-                        @else
-                            <div class="w-full h-32 bg-gray-200 rounded mb-2 flex items-center justify-center">
-                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                </svg>
-                            </div>
-                        @endif
-                        <h3 class="font-semibold text-sm">{{ $userGift->gift->name }}</h3>
-                        <p class="text-xs text-gray-500">{{ $userGift->gift->getTranslatedPriceTypeAttribute() }}: {{ $userGift->gift->price }}</p>
-                        @if($userGift->quantity > 1)
-                            <span class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                                ×{{ $userGift->quantity }}
-                            </span>
-                        @endif
-                        <button class="mt-2 w-full bg-blue-500 text-white text-sm py-1 rounded hover:bg-blue-600">
-                            {{ __('messages.gifts.send_in_chat') }}
-                        </button>
-                    </div>
-                @endforeach
-            </div>
-        @endif
+        </div>
+        <div class="card-body p-0">
+            @if($physicalGifts->isEmpty())
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-box fa-3x mb-3"></i>
+                    <p class="mb-0">暂无实体礼物</p>
+                </div>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="physicalGiftsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="ps-4" style="width: 50px;">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                </th>
+                                <th scope="col">礼物</th>
+                                <th scope="col">价格类型</th>
+                                <th scope="col">价格</th>
+                                <th scope="col">获得时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($physicalGifts as $userGift)
+                                <tr>
+                                    <td class="ps-4">
+                                        <input type="checkbox" 
+                                               class="gift-checkbox" 
+                                               data-user-gift-id="{{ $userGift->id }}"
+                                               data-gift-name="{{ $userGift->gift->name }}"
+                                               onchange="updateRedeemButton()">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if($userGift->gift->image)
+                                                <img src="{{ asset('storage/' . $userGift->gift->image) }}" 
+                                                     alt="{{ $userGift->gift->name }}" 
+                                                     class="rounded me-3"
+                                                     style="width: 50px; height: 50px; object-fit: cover;">
+                                            @else
+                                                <div class="rounded bg-light d-flex align-items-center justify-content-center me-3"
+                                                     style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-gift text-muted"></i>
+                                                </div>
+                                            @endif
+                                            <span class="fw-medium">{{ $userGift->gift->name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ $userGift->gift->getTranslatedPriceTypeAttribute() }}</td>
+                                    <td>{{ $userGift->gift->price }}</td>
+                                    <td class="text-muted small">
+                                        {{ $userGift->created_at->format('Y-m-d H:i') }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
     </div>
     
-    <!-- 实体礼物 -->
-    <div class="mb-8">
-        <h2 class="text-2xl font-semibold mb-4">{{ __('messages.gifts.physical_gifts') }}</h2>
-        @if($physicalGifts->isEmpty())
-            <div class="bg-gray-100 rounded-lg p-8 text-center">
-                <p class="text-gray-500">{{ __('messages.gifts.no_gifts') }}</p>
-            </div>
-        @else
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                @foreach($physicalGifts as $userGift)
-                    <div class="bg-white rounded-lg shadow p-4 relative">
-                        @if($userGift->gift->image)
-                            <img src="{{ asset('storage/' . $userGift->gift->image) }}" 
-                                 alt="{{ $userGift->gift->name }}" 
-                                 class="w-full h-32 object-cover rounded mb-2">
-                        @else
-                            <div class="w-full h-32 bg-gray-200 rounded mb-2 flex items-center justify-center">
-                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                </svg>
+    <!-- 虚拟礼物 -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">💎 虚拟礼物</h5>
+        </div>
+        <div class="card-body">
+            @if($virtualGifts->isEmpty())
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-gift fa-3x mb-3"></i>
+                    <p class="mb-0">暂无虚拟礼物</p>
+                </div>
+            @else
+                <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-4">
+                    @foreach($virtualGifts as $userGift)
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <div class="gift-image-wrapper" style="position: relative; height: 150px; overflow: hidden;">
+                                    @if($userGift->gift->image)
+                                        <img src="{{ asset('storage/' . $userGift->gift->image) }}" 
+                                             alt="{{ $userGift->gift->name }}" 
+                                             style="width: 100%; height: 100%; object-fit: cover;">
+                                    @else
+                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                            <i class="fas fa-gift fa-2x text-muted"></i>
+                                        </div>
+                                    @endif
+                                    @if($userGift->quantity > 1)
+                                        <span class="badge bg-primary position-absolute top-0 end-0 m-2">
+                                            ×{{ $userGift->quantity }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="card-body p-3 text-center">
+                                    <h6 class="card-title text-truncate mb-2">{{ $userGift->gift->name }}</h6>
+                                    <p class="card-text small text-primary mb-2">
+                                        {{ $userGift->gift->getTranslatedPriceTypeAttribute() }}: {{ $userGift->gift->price }}
+                                    </p>
+                                </div>
                             </div>
-                        @endif
-                        <h3 class="font-semibold text-sm">{{ $userGift->gift->name }}</h3>
-                        <p class="text-xs text-gray-500">{{ $userGift->gift->getTranslatedPriceTypeAttribute() }}: {{ $userGift->gift->price }}</p>
-                        @if($userGift->quantity > 1)
-                            <span class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                                ×{{ $userGift->quantity }}
-                            </span>
-                        @endif
-                        @if(!$userGift->is_redeemed)
-                            <a href="{{ route('user.gifts.redeem.create', $userGift) }}" 
-                               class="mt-2 block w-full bg-green-500 text-white text-sm py-1 rounded hover:bg-green-600 text-center">
-                                {{ __('messages.gifts.redeem') }}
-                            </a>
-                        @else
-                            <span class="mt-2 block w-full bg-gray-300 text-gray-500 text-sm py-1 rounded text-center">
-                                {{ __('messages.gifts.already_redeemed') }}
-                            </span>
-                        @endif
-                    </div>
-                @endforeach
-            </div>
-        @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </div>
     
     <!-- 兑换记录链接 -->
-    <div class="mt-8">
-        <a href="{{ route('user.gifts.history') }}" 
-           class="text-blue-500 hover:text-blue-600">
-            {{ __('messages.gifts.redeem_address') }} →
+    <div class="text-center mt-4">
+        <a href="{{ route('user.gifts.history') }}" class="btn btn-outline-primary">
+            📋 查看兑换记录
         </a>
     </div>
 </div>
+
+<!-- 兑换信息模态框 -->
+<div class="modal fade" id="redemptionInfoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="redemptionInfoForm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">📝 填写兑换信息</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">收件人姓名 <span class="text-danger">*</span></label>
+                        <input type="text" name="recipient_name" class="form-control" value="{{ $hasRedemptionInfo ? auth()->user()->recipient_name : '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">手机号 <span class="text-danger">*</span></label>
+                        <input type="tel" name="phone" class="form-control" placeholder="请输入手机号" value="{{ $hasRedemptionInfo ? auth()->user()->phone : '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">详细地址 <span class="text-danger">*</span></label>
+                        <textarea name="address" class="form-control" rows="3" placeholder="请输入详细地址" required>{{ $hasRedemptionInfo ? auth()->user()->address : '' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">收件人手机号（可选）</label>
+                        <input type="tel" name="recipient_phone" class="form-control" placeholder="如与上面不同请填写" value="{{ $hasRedemptionInfo ? auth()->user()->recipient_phone : '' }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存信息</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.gift-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+#selectAll {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+</style>
+
+<script>
+// 全选/取消全选
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.gift-checkbox');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    updateRedeemButton();
+}
+
+// 更新兑换按钮状态
+function updateRedeemButton() {
+    const selected = document.querySelectorAll('.gift-checkbox:checked');
+    const btn = document.getElementById('redeemBtn');
+    if (selected.length > 0) {
+        btn.disabled = false;
+        btn.innerHTML = '✅ 兑换选中 (' + selected.length + ')';
+    } else {
+        btn.disabled = true;
+        btn.innerHTML = '✅ 兑换选中';
+    }
+}
+
+// 检查兑换信息
+function checkRedemptionInfo() {
+    // 不需要检查是否选择产品，直接打开填写信息模态框
+    const modalElement = document.getElementById('redemptionInfoModal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+// 兑换选中的礼物
+function redeemSelected() {
+    const selected = document.querySelectorAll('.gift-checkbox:checked');
+    if (selected.length === 0) {
+        alert('请先选择要兑换的礼物');
+        return;
+    }
+    
+    // 收集选中的礼物信息
+    const gifts = [];
+    selected.forEach(cb => {
+        gifts.push({
+            user_gift_id: cb.dataset.userGiftId,
+            name: cb.dataset.giftName
+        });
+    });
+    
+    // 提交表单
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ route("user.gifts.redeem-multiple") }}';
+    
+    const token = document.createElement('input');
+    token.type = 'hidden';
+    token.name = '_token';
+    token.value = '{{ csrf_token() }}';
+    form.appendChild(token);
+    
+    gifts.forEach((gift, index) => {
+        const userGiftIdInput = document.createElement('input');
+        userGiftIdInput.type = 'hidden';
+        userGiftIdInput.name = 'user_gift_ids[' + index + ']';
+        userGiftIdInput.value = gift.user_gift_id;
+        form.appendChild(userGiftIdInput);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', function() {
+    updateRedeemButton();
+    
+    // 确保 Bootstrap Dropdown 正常工作
+    document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function(element) {
+        new bootstrap.Dropdown(element);
+    });
+    
+    // 处理兑换信息表单提交
+    document.getElementById('redemptionInfoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        
+        fetch('{{ route("user.gifts.save-redemption-info") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 关闭模态框
+            const modalElement = document.getElementById('redemptionInfoModal');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            modal.hide();
+            
+            // 刷新页面
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('保存失败，请重试');
+        });
+    });
+});
+</script>
+
+<!-- Bootstrap JS (确保加载) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @endsection
