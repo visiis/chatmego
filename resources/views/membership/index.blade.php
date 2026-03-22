@@ -157,6 +157,63 @@
             </div>
         </div>
     </div>
+    
+    <!-- 订阅历史队列 -->
+    @if($subscriptionHistory->count() > 0)
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">📋 会员订阅队列（最近 10 条）</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>会员计划</th>
+                                    <th>开始时间</th>
+                                    <th>到期时间</th>
+                                    <th>状态</th>
+                                    <th>价格</th>
+                                    <th>备注</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($subscriptionHistory as $subscription)
+                                <tr>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ $subscription->plan->badge_color }};">
+                                            {{ $subscription->plan->icon }} {{ $subscription->plan->name }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $subscription->starts_at->format('Y-m-d H:i') }}</td>
+                                    <td>{{ $subscription->ends_at->format('Y-m-d H:i') }}</td>
+                                    <td>
+                                        @if($subscription->status === 'active')
+                                            <span class="badge bg-success">有效</span>
+                                        @elseif($subscription->status === 'expired')
+                                            <span class="badge bg-secondary">已过期</span>
+                                        @elseif($subscription->status === 'cancelled')
+                                            <span class="badge bg-warning">已取消</span>
+                                        @endif
+                                    </td>
+                                    <td>💰 {{ $subscription->price_paid }}</td>
+                                    <td class="text-muted small">{{ $subscription->notes }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>叠加模式说明：</strong> 购买的会员将按顺序加入队列，当前会员到期后自动切换到下一个会员。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 
 <script>

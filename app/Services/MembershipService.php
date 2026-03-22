@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class MembershipService
 {
     /**
-     * 为用户购买会员
+     * 为用户购买会员（叠加模式）
      */
     public static function purchaseMembership(User $user, MembershipPlan $plan): array
     {
@@ -30,15 +30,16 @@ class MembershipService
         // 计算有效期
         $now = Carbon::now();
         
-        // 检查是否有当前有效的订阅
+        // 获取当前有效的订阅
         $currentSubscription = UserSubscription::getUserActiveSubscription($user->id);
         
-        if ($currentSubscription && $currentSubscription->plan_id === $plan->id) {
-            // 如果是同一会员的续费，在现有基础上延长
-            $startsAt = $currentSubscription->ends_at > $now ? $currentSubscription->ends_at : $now;
+        // 叠加模式：总是在当前最晚到期时间基础上延长
+        if ($currentSubscription && $currentSubscription->ends_at > $now) {
+            // 有有效会员，在当前到期时间基础上延长
+            $startsAt = $currentSubscription->ends_at;
             $endsAt = (clone $startsAt)->addDays($plan->duration_days);
         } else {
-            // 新购买或升级
+            // 没有有效会员，立即开始
             $startsAt = $now;
             $endsAt = (clone $startsAt)->addDays($plan->duration_days);
         }
@@ -51,12 +52,12 @@ class MembershipService
             'ends_at' => $endsAt,
             'status' => 'active',
             'price_paid' => $plan->price,
-            'notes' => "购买{$plan->name}，{$plan->duration_days}天",
+            'notes' => "购买{$plan->name}，{$plan->duration_days}天，叠加模式",
         ]);
         
         return [
             'success' => true,
-            'message' => "成功购买{$plan->name}",
+            'message' => "成功购买{$plan->name}，有效期至 {$endsAt->format('Y-m-d')}",
             'subscription' => $subscription,
             'ends_at' => $endsAt,
         ];

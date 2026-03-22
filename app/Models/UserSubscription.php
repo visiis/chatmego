@@ -50,14 +50,14 @@ class UserSubscription extends Model
     }
     
     /**
-     * 获取用户的当前有效订阅
+     * 获取用户的当前有效订阅（按到期时间升序，返回最早到期的）
      */
     public static function getUserActiveSubscription($userId)
     {
         return static::where('user_id', $userId)
             ->where('status', 'active')
             ->where('ends_at', '>', now())
-            ->orderBy('ends_at', 'desc')
+            ->orderBy('ends_at', 'asc')  // 升序：最早到期的在前
             ->first();
     }
     

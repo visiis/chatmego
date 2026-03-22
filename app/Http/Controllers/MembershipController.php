@@ -19,7 +19,14 @@ class MembershipController extends Controller
         $membershipInfo = MembershipService::getUserMembershipInfo($user);
         $availablePlans = MembershipService::getAvailablePlans();
         
-        return view('membership.index', compact('user', 'membershipInfo', 'availablePlans'));
+        // 获取用户的订阅历史（按开始时间倒序）
+        $subscriptionHistory = $user->subscriptions()
+            ->with('plan')
+            ->orderBy('starts_at', 'desc')
+            ->limit(10)
+            ->get();
+        
+        return view('membership.index', compact('user', 'membershipInfo', 'availablePlans', 'subscriptionHistory'));
     }
     
     /**
