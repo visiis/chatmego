@@ -24,6 +24,12 @@
                             </div>
                             
                             <h5 class="card-title">{{ $user->name }}</h5>
+                            
+                            <!-- 会员等级徽章 -->
+                            <div class="mb-2">
+                                <x-member-level-badge :user="$user" />
+                            </div>
+                            
                             <p class="text-muted small mb-1">
                                 {{ $user->gender == 'male' ? __('messages.profile.male') : __('messages.profile.female') }} · {{ $user->age }} {{ __('messages.profile.age') }}
                             </p>
