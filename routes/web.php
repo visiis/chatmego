@@ -75,6 +75,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/membership/convert-points', [App\Http\Controllers\MembershipController::class, 'convertPoints'])->name('membership.convertPoints');
     Route::post('/membership/cancel', [App\Http\Controllers\MembershipController::class, 'cancel'])->name('membership.cancel');
     
+    // 礼物相关路由
+    Route::get('/user/gifts', [App\Http\Controllers\UserGiftController::class, 'index'])->name('user.gifts.index');
+    Route::post('/user/gifts/{gift}/purchase', [App\Http\Controllers\UserGiftController::class, 'purchase'])->name('user.gifts.purchase');
+    Route::get('/user/gifts/{userGift}/redeem', [App\Http\Controllers\GiftRedemptionController::class, 'create'])->name('user.gifts.redeem.create');
+    Route::post('/user/gifts/{userGift}/redeem', [App\Http\Controllers\GiftRedemptionController::class, 'store'])->name('user.gifts.redeem.store');
+    Route::get('/user/gifts/history', [App\Http\Controllers\GiftRedemptionController::class, 'history'])->name('user.gifts.history');
+    
     // 环信测试路由
     Route::get('/easemob-test', [App\Http\Controllers\EasemobTestController::class, 'index'])->name('easemob.test');
     Route::post('/easemob/test-token', [App\Http\Controllers\EasemobTestController::class, 'testToken']);

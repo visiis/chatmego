@@ -1,5 +1,48 @@
 # 部署说明
 
+## ⚠️ 重要：部署流程（必须严格遵守）
+
+### 正确的部署步骤
+
+**1. 本地修改和测试**
+```bash
+# 在本地修改文件
+# 测试修改是否正确
+
+# 提交到 Git
+git add -A
+git commit -m "修改说明"
+```
+
+**2. 上传文件到服务器（使用 SCP，不是 Git）**
+```bash
+# 上传修改的文件到服务器
+scp -i ~/.ssh/id_ed25519 /path/to/modified/file.php b3kxi5lpp7kr@bhr.41c.mytemp.website:/home/b3kxi5lpp7kr/public_html/path/to/file.php
+
+# 在服务器上清除缓存
+ssh -i ~/.ssh/id_ed25519 b3kxi5lpp7kr@bhr.41c.mytemp.website "cd /home/b3kxi5lpp7kr/public_html && php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear"
+```
+
+**3. Git 推送（只推送，永远不要拉取）**
+```bash
+# 推送到远程仓库
+git push origin main
+```
+
+### ⛔ 禁止操作
+
+- **永远不要**在服务器上执行 `git pull` 或 `git reset`
+- **永远不要**用 Git 覆盖服务器上的文件
+- **永远不要**在没经过用户同意时拉取远程代码
+
+### ✅ 正确流程总结
+
+```
+本地修改 → 上传服务器 (SCP) → 清除缓存 → Git 推送
+```
+
+---
+
 ## 环境配置文件管理
 
 ### 本地开发环境
@@ -9,38 +52,6 @@
 ### 服务器生产环境
 - **配置文件**: `.env`（在服务器上手动创建和配置）
 - **不要修改**: 服务器上的 `.env` 文件不应该被本地代码覆盖
-
-## 部署流程
-
-### 1. 本地开发
-```bash
-# 克隆项目后，复制配置模板
-cp .env.example .env
-
-# 生成应用密钥
-php artisan key:generate
-
-# 配置数据库连接
-# 编辑 .env 文件，设置正确的数据库信息
-```
-
-### 2. 服务器部署
-```bash
-# 拉取最新代码
-git pull origin main
-
-# 安装依赖
-composer install --no-dev --optimize-autoloader
-
-# 清除缓存
-php artisan config:clear
-php artisan cache:clear
-php artisan route:clear
-php artisan view:clear
-
-# 运行迁移（如果需要）
-php artisan migrate --force
-```
 
 ### 3. 环境差异说明
 
