@@ -39,29 +39,34 @@
                             </p>
                             
                             <!-- 操作按钮 -->
-                            <div class="mt-4 text-center">
-                                <a href="{{ route('profile', $user->id) }}" class="btn btn-primary">
-                                    {{ __('messages.users.view_profile') }}
-                                </a>
-                                @if(auth()->id() != $user->id)
-                                    <a href="{{ route('chat.show', $user->id) }}" class="btn btn-success">
-                                        <i class="fas fa-comments"></i> 立即聊天
+                            <div class="mt-4">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ route('profile', $user->id) }}" class="btn btn-primary btn-block">
+                                        {{ __('messages.users.view_profile') }}
                                     </a>
-                                    @if(isset($user->friendship_status) && $user->friendship_status === 'accepted')
-                                        <button type="button" class="btn btn-secondary" disabled>
-                                            <i class="fas fa-check"></i> 已是好友
-                                        </button>
-                                    @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === auth()->id())
-                                        <button type="button" class="btn btn-secondary" disabled>
-                                            <i class="fas fa-clock"></i> 已发送
-                                        </button>
-                                    @else
-                                        <form action="{{ route('friends.request', $user->id) }}" method="POST" class="d-inline friend-request-form">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success friend-request-btn">
-                                                <i class="fas fa-user-plus"></i> 加入好友
+                                    @if(auth()->id() != $user->id)
+                                        <a href="{{ route('chat.show', $user->id) }}" class="btn btn-success btn-block">
+                                            <i class="fas fa-comments"></i> 立即聊天
+                                        </a>
+                                        @if(isset($user->friendship_status) && $user->friendship_status === 'accepted')
+                                            <button type="button" class="btn btn-secondary btn-block" disabled>
+                                                <i class="fas fa-check"></i> 已是好友
                                             </button>
-                                        </form>
+                                        @elseif(isset($user->friendship_status) && $user->friendship_status === 'pending' && $user->requester_id === auth()->id())
+                                            <button type="button" class="btn btn-secondary btn-block" disabled>
+                                                <i class="fas fa-clock"></i> 已发送
+                                            </button>
+                                        @else
+                                            <form action="{{ route('friends.request', $user->id) }}" method="POST" class="friend-request-form">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-block friend-request-btn">
+                                                    <i class="fas fa-user-plus"></i> 加入好友
+                                                </button>
+                                            </form>
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
                                     @endif
                                 @endif
                             </div>
