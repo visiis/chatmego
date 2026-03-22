@@ -98,8 +98,8 @@ class MembershipController extends Controller
             'ends_at' => $endsAt,
             'status' => 'active',
             'price_paid' => $totalPrice,
-            'notes' => trans('messages.membership.purchase_note', [
-                'plan' => $plan->name,
+            'notes' => json_encode([
+                'plan_code' => $plan->code,
                 'months' => $months,
                 'days' => $totalDays,
             ]),

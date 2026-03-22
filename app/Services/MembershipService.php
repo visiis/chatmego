@@ -52,7 +52,7 @@ class MembershipService
             'ends_at' => $endsAt,
             'status' => 'active',
             'price_paid' => $plan->price,
-            'notes' => "购买{$plan->name}，{$plan->duration_days}天，叠加模式",
+            'notes' => "plan:{$plan->code},months:1,days:{$plan->duration_days},mode:stacking",
         ]);
         
         return [

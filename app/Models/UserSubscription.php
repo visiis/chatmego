@@ -33,6 +33,32 @@ class UserSubscription extends Model
     }
     
     /**
+     * 获取翻译后的备注
+     */
+    public function getTranslatedNotesAttribute()
+    {
+        // 尝试解析 JSON 格式的 notes
+        $notesData = json_decode($this->notes, true);
+        
+        if (is_array($notesData) && isset($notesData['plan_code'])) {
+            // 获取当前语言环境
+            $locale = app()->getLocale();
+            
+            // 获取会员计划的翻译名称（指定语言）
+            $planName = trans("messages.membership.plans.{$notesData['plan_code']}", [], $locale);
+            
+            return trans('messages.membership.purchase_note', [
+                'plan' => $planName,
+                'months' => $notesData['months'],
+                'days' => $notesData['days'],
+            ], $locale);
+        }
+        
+        // 如果不是 JSON 格式，返回原始 notes（兼容旧数据）
+        return $this->notes;
+    }
+    
+    /**
      * 获取用户
      */
     public function user()

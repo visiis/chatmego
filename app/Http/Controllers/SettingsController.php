@@ -23,6 +23,9 @@ class SettingsController extends Controller
         ]);
 
         session()->put('locale', $request->language);
+        
+        // 立即设置当前请求的语言环境
+        app()->setLocale($request->language);
 
         return redirect()->back()->with('success', __('messages.settings.success'));
     }

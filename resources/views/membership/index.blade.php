@@ -224,7 +224,7 @@
                                         @endif
                                     </td>
                                     <td>💰 {{ $subscription->price_paid }}</td>
-                                    <td class="text-muted small">{{ $subscription->notes }}</td>
+                                    <td class="text-muted small">{{ $subscription->translatedNotes }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
