@@ -21,10 +21,10 @@ class MembershipController extends Controller
         $membershipInfo = MembershipService::getUserMembershipInfo($user);
         $availablePlans = MembershipService::getAvailablePlans();
         
-        // 获取用户的订阅历史（按开始时间倒序）
+        // 获取用户的订阅历史（按开始时间升序，显示队列顺序）
         $subscriptionHistory = $user->subscriptions()
             ->with('plan')
-            ->orderBy('starts_at', 'desc')
+            ->orderBy('starts_at', 'asc')  // 升序：从最早开始的显示
             ->limit(10)
             ->get();
         
