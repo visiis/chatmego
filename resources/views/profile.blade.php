@@ -40,6 +40,27 @@
                                         </div>
                                     @endif
                                 </div>
+                                
+                                <!-- 会员等级徽章 -->
+                                <div class="mt-3">
+                                    <x-member-level-badge :user="$user" />
+                                    
+                                    @if($user->id == auth()->id())
+                                        <div class="mt-2 small text-muted">
+                                            当前积分：{{ $user->points }}
+                                            @php
+                                                $nextLevel = \App\Models\MemberLevel::where('min_points', '>', $user->points)
+                                                    ->orderBy('min_points')
+                                                    ->first();
+                                            @endphp
+                                            @if($nextLevel)
+                                                <br>
+                                                距离{{ $nextLevel->name }}还差 {{ $nextLevel->min_points - $user->points }} 积分
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
+                                
                                 @if($user->id == auth()->id())
                                     <div class="custom-file">
                                         <input type="file" class="form-control @error('avatar') is-invalid @enderror" id="avatar" name="avatar">
