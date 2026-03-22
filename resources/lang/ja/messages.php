@@ -4,7 +4,8 @@ return [
     'nav' => [
         'discover' => '発見',
         'chat' => 'チャット',
-        'points' => 'ポイント',
+        'points' => 'コイン',
+        'activity_points' => 'アクティビティポイント',
         'profile' => 'プロフィール',
         'settings' => '設定',
         'logout' => 'ログアウト',
@@ -89,5 +90,10 @@ return [
         'purchase_note' => ':plan を購入、:months ヶ月、:days 日、スタッキングモード',
         'cancel_auto_renewal' => '自動更新をキャンセル',
         'confirm_cancel' => '本当に自動更新をキャンセルしますか？\n\nキャンセル後、現在のメンバーシップ特典は有効期限まで継続されますが、自動更新は行われません。',
+        'convert_points_to_coins' => 'アクティビティポイントをコインに交換',
+        'convert_amount' => '交換数量',
+        'enter_activity_points' => 'アクティビティポイントを入力',
+        'will_get_coins' => '獲得できるコイン',
+        'convert_now' => '今すぐ交換',
     ],
 ];

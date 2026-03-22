@@ -4,7 +4,8 @@ return [
     'nav' => [
         'discover' => '发现',
         'chat' => '聊天',
-        'points' => '积分',
+        'points' => '金币',
+        'activity_points' => '活跃度',
         'profile' => '个人资料',
         'settings' => '设置',
         'logout' => '登出',
@@ -89,5 +90,10 @@ return [
         'purchase_note' => '购买:plan，:months 个月，:days 天，叠加模式',
         'cancel_auto_renewal' => '取消自动续费',
         'confirm_cancel' => '确定要取消会员自动续费吗？\n\n取消后，当前会员权益将持续到有效期结束，但不会自动续费。',
+        'convert_points_to_coins' => '兑换金币',
+        'convert_amount' => '兑换数量',
+        'enter_activity_points' => '输入活跃度数量',
+        'will_get_coins' => '可获得金币',
+        'convert_now' => '立即兑换',
     ],
 ];

@@ -4,7 +4,8 @@ return [
     'nav' => [
         'discover' => 'Discover',
         'chat' => 'Chat',
-        'points' => 'Points',
+        'points' => 'Coins',
+        'activity_points' => 'Activity Points',
         'profile' => 'Profile',
         'settings' => 'Settings',
         'logout' => 'Logout',
@@ -89,5 +90,10 @@ return [
         'purchase_note' => 'Purchased :plan, :months month(s), :days days, stacking mode',
         'cancel_auto_renewal' => 'Cancel Auto Renewal',
         'confirm_cancel' => 'Are you sure you want to cancel auto renewal?\n\nAfter cancellation, current membership benefits will continue until expiry, but will not auto renew.',
+        'convert_points_to_coins' => 'Convert Activity Points to Coins',
+        'convert_amount' => 'Convert Amount',
+        'enter_activity_points' => 'Enter activity points amount',
+        'will_get_coins' => 'Will get coins',
+        'convert_now' => 'Convert Now',
     ],
 ];

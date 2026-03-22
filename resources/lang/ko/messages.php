@@ -4,7 +4,8 @@ return [
     'nav' => [
         'discover' => '발견',
         'chat' => '채팅',
-        'points' => '포인트',
+        'points' => '코인',
+        'activity_points' => '활동 포인트',
         'profile' => '프로필',
         'settings' => '설정',
         'logout' => '로그아웃',
@@ -89,5 +90,10 @@ return [
         'purchase_note' => ':plan 구매，:months 개월，:days 일，스태킹 모드',
         'cancel_auto_renewal' => '자동 갱신 취소',
         'confirm_cancel' => '정말로 멤버십 자동 갱신을 취소하시겠습니까？\n\n취소 후 현재 멤버십 혜택은 만료일까지 지속되지만，자동 갱신은 되지 않습니다.',
+        'convert_points_to_coins' => '활동 포인트를 코인으로 교환',
+        'convert_amount' => '교환 수량',
+        'enter_activity_points' => '활동 포인트 입력',
+        'will_get_coins' => '획득 가능한 코인',
+        'convert_now' => '지금 교환',
     ],
 ];

@@ -4,7 +4,8 @@ return [
     'nav' => [
         'discover' => '發現',
         'chat' => '聊天',
-        'points' => '積分',
+        'points' => '金幣',
+        'activity_points' => '活躍度',
         'profile' => '個人資料',
         'settings' => '設定',
         'logout' => '登出',
@@ -89,5 +90,10 @@ return [
         'purchase_note' => '購買:plan，:months 個月，:days 天，疊加模式',
         'cancel_auto_renewal' => '取消自動續費',
         'confirm_cancel' => '確定要取消會員自動續費嗎？\n\n取消後，當前會員權益將持續到有效期結束，但不會自動續費。',
+        'convert_points_to_coins' => '兌換金幣',
+        'convert_amount' => '兌換數量',
+        'enter_activity_points' => '輸入活躍度數量',
+        'will_get_coins' => '可獲得金幣',
+        'convert_now' => '立即兌換',
     ],
 ];

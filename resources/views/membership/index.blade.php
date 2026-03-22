@@ -76,24 +76,29 @@
             <!-- 活跃度兑换 -->
             <div class="card shadow-sm mt-3">
                 <div class="card-body">
-                    <h5 class="card-title mb-3">💱 {{ __('messages.membership.purchase_duration') }}</h5>
+                    <h5 class="card-title mb-3">💱 {{ __('messages.membership.convert_points_to_coins') }}</h5>
                     <p class="small text-muted mb-3">
-                        100 {{ __('messages.nav.points') }} = 1 💰
+                        100 {{ __('messages.nav.activity_points') }} = 1 💰
                     </p>
                     <form action="{{ route('membership.convertPoints') }}" method="POST">
                         @csrf
                         <div class="mb-3">
-                            <label class="form-label">{{ __('messages.membership.purchase_duration') }}</label>
+                            <label class="form-label">{{ __('messages.membership.convert_amount') }}</label>
                             <input type="number" name="points" class="form-control" 
                                    min="100" step="100" 
                                    max="{{ $user->points }}" 
-                                   placeholder="{{ __('messages.membership.required_coins') }}" required>
+                                   placeholder="{{ __('messages.membership.enter_activity_points') }}" required>
                             <small class="text-muted">
-                                {{ __('messages.nav.points') }}: {{ $user->points }}
+                                {{ __('messages.nav.activity_points') }}: {{ $user->points }}
+                            </small>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-success">
+                                <i class="fas fa-gift"></i> {{ __('messages.membership.will_get_coins') }}: <span id="coins-preview">0</span> 💰
                             </small>
                         </div>
                         <button type="submit" class="btn btn-success w-100">
-                            {{ __('messages.membership.buy_now') }}
+                            {{ __('messages.membership.convert_now') }}
                         </button>
                     </form>
                 </div>
@@ -243,6 +248,16 @@ function confirmCancel() {
     if (confirm('{{ __('messages.membership.confirm_cancel') }}')) {
         document.getElementById('cancel-form').submit();
     }
+}
+
+// 活跃度兑换金币预览
+const pointsInput = document.querySelector('input[name="points"]');
+if (pointsInput) {
+    pointsInput.addEventListener('input', function() {
+        const points = parseInt(this.value) || 0;
+        const coins = Math.floor(points / 100);
+        document.getElementById('coins-preview').textContent = coins;
+    });
 }
 
 // 更新价格和按钮状态
