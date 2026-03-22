@@ -123,4 +123,18 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Hashing Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This option controls the default hash driver that will be used to hash
+    | passwords, and other data that need to be hashed.
+    |
+    | Supported: "bcrypt", "argon", "argon2id"
+    |
+    */
+
+    'hash' => env('HASH_DRIVER', 'bcrypt'),
+
 ];
