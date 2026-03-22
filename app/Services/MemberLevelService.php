@@ -12,7 +12,7 @@ class MemberLevelService
      */
     public static function updateUserLevel(User $user): ?MemberLevel
     {
-        $currentLevel = MemberLevel::getLevelByPoints($user->points);
+        $currentLevel = MemberLevel::getLevelByPoints($user->total_points_earned);
         
         if ($currentLevel) {
             // 可以在这里添加等级变更时的逻辑，比如发送通知
@@ -34,6 +34,7 @@ class MemberLevelService
     public static function addPoints(User $user, int $points, string $reason = ''): void
     {
         $user->increment('points', $points);
+        $user->increment('total_points_earned', $points);
         
         // 记录积分日志
         self::logPointsChange($user, $points, 'earn', $reason);
@@ -48,6 +49,7 @@ class MemberLevelService
     public static function deductPoints(User $user, int $points, string $reason = ''): void
     {
         $user->decrement('points', $points);
+        // 注意：total_points_earned 不减少，因为这是历史累计获得的活跃度
         
         // 确保积分不为负
         if ($user->points < 0) {
@@ -58,7 +60,7 @@ class MemberLevelService
         // 记录积分日志
         self::logPointsChange($user, $points, 'spent', $reason);
         
-        // 更新等级
+        // 更新等级（等级基于 total_points_earned，所以不会降级）
         self::updateUserLevel($user);
     }
     
@@ -68,7 +70,7 @@ class MemberLevelService
     private static function logPointsChange(User $user, int $amount, string $type, string $reason): void
     {
         // TODO: 创建 point_logs 表后实现
-        \Log::info("用户 {$user->name} 积分{$type}: {$amount}, 原因：{$reason}, 当前积分：{$user->points}");
+        \Log::info("用户 {$user->name} 积分{$type}: {$amount}, 原因：{$reason}, 当前积分：{$user->points}, 累计积分：{$user->total_points_earned}");
     }
     
     /**

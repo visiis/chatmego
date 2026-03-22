@@ -33,6 +33,7 @@ class User extends Authenticatable implements FilamentUser
         'specialty',
         'love_declaration',
         'points',
+        'total_points_earned',
         'coins',
         'total_coins_spent',
         'total_coins_recharged',
@@ -62,6 +63,7 @@ class User extends Authenticatable implements FilamentUser
             'is_admin' => 'boolean',
             'is_active' => 'boolean',
             'points' => 'integer',
+            'total_points_earned' => 'integer',
             'coins' => 'integer',
             'total_coins_spent' => 'integer',
             'total_coins_recharged' => 'integer',
@@ -81,7 +83,7 @@ class User extends Authenticatable implements FilamentUser
      */
     public function getCurrentLevelAttribute()
     {
-        return MemberLevel::getLevelByPoints($this->points);
+        return MemberLevel::getLevelByPoints($this->total_points_earned);
     }
     
     /**
@@ -197,6 +199,8 @@ class User extends Authenticatable implements FilamentUser
         
         $this->decrement('points', $points);
         $this->increment('coins', $coins);
+        // 注意：total_points_earned 不减少，因为这是历史累计获得的活跃度
+        // 兑换金币不会导致会员等级降级
         
         // TODO: 记录兑换日志
         
