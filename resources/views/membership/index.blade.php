@@ -133,23 +133,39 @@
                                 </ul>
                                 
                                 @if($membershipInfo['has_membership'] && $membershipInfo['plan']->code === $plan['code'])
-                                    <button class="btn btn-secondary w-100" disabled>
-                                        当前会员
-                                    </button>
-                                @else
-                                    <form action="{{ route('membership.purchase') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="plan_id" value="{{ $plan['id'] }}">
-                                        <button type="submit" class="btn btn-primary w-100" 
-                                                {{ $user->coins < $plan['price'] ? 'disabled' : '' }}>
-                                            @if($user->coins < $plan['price'])
-                                                💰 金币不足
-                                            @else
-                                                🛒 立即购买
-                                            @endif
-                                        </button>
-                                    </form>
+                                    <div class="alert alert-info mb-3">
+                                        <small><i class="fas fa-info-circle"></i> 当前正在使用此会员</small>
+                                    </div>
                                 @endif
+                                
+                                <form action="{{ route('membership.purchase') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="plan_id" value="{{ $plan['id'] }}">
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label small">购买时长</label>
+                                        <select name="months" class="form-select form-select-sm" onchange="updatePrice(this, {{ $plan['price'] }}, {{ $plan['duration_days'] }})">
+                                            <option value="1">1 个月（{{ $plan['duration_days'] }}天）</option>
+                                            <option value="3">3 个月（{{ $plan['duration_days'] * 3 }}天）</option>
+                                            <option value="6">6 个月（{{ $plan['duration_days'] * 6 }}天）</option>
+                                            <option value="12">12 个月（{{ $plan['duration_days'] * 12 }}天）</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted small">需要金币：</span>
+                                            <span class="text-primary fw-bold" id="price-{{ $plan['id'] }}">{{ $plan['price'] }} 💰</span>
+                                        </div>
+                                        <input type="hidden" name="total_price" id="hidden-price-{{ $plan['id'] }}" value="{{ $plan['price'] }}">
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary w-100" 
+                                            {{ $user->coins < $plan['price'] ? 'disabled' : '' }}
+                                            id="btn-{{ $plan['id'] }}">
+                                        {{ $user->coins < $plan['price'] ? '💰 金币不足' : '🛒 立即购买' }}
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -159,7 +175,6 @@
     </div>
     
     <!-- 订阅历史队列 -->
-    @if($subscriptionHistory->count() > 0)
     <div class="row mt-4">
         <div class="col-12">
             <div class="card shadow-sm">
@@ -167,6 +182,7 @@
                     <h5 class="mb-0">📋 会员订阅队列（最近 10 条）</h5>
                 </div>
                 <div class="card-body">
+                    @if($subscriptionHistory->count() > 0)
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -205,7 +221,10 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="alert alert-info mb-0">
+                    @else
+                    <p class="text-muted text-center mb-0">暂无订阅记录</p>
+                    @endif
+                    <div class="alert alert-info mb-0 mt-3">
                         <i class="fas fa-info-circle"></i>
                         <strong>叠加模式说明：</strong> 购买的会员将按顺序加入队列，当前会员到期后自动切换到下一个会员。
                     </div>
@@ -213,13 +232,38 @@
             </div>
         </div>
     </div>
-    @endif
 </div>
 
 <script>
 function confirmCancel() {
     if (confirm('确定要取消会员自动续费吗？\n\n取消后，当前会员权益将持续到有效期结束，但不会自动续费。')) {
         document.getElementById('cancel-form').submit();
+    }
+}
+
+// 更新价格和按钮状态
+function updatePrice(selectElement, basePrice, baseDays) {
+    const months = parseInt(selectElement.value);
+    const planId = selectElement.closest('form').querySelector('input[name="plan_id"]').value;
+    
+    // 计算总价和总天数
+    const totalPrice = basePrice * months;
+    const totalDays = baseDays * months;
+    
+    // 更新价格显示
+    document.getElementById(`price-${planId}`).textContent = `${totalPrice} 💰`;
+    document.getElementById(`hidden-price-${planId}`).value = totalPrice;
+    
+    // 更新按钮状态
+    const userCoins = {{ $user->coins }};
+    const btn = document.getElementById(`btn-${planId}`);
+    
+    if (userCoins < totalPrice) {
+        btn.disabled = true;
+        btn.innerHTML = '💰 金币不足';
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = '🛒 立即购买';
     }
 }
 </script>
