@@ -9,6 +9,7 @@ return [
         'settings' => '設定',
         'logout' => '登出',
         'friends' => '好友',
+        'membership' => '會員中心',
     ],
     'title' => 'CMG 跟我聊天吧 邂逅心動的TA',
     'Settings' => '設定',

@@ -9,6 +9,7 @@ return [
         'settings' => 'Settings',
         'logout' => 'Logout',
         'friends' => 'Friends',
+        'membership' => 'Membership Center',
     ],
     'title' => 'CMG Chat with me and meet your perfect match',
     'Settings' => 'Settings',

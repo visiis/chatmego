@@ -69,7 +69,7 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('membership.index') }}">会员中心</a>
+                                    <a class="dropdown-item" href="{{ route('membership.index') }}">{{ __('messages.nav.membership') }}</a>
                                     <a class="dropdown-item" href="{{ route('profile') }}">{{ __('messages.nav.profile') }}</a>
                                     <a class="dropdown-item" href="{{ route('settings') }}">{{ __('messages.nav.settings') }}</a>
                                     <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
