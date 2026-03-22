@@ -19,6 +19,10 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
+    protected static ?string $navigationGroup = '用户管理';
+
+    protected static ?int $navigationSort = 1;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -35,51 +39,61 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->dehydrated(fn ($state) => filled($state))
-                    ->dehydrateStateUsing(fn ($state) => bcrypt($state)),
-                Forms\Components\Placeholder::make('avatar_display')
-                    ->label('头像')
-                    ->content(function ($record) {
-                        if ($record && $record->avatar) {
-                            return new \Illuminate\Support\HtmlString(
-                                '<img src="' . asset('storage/' . $record->avatar) . '" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">'
-                            );
-                        }
-                        return new \Illuminate\Support\HtmlString(
-                            '<img src="' . asset('images/default-avatar.svg') . '" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">'
-                        );
-                    })
-                    ->visible(fn ($record) => $record && $record->exists),
-                Forms\Components\Toggle::make('delete_avatar')
-                    ->label('删除头像')
-                    ->default(false)
-                    ->visible(fn ($record) => $record && $record->exists && $record->avatar),
-                Forms\Components\Select::make('gender')
-                    ->options([
-                        'male' => '男',
-                        'female' => '女',
-                    ]),
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('easemob_username')
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('easemob_password')
+                    ->password()
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('easemob_uuid')
+                    ->maxLength(255),
+                Forms\Components\Toggle::make('is_online')
+                    ->required(),
+                Forms\Components\DateTimePicker::make('last_seen_at'),
+                Forms\Components\TextInput::make('avatar')
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('gender')
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('age')
                     ->numeric(),
                 Forms\Components\TextInput::make('height')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('weight')
                     ->maxLength(255),
-                Forms\Components\Textarea::make('hobbies')
-                    ->rows(3),
-                Forms\Components\Textarea::make('specialty')
-                    ->rows(3),
+                Forms\Components\TextInput::make('hobbies')
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('specialty')
+                    ->maxLength(255),
                 Forms\Components\Textarea::make('love_declaration')
-                    ->rows(3),
+                    ->columnSpanFull(),
                 Forms\Components\TextInput::make('points')
+                    ->required()
                     ->numeric()
-                    ->default(0),
+                    ->default(0)
+                    ->label('活跃度'),
+                Forms\Components\TextInput::make('coins')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('金币')
+                    ->prefix('💰')
+                    ->hint('可直接修改金币数量'),
+                Forms\Components\TextInput::make('total_coins_spent')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('累计消费金币')
+                    ->disabled(),
+                Forms\Components\TextInput::make('total_coins_recharged')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('累计充值金币')
+                    ->disabled(),
                 Forms\Components\Toggle::make('is_active')
-                    ->default(true),
-                Forms\Components\Toggle::make('is_admin')
-                    ->label('管理员')
-                    ->default(false),
+                    ->required(),
+                Forms\Components\Toggle::make('is_admin'),
             ]);
     }
 
@@ -93,43 +107,67 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
-                Tables\Columns\ImageColumn::make('avatar')
-                    ->disk('public')
-                    ->circular()
-                    ->size(40),
+                Tables\Columns\TextColumn::make('easemob_username')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('easemob_uuid')
+                    ->searchable(),
+                Tables\Columns\IconColumn::make('is_online')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('last_seen_at')
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('avatar')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('gender')
-                    ->formatStateUsing(fn (string $state): string => match($state) {
-                        'male' => '男',
-                        'female' => '女',
-                        default => $state,
-                    }),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('age')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('height')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('weight')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('hobbies')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('specialty')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('points')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->label('活跃度'),
+                Tables\Columns\TextColumn::make('coins')
+                    ->numeric()
+                    ->sortable()
+                    ->label('金币')
+                    ->prefix('💰'),
+                Tables\Columns\TextColumn::make('total_coins_spent')
+                    ->numeric()
+                    ->sortable()
+                    ->label('累计消费')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('total_coins_recharged')
+                    ->numeric()
+                    ->sortable()
+                    ->label('累计充值')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
                 Tables\Columns\IconColumn::make('is_admin')
-                    ->label('管理员')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('gender')
-                    ->options([
-                        'male' => '男',
-                        'female' => '女',
-                    ]),
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('是否激活'),
+                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
