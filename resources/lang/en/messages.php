@@ -61,6 +61,7 @@ return [
         'title' => 'Membership Center',
         'current_membership' => 'Current Membership',
         'no_membership' => 'No active membership',
+        'basic_member' => 'Basic Member',
         'expires_at' => 'Expires at',
         'days_remaining' => ':days days remaining',
         'available_plans' => 'Available Plans',
@@ -86,5 +87,7 @@ return [
         'no_subscription_records' => 'No subscription records',
         'purchase_success' => 'Successfully purchased :plan, :months month(s), valid until :ends_at',
         'purchase_note' => 'Purchased :plan, :months month(s), :days days, stacking mode',
+        'cancel_auto_renewal' => 'Cancel Auto Renewal',
+        'confirm_cancel' => 'Are you sure you want to cancel auto renewal?\n\nAfter cancellation, current membership benefits will continue until expiry, but will not auto renew.',
     ],
 ];

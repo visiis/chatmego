@@ -38,13 +38,16 @@
                             {{ __('messages.membership.days_remaining', ['days' => $membershipInfo['days_remaining']]) }}
                         </p>
                         <hr>
+                        <form id="cancel-form" action="{{ route('membership.cancel') }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
                         <button class="btn btn-outline-danger btn-sm" onclick="confirmCancel()">
-                            取消自动续费
+                            {{ __('messages.membership.cancel_auto_renewal') }}
                         </button>
                     @else
                         <div class="mb-3">
                             <span class="badge bg-secondary" style="font-size: 1.2rem; padding: 10px 20px;">
-                                普通会员
+                                {{ __('messages.membership.basic_member') }}
                             </span>
                         </div>
                         <p class="text-muted">
@@ -237,7 +240,7 @@
 
 <script>
 function confirmCancel() {
-    if (confirm('确定要取消会员自动续费吗？\n\n取消后，当前会员权益将持续到有效期结束，但不会自动续费。')) {
+    if (confirm('{{ __('messages.membership.confirm_cancel') }}')) {
         document.getElementById('cancel-form').submit();
     }
 }
@@ -261,10 +264,10 @@ function updatePrice(selectElement, basePrice, baseDays) {
     
     if (userCoins < totalPrice) {
         btn.disabled = true;
-        btn.innerHTML = '💰 金币不足';
+        btn.innerHTML = '💰 {{ __('messages.membership.insufficient_coins') }}';
     } else {
         btn.disabled = false;
-        btn.innerHTML = '🛒 立即购买';
+        btn.innerHTML = '🛒 {{ __('messages.membership.buy_now') }}';
     }
 }
 </script>

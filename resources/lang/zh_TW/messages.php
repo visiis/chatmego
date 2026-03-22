@@ -61,6 +61,7 @@ return [
         'title' => '會員中心',
         'current_membership' => '當前會員',
         'no_membership' => '暫無有效會員',
+        'basic_member' => '普通會員',
         'expires_at' => '到期時間',
         'days_remaining' => '剩餘 :days 天',
         'available_plans' => '可選會員',
@@ -86,5 +87,7 @@ return [
         'no_subscription_records' => '暫無訂閱記錄',
         'purchase_success' => '成功購買:plan，:months 個月，有效期至 :ends_at',
         'purchase_note' => '購買:plan，:months 個月，:days 天，疊加模式',
+        'cancel_auto_renewal' => '取消自動續費',
+        'confirm_cancel' => '確定要取消會員自動續費嗎？\n\n取消後，當前會員權益將持續到有效期結束，但不會自動續費。',
     ],
 ];
