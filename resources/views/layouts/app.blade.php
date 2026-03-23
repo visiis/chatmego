@@ -39,12 +39,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('friends') }}">{{ __('messages.nav.friends') }}</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">{{ __('messages.nav.points') }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('blank') }}">空白页</a>
-                        </li>
                     </ul>
 
                     <!-- Right Side Of Navbar -->
