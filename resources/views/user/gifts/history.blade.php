@@ -38,7 +38,7 @@
                                     <td class="ps-4">
                                         <div class="d-flex align-items-center">
                                             @if($redemption->gift->image)
-                                                <img src="{{ asset('storage/' . $redemption->gift->image) }}" 
+                                                <img src="{{ image_url($redemption->gift->image) }}" 
                                                      alt="{{ $redemption->gift->name }}" 
                                                      class="rounded me-3"
                                                      style="width: 40px; height: 40px; object-fit: cover;">

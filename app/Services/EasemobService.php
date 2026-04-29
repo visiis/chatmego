@@ -22,9 +22,15 @@ class EasemobService
         $this->clientId = config('easemob.client_id');
         $this->clientSecret = config('easemob.client_secret');
         $this->baseUrl = 'https://' . config('easemob.rest_api') . '/1.0';
-        
-        // 获取 Token
-        $this->token = $this->getToken();
+    }
+    
+    protected function getTokenOrNull()
+    {
+        try {
+            return $this->getToken();
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**
@@ -83,6 +89,8 @@ class EasemobService
      */
     public function registerUser(string $username, string $password, string $nickname = '')
     {
+        $token = $this->getToken();
+        
         // 从 appKey 中提取 orgName 和 appName
         $parts = explode('#', $this->appKey);
         $orgName = $parts[0];
@@ -92,7 +100,7 @@ class EasemobService
         $url = 'https://' . config('easemob.rest_api') . "/{$orgName}/{$appName}/users";
         
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->token,
+            'Authorization' => 'Bearer ' . $token,
             'Content-Type' => 'application/json',
         ])->withOptions([
             'verify' => false,
@@ -120,6 +128,8 @@ class EasemobService
      */
     public function sendPrivateMessage(string $from, string $to, string $message, string $type = 'txt')
     {
+        $token = $this->getToken();
+        
         // 从 appKey 中提取 orgName 和 appName
         $parts = explode('#', $this->appKey);
         $orgName = $parts[0];
@@ -129,7 +139,7 @@ class EasemobService
         $url = 'https://' . config('easemob.rest_api') . "/{$orgName}/{$appName}/messages";
         
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->token,
+            'Authorization' => 'Bearer ' . $token,
             'Content-Type' => 'application/json',
         ])->withOptions([
             'verify' => false,
@@ -165,6 +175,8 @@ class EasemobService
      */
     public function getUserInfo(string $username)
     {
+        $token = $this->getToken();
+        
         // 从 appKey 中提取 orgName 和 appName
         $parts = explode('#', $this->appKey);
         $orgName = $parts[0];
@@ -174,7 +186,7 @@ class EasemobService
         $url = 'https://' . config('easemob.rest_api') . "/{$orgName}/{$appName}/users/{$username}";
         
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->token,
+            'Authorization' => 'Bearer ' . $token,
         ])->withOptions([
             'verify' => false,
         ])->get($url);
@@ -195,6 +207,8 @@ class EasemobService
      */
     public function updateUserInfo(string $username, string $nickname)
     {
+        $token = $this->getToken();
+        
         // 从 appKey 中提取 orgName 和 appName
         $parts = explode('#', $this->appKey);
         $orgName = $parts[0];
@@ -204,7 +218,7 @@ class EasemobService
         $url = 'https://' . config('easemob.rest_api') . "/{$orgName}/{$appName}/users/{$username}";
         
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->token,
+            'Authorization' => 'Bearer ' . $token,
             'Content-Type' => 'application/json',
         ])->withOptions([
             'verify' => false,
@@ -227,6 +241,8 @@ class EasemobService
      */
     public function deleteUser(string $username)
     {
+        $token = $this->getToken();
+        
         // 从 appKey 中提取 orgName 和 appName
         $parts = explode('#', $this->appKey);
         $orgName = $parts[0];
@@ -236,7 +252,7 @@ class EasemobService
         $url = 'https://' . config('easemob.rest_api') . "/{$orgName}/{$appName}/users/{$username}";
         
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->token,
+            'Authorization' => 'Bearer ' . $token,
         ])->withOptions([
             'verify' => false,
         ])->delete($url);

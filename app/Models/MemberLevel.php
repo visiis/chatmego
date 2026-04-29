@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class MemberLevel extends Model
 {
+    protected $table = 'member_levels';
+    
     protected $fillable = [
         'name',
         'icon',
@@ -20,21 +22,20 @@ class MemberLevel extends Model
         'min_points' => 'integer',
         'max_points' => 'integer',
         'level_order' => 'integer',
-        'privileges' => 'array',
         'is_active' => 'boolean',
     ];
     
     /**
-     * 获取当前积分对应的等级
+     * 根据积分获取用户等级
      */
     public static function getLevelByPoints($points)
     {
-        return static::where('min_points', '<=', $points)
+        return static::where('is_active', true)
+            ->where('min_points', '<=', $points)
             ->where(function($query) use ($points) {
-                $query->whereNull('max_points')
-                      ->orWhere('max_points', '>=', $points);
+                $query->where('max_points', '>=', $points)
+                      ->orWhereNull('max_points');
             })
-            ->where('is_active', true)
             ->orderBy('level_order', 'desc')
             ->first();
     }

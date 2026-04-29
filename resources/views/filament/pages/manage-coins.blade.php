@@ -42,4 +42,16 @@
             </x-filament::button>
         </div>
     </x-filament::section>
-</x-filament::panels::page>
+
+    <x-filament::section class="mt-6">
+        <x-slot name="heading">
+            金币管理记录
+        </x-slot>
+
+        <x-slot name="description">
+            查看所有金币操作历史记录
+        </x-slot>
+
+        {{ $this->table }}
+    </x-filament::section>
+</x-filament-panels::page>

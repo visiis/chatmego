@@ -69,7 +69,7 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if($userGift->gift->image)
-                                                <img src="{{ asset('storage/' . $userGift->gift->image) }}" 
+                                                <img src="{{ image_url($userGift->gift->image) }}" 
                                                      alt="{{ $userGift->gift->name }}" 
                                                      class="rounded me-3"
                                                      style="width: 50px; height: 50px; object-fit: cover;">
@@ -114,7 +114,7 @@
                             <div class="card h-100 shadow-sm">
                                 <div class="gift-image-wrapper" style="position: relative; height: 150px; overflow: hidden;">
                                     @if($userGift->gift->image)
-                                        <img src="{{ asset('storage/' . $userGift->gift->image) }}" 
+                                        <img src="{{ image_url($userGift->gift->image) }}" 
                                              alt="{{ $userGift->gift->name }}" 
                                              style="width: 100%; height: 100%; object-fit: cover;">
                                     @else

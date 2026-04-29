@@ -15,11 +15,13 @@
                     <div class="card text-center shadow-sm h-100">
                         <div class="card-body">
                             <!-- 头像 -->
-                            <div class="mb-3">
+                            <div class="mb-3" style="width: 120px; height: 120px; margin: 0 auto;">
                                 @if($user->avatar)
-                                    <img src="{{ asset('storage/' . $user->avatar) }}" class="rounded-circle mx-auto d-block" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #e9ecef;" alt="{{ $user->name }}">
+                                    <div class="avatar-container w-100 h-100">
+                                        <img src="{{ avatar_url($user->avatar) }}" loading="lazy" class="lazy-image rounded-circle w-100 h-100 object-fit-cover" style="border: 3px solid #e9ecef;" alt="{{ $user->name }}">
+                                    </div>
                                 @else
-                                    <img src="{{ asset('images/default-avatar.svg') }}" class="rounded-circle mx-auto d-block" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #e9ecef;" alt="{{ $user->name }}">
+                                    <img src="{{ asset('images/default-avatar.svg') }}" class="rounded-circle w-100 h-100 object-fit-cover" style="border: 3px solid #e9ecef;" alt="{{ $user->name }}">
                                 @endif
                             </div>
                             

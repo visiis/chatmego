@@ -35,7 +35,7 @@
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center">
                                         @if($admin->avatar)
-                                            <img src="{{ asset('storage/' . $admin->avatar) }}" 
+                                            <img src="{{ avatar_url($admin->avatar) }}" 
                                                  alt="{{ $admin->name }}" 
                                                  class="rounded-circle me-3" 
                                                  style="width: 50px; height: 50px; object-fit: cover;">

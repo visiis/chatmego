@@ -15,6 +15,9 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    
+    <!-- Image Loading Styles -->
+    <link rel="stylesheet" href="{{ asset('css/image-loading.css') }}">
 </head>
 <body>
     <div id="app">
@@ -84,5 +87,8 @@
     </div>
     @stack('scripts')
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+    
+    <!-- Image Loading Script -->
+    <script src="{{ asset('js/image-loading.js') }}"></script>
 </body>
 </html>

@@ -5,6 +5,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\UploadController;
+
+require __DIR__.'/test-picbed.php';
 
 Route::get('/test-locale', function () {
     return response()->json([
@@ -123,4 +126,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/easemob/test-send-message', [App\Http\Controllers\EasemobTestController::class, 'testSendMessage']);
     Route::post('/easemob/test-user-info', [App\Http\Controllers\EasemobTestController::class, 'testGetUserInfo']);
     Route::post('/easemob/sync-users', [App\Http\Controllers\EasemobTestController::class, 'syncUsers']);
+    
+    // 图床上传路由
+    Route::post('/upload', [UploadController::class, 'upload'])->name('upload');
+    Route::post('/upload/url', [UploadController::class, 'uploadFromUrl'])->name('upload.url');
+    Route::delete('/upload', [UploadController::class, 'delete'])->name('upload.delete');
+    Route::get('/upload/list', [UploadController::class, 'listFiles'])->name('upload.list');
 });

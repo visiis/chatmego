@@ -60,6 +60,12 @@ return [
             'report' => false,
         ],
 
+        'picbed' => [
+            'driver' => 'picbed',
+            'api_url' => env('PICBED_API_URL', 'https://pic.chatmego.com'),
+            'api_key' => env('PICBED_API_KEY', ''),
+        ],
+
     ],
 
     /*

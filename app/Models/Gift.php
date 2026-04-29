@@ -21,6 +21,55 @@ class Gift extends Model
         'is_active' => 'boolean',
         'price' => 'integer',
     ];
+    
+    protected $appends = ['image_thumbnail'];
+    
+    public function getImageThumbnailAttribute(): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+        
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return preg_replace('/\\.(jpg|jpeg|png|webp)$/i', '.th.$1', $this->image);
+        }
+        
+        return asset('storage/' . $this->image);
+    }
+    
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->getImageForContext('detail');
+    }
+    
+    public function getImageForListAttribute(): ?string
+    {
+        return $this->getImageForContext('list');
+    }
+    
+    public function getImageForDetailAttribute(): ?string
+    {
+        return $this->getImageForContext('detail');
+    }
+    
+    public function getImageForPreviewAttribute(): ?string
+    {
+        return $this->getImageForContext('preview');
+    }
+    
+    protected function getImageForContext($context): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+        
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            $imageService = app(\App\Services\ImageService::class);
+            return $imageService->getImageUrl($this->image, $imageService->getSizeForContext($context));
+        }
+        
+        return asset('storage/' . $this->image);
+    }
 
     /**
      * 获取用户礼物

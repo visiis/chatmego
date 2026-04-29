@@ -32,7 +32,7 @@
                                 <div class="text-center mb-3">
                                     @if($user->avatar)
                                         <div class="ratio ratio-1x1 d-inline-block" style="width: 180px; height: 180px;">
-                                            <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+                                            <img src="{{ avatar_url($user->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
                                         </div>
                                     @else
                                         <div class="ratio ratio-1x1 d-inline-block" style="width: 180px; height: 180px;">

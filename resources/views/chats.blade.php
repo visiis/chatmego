@@ -42,8 +42,8 @@
                         <div class="d-flex align-items-center">
                             <div class="position-relative me-3">
                                 @if($friend->avatar)
-                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 60px; height: 60px;">
-                                        <img src="{{ asset('storage/' . $friend->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+                                    <div class="ratio ratio-1x1 d-inline-block avatar-container" style="width: 60px; height: 60px;">
+                                        <img src="{{ avatar_url($friend->avatar) }}" loading="lazy" class="lazy-image rounded-circle img-thumbnail w-100 h-100 object-fit-cover" alt="Avatar">
                                     </div>
                                 @else
                                     <div class="ratio ratio-1x1 d-inline-block" style="width: 60px; height: 60px;">

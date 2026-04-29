@@ -138,6 +138,47 @@ class User extends Authenticatable implements FilamentUser
     }
     
     /**
+     * 获取头像 URL（中等大小，用于详情页）
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->getAvatarForContext('detail');
+    }
+    
+    /**
+     * 获取列表用头像（小图）
+     */
+    public function getAvatarForListAttribute(): ?string
+    {
+        return $this->getAvatarForContext('list');
+    }
+    
+    /**
+     * 获取详情用头像（中图）
+     */
+    public function getAvatarForDetailAttribute(): ?string
+    {
+        return $this->getAvatarForContext('detail');
+    }
+    
+    /**
+     * 获取预览用头像（大图）
+     */
+    public function getAvatarForPreviewAttribute(): ?string
+    {
+        return $this->getAvatarForContext('preview');
+    }
+    
+    protected function getAvatarForContext($context): ?string
+    {
+        if (!$this->avatar) {
+            return asset('images/default-avatar.png');
+        }
+        
+        return avatar_url($this->avatar);
+    }
+    
+    /**
      * 检查是否是 VIP
      */
     public function isVip()

@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Gift;
 use App\Models\User;
+use App\Observers\GiftObserver;
 use App\Observers\UserObserver;
 use Illuminate\Support\ServiceProvider;
 use Filament\Support\Facades\FilamentView;
@@ -25,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // 注册 User Observer
         User::observe(UserObserver::class);
+        
+        // 注册 Gift Observer
+        Gift::observe(GiftObserver::class);
 
         FilamentView::registerRenderHook(
             'panels::head.end',

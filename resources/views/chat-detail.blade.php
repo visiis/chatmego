@@ -10,7 +10,7 @@
                         <div class="me-3">
                             @if($user->avatar)
                                 <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
-                                    <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+                                    <img src="{{ avatar_url($user->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
                                 </div>
                             @else
                                 <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
@@ -50,7 +50,7 @@
                                     <div class="me-2">
                                         @if($user->avatar)
                                             <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
-                                                <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+                                                <img src="{{ avatar_url($user->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
                                             </div>
                                         @else
                                             <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
@@ -90,7 +90,7 @@
                                     <div class="ms-2">
                                         @if(auth()->user()->avatar)
                                             <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
-                                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+                                                <img src="{{ avatar_url(auth()->user()->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
                                             </div>
                                         @else
                                             <div class="ratio ratio-1x1 d-inline-block" style="width: 40px; height: 40px;">
@@ -280,8 +280,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let isSendingMessage = false;
     
     // 头像 URL
-    const myAvatar = "{{ asset('storage/' . auth()->user()->avatar) }}";
-    const userAvatar = "{{ asset('storage/' . $user->avatar) }}";
+    const myAvatar = "{{ avatar_url(auth()->user()->avatar) }}";
+    const userAvatar = "{{ avatar_url($user->avatar) }}";
     const defaultAvatar = "{{ asset('images/default-avatar.svg') }}";
     
     // 检测是否为移动设备
@@ -564,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const giftData = JSON.parse(message.message);
                 messageContent = `
                     <div class="text-center">
-                        ${giftData.gift_image ? `<img src="/storage/${giftData.gift_image}" alt="${giftData.gift_name}" class="img-fluid rounded mb-2" style="max-height: 150px;">` : ''}
+                        ${giftData.gift_image ? `<img src="${giftData.gift_image.startsWith('http') ? giftData.gift_image : '/storage/' + giftData.gift_image}" alt="${giftData.gift_name}" class="img-fluid rounded mb-2" style="max-height: 150px;">` : ''}
                         <div class="bg-white bg-opacity-25 rounded p-2">
                             <i class="fas fa-gift"></i> ${giftData.gift_name}
                         </div>
@@ -604,7 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const giftData = JSON.parse(message.message);
                 messageContent = `
                     <div class="text-center">
-                        ${giftData.gift_image ? `<img src="/storage/${giftData.gift_image}" alt="${giftData.gift_name}" class="img-fluid rounded mb-2" style="max-height: 150px;">` : ''}
+                        ${giftData.gift_image ? `<img src="${giftData.gift_image.startsWith('http') ? giftData.gift_image : '/storage/' + giftData.gift_image}" alt="${giftData.gift_name}" class="img-fluid rounded mb-2" style="max-height: 150px;">` : ''}
                         <div class="bg-light rounded p-2">
                             <i class="fas fa-gift text-danger"></i> ${giftData.gift_name}
                         </div>
@@ -703,8 +703,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let html = '';
         gifts.forEach(gift => {
-            const giftImage = gift.image 
-                ? `<img src="${storageBaseUrl}/${gift.image}" alt="${gift.name}" class="img-fluid rounded mb-2" style="height: 80px; object-fit: cover;">`
+            const giftImage = gift.image_thumbnail || gift.image 
+                ? `<img src="${gift.image_thumbnail || gift.image}" alt="${gift.name}" class="img-fluid rounded mb-2" style="height: 80px; object-fit: cover;">`
                 : `<div class="bg-light rounded mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-gift fa-2x text-muted"></i></div>`;
             
             const priceText = gift.price_type === 'activity_points' 

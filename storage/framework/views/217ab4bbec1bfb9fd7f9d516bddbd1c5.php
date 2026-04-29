@@ -15,6 +15,9 @@
 
     <!-- Scripts -->
     <?php echo app('Illuminate\Foundation\Vite')(['resources/sass/app.scss', 'resources/js/app.js']); ?>
+    
+    <!-- Image Loading Styles -->
+    <link rel="stylesheet" href="<?php echo e(asset('css/image-loading.css')); ?>">
 </head>
 <body>
     <div id="app">
@@ -38,12 +41,6 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo e(route('friends')); ?>"><?php echo e(__('messages.nav.friends')); ?></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#"><?php echo e(__('messages.nav.points')); ?></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo e(route('blank')); ?>">空白页</a>
                         </li>
                     </ul>
 
@@ -74,14 +71,10 @@
                                     <a class="dropdown-item" href="<?php echo e(route('user.gifts.index')); ?>"><?php echo e(__('messages.gifts.nav_gifts')); ?></a>
                                     <a class="dropdown-item" href="<?php echo e(route('profile')); ?>"><?php echo e(__('messages.nav.profile')); ?></a>
                                     <a class="dropdown-item" href="<?php echo e(route('settings')); ?>"><?php echo e(__('messages.nav.settings')); ?></a>
-                                    <a class="dropdown-item" href="<?php echo e(route('logout')); ?>" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <a class="dropdown-item" href="<?php echo e(route('logout')); ?>">
                                         <?php echo e(__('messages.nav.logout')); ?>
 
                                     </a>
-
-                                    <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" class="d-none">
-                                        <?php echo csrf_field(); ?>
-                                    </form>
                                 </div>
                             </li>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -95,6 +88,10 @@
         </main>
     </div>
     <?php echo $__env->yieldPushContent('scripts'); ?>
+    <script src="<?php echo e(asset('js/bootstrap.bundle.min.js')); ?>"></script>
+    
+    <!-- Image Loading Script -->
+    <script src="<?php echo e(asset('js/image-loading.js')); ?>"></script>
 </body>
 </html>
 <?php /**PATH /Volumes/MyWork/APP/ChatMeGo/resources/views/layouts/app.blade.php ENDPATH**/ ?>

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\GiftResource\Pages;
 use App\Filament\Resources\GiftResource\RelationManagers;
 use App\Models\Gift;
+use App\Services\PicBedService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -61,7 +62,20 @@ class GiftResource extends Resource
                         Forms\Components\FileUpload::make('image')
                             ->image()
                             ->directory('gifts')
-                            ->label('礼物图片'),
+                            ->label('礼物图片')
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                if ($state && !str_starts_with($state, 'http')) {
+                                    $path = storage_path('app/public/' . $state);
+                                    if (file_exists($path)) {
+                                        $picBedService = new PicBedService();
+                                        $result = $picBedService->upload($path, 'gifts');
+                                        if ($result['success']) {
+                                            $set('image', $result['url']);
+                                            unlink($path);
+                                        }
+                                    }
+                                }
+                            }),
                         Forms\Components\Textarea::make('description')
                             ->columnSpanFull()
                             ->rows(3)
@@ -80,7 +94,7 @@ class GiftResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->sortable(),
-                Tables\Columns\ImageColumn::make('image')
+                Tables\Columns\ImageColumn::make('image_for_list')
                     ->label('图片'),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()

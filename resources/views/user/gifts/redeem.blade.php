@@ -10,7 +10,7 @@
             <div class="mb-6 pb-6 border-b">
                 <div class="flex items-center space-x-4">
                     @if($userGift->gift->image)
-                        <img src="{{ asset('storage/' . $userGift->gift->image) }}" 
+                        <img src="{{ image_url($userGift->gift->image) }}" 
                              alt="{{ $userGift->gift->name }}" 
                              class="w-24 h-24 object-cover rounded">
                     @else

@@ -30,47 +30,44 @@
             </a>
         </div>
     @else
-        <div class="row">
-            @foreach($friends as $friend)
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card shadow-sm">
-                        <div class="card-body text-center">
-                            <!-- 头像 -->
-                            <div class="mb-3">
-                                @if($friend->avatar)
-                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 150px; height: 150px;">
-                                        <img src="{{ asset('storage/' . $friend->avatar) }}" alt="Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                @foreach($friends as $friend)
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3 text-center">
+                                    @if($friend->avatar)
+                                        <img src="{{ avatar_url($friend->avatar) }}" alt="Avatar" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                                    @else
+                                        <img src="{{ asset('images/default-avatar.svg') }}" alt="Default Avatar" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                                    @endif
+                                </div>
+                                <div class="col-md-5">
+                                    <h5 class="mb-0">{{ $friend->name }}</h5>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ route('chat.show', $friend->id) }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-comment"></i> 发消息
+                                        </a>
+                                        <a href="{{ route('profile', $friend->id) }}" class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-user"></i> 资料
+                                        </a>
+                                        <form action="{{ route('friends.remove', $friend->id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('确定要删除这位好友吗？')">
+                                                <i class="fas fa-user-minus"></i> 删除
+                                            </button>
+                                        </form>
                                     </div>
-                                @else
-                                    <div class="ratio ratio-1x1 d-inline-block" style="width: 150px; height: 150px;">
-                                        <img src="{{ asset('images/default-avatar.svg') }}" alt="Default Avatar" class="rounded-circle img-thumbnail w-100 h-100 object-fit-cover">
-                                    </div>
-                                @endif
-                            </div>
-
-                            <!-- 名字 -->
-                            <h3 class="card-title mb-4">{{ $friend->name }}</h3>
-
-                            <!-- 按钮 -->
-                            <div class="d-grid gap-2">
-                                <a href="{{ route('chat.show', $friend->id) }}" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-comment"></i> 发消息
-                                </a>
-                                <a href="{{ route('profile', $friend->id) }}" class="btn btn-secondary btn-lg">
-                                    <i class="fas fa-user"></i> 资料
-                                </a>
-                                <form action="{{ route('friends.remove', $friend->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger btn-lg" onclick="return confirm('确定要删除这位好友吗？')">
-                                        <i class="fas fa-user-minus"></i> 删除
-                                    </button>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
     @endif
 </div>
