@@ -19,11 +19,11 @@ class HomeController extends Controller
     }
 
     /**
-     * Show the users list.
+     * Show the users list with search and filter options.
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
+    public function index(Request $request)
     {
         $authUserId = auth()->id();
         
@@ -41,10 +41,54 @@ class HomeController extends Controller
             ->unique()
             ->toArray();
         
+        // 获取筛选条件
+        $search = $request->input('search');
+        $gender = $request->input('gender');
+        $minAge = $request->input('min_age');
+        $maxAge = $request->input('max_age');
+        $minHeight = $request->input('min_height');
+        $maxHeight = $request->input('max_height');
+        $memberLevel = $request->input('member_level');
+        
         // 获取用户列表（排除自己和已是好友的用户）
         $users = User::where('id', '!=', $authUserId)
-                    ->whereNotIn('id', $friendIds)
-                    ->get();
+                    ->whereNotIn('id', $friendIds);
+        
+        // 搜索关键词筛选（用户名、个性签名）
+        if (!empty($search)) {
+            $users->where(function($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('love_declaration', 'like', '%' . $search . '%');
+            });
+        }
+        
+        // 性别筛选
+        if (!empty($gender)) {
+            $users->where('gender', $gender);
+        }
+        
+        // 年龄范围筛选
+        if (!empty($minAge)) {
+            $users->where('age', '>=', $minAge);
+        }
+        if (!empty($maxAge)) {
+            $users->where('age', '<=', $maxAge);
+        }
+        
+        // 身高范围筛选
+        if (!empty($minHeight)) {
+            $users->where('height', '>=', $minHeight);
+        }
+        if (!empty($maxHeight)) {
+            $users->where('height', '<=', $maxHeight);
+        }
+        
+        // 会员等级筛选
+        if (!empty($memberLevel)) {
+            $users->where('member_level', $memberLevel);
+        }
+        
+        $users = $users->get();
         
         // 为每个用户添加好友状态信息
         foreach ($users as $user) {
@@ -89,6 +133,6 @@ class HomeController extends Controller
             })->values()->toArray()
         ]);
         
-        return view('users', compact('users'));
+        return view('users', compact('users', 'search', 'gender', 'minAge', 'maxAge', 'minHeight', 'maxHeight', 'memberLevel'));
     }
 }

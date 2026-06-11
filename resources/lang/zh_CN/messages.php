@@ -6,7 +6,7 @@ return [
         'chat' => '聊天',
         'points' => '金币',
         'activity_points' => '活跃度',
-        'profile' => '个人资料',
+        'profile' => '个人主页',
         'settings' => '设置',
         'logout' => '登出',
         'friends' => '好友',
@@ -49,7 +49,7 @@ return [
     ],
     'users' => [
         'title' => '交友列表',
-        'view_profile' => '查看详情',
+        'view_profile' => '查看主页',
         'no_users' => '暂无会员信息',
     ],
     'settings' => [

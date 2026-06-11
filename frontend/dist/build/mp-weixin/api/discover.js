@@ -1,0 +1,1 @@
+"use strict";const e=require("../utils/request.js");exports.dislikeUser=function(s){return e.post(`/api/users/${s}/dislike`)},exports.getMatches=function(){return e.get("/api/matches")},exports.getRecommendUsers=function(s){return e.get("/api/discover/users",s)},exports.likeUser=function(s){return e.post(`/api/users/${s}/like`)};

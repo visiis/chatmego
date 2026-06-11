@@ -1,6 +1,79 @@
 <?php $__env->startSection('content'); ?>
-<div class="container py-5">
-    <h2 class="text-center mb-4"><?php echo e(__('messages.users.title')); ?></h2>
+<div class="container">
+    <h1 class="text-center mb-4">
+        <i class="fas fa-search"></i> 发现好友
+    </h1>
+    
+    <!-- 搜索和筛选区域 -->
+    <div class="card mb-4 shadow-sm rounded-xl overflow-hidden">
+        <div class="card-body p-4">
+            <form method="GET" action="<?php echo e(route('home')); ?>" class="row align-items-end gap-3">
+                <!-- 搜索框 -->
+                <div class="col-md-3">
+                    <label class="form-label text-gray-600 font-medium mb-2" style="font-size: 14px;">搜索</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-gray-100 border-gray-200" style="height: 40px;">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control" placeholder="用户名或简介..." value="<?php echo e($search ?? ''); ?>" style="height: 40px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <!-- 性别筛选 -->
+                <div class="col-md-1.5">
+                    <label class="form-label text-gray-600 font-medium mb-2" style="font-size: 14px;">性别</label>
+                    <select name="gender" class="form-select" style="height: 40px; font-size: 14px;">
+                        <option value="">全部</option>
+                        <option value="male" <?php echo e(($gender ?? '') == 'male' ? 'selected' : ''); ?>>男</option>
+                        <option value="female" <?php echo e(($gender ?? '') == 'female' ? 'selected' : ''); ?>>女</option>
+                    </select>
+                </div>
+                
+                <!-- 年龄范围 -->
+                <div class="col-md-2">
+                    <label class="form-label text-gray-600 font-medium mb-2" style="font-size: 14px;">年龄</label>
+                    <div class="d-flex items-center gap-1" style="height: 40px;">
+                        <input type="number" name="min_age" class="form-control" placeholder="最小" min="18" max="100" value="<?php echo e($minAge ?? ''); ?>" style="height: 40px; font-size: 14px; flex: 1;">
+                        <span class="text-gray-400 px-1" style="font-size: 14px;">-</span>
+                        <input type="number" name="max_age" class="form-control" placeholder="最大" min="18" max="100" value="<?php echo e($maxAge ?? ''); ?>" style="height: 40px; font-size: 14px; flex: 1;">
+                    </div>
+                </div>
+                
+                <!-- 身高范围 -->
+                <div class="col-md-2">
+                    <label class="form-label text-gray-600 font-medium mb-2" style="font-size: 14px;">身高(cm)</label>
+                    <div class="d-flex items-center gap-1" style="height: 40px;">
+                        <input type="number" name="min_height" class="form-control" placeholder="最小" min="100" max="250" value="<?php echo e($minHeight ?? ''); ?>" style="height: 40px; font-size: 14px; flex: 1;">
+                        <span class="text-gray-400 px-1" style="font-size: 14px;">-</span>
+                        <input type="number" name="max_height" class="form-control" placeholder="最大" min="100" max="250" value="<?php echo e($maxHeight ?? ''); ?>" style="height: 40px; font-size: 14px; flex: 1;">
+                    </div>
+                </div>
+                
+                <!-- 会员等级 -->
+                <div class="col-md-1.5">
+                    <label class="form-label text-gray-600 font-medium mb-2" style="font-size: 14px;">会员</label>
+                    <select name="member_level" class="form-select" style="height: 40px; font-size: 14px;">
+                        <option value="">全部</option>
+                        <option value="1" <?php echo e(($memberLevel ?? '') == '1' ? 'selected' : ''); ?>>VIP1</option>
+                        <option value="2" <?php echo e(($memberLevel ?? '') == '2' ? 'selected' : ''); ?>>VIP2</option>
+                        <option value="3" <?php echo e(($memberLevel ?? '') == '3' ? 'selected' : ''); ?>>VIP3</option>
+                        <option value="4" <?php echo e(($memberLevel ?? '') == '4' ? 'selected' : ''); ?>>VIP4</option>
+                        <option value="5" <?php echo e(($memberLevel ?? '') == '5' ? 'selected' : ''); ?>>VIP5</option>
+                    </select>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1" style="height: 40px; font-size: 14px; font-weight: 500;">
+                        <i class="fas fa-filter me-1"></i> 筛选
+                    </button>
+                    <a href="<?php echo e(route('home')); ?>" class="btn btn-outline-gray-300 flex-1" style="height: 40px; font-size: 14px;">
+                        <i class="fas fa-undo me-1"></i> 重置
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
     
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($users->isEmpty()): ?>
         <div class="alert alert-info text-center">
@@ -62,8 +135,8 @@
                             <!-- 操作按钮 -->
                             <div class="mt-4">
                                 <div class="d-grid gap-2">
-                                    <a href="<?php echo e(route('profile', $user->id)); ?>" class="btn btn-primary btn-block">
-                                        <?php echo e(__('messages.users.view_profile')); ?>
+                                    <a href="<?php echo e(route('profile.show', $user->id)); ?>" class="btn btn-primary btn-block">
+                                        <i class="fas fa-home"></i> <?php echo e(__('messages.users.view_profile')); ?>
 
                                     </a>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->id() != $user->id): ?>

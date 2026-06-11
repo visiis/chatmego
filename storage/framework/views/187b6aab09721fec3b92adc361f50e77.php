@@ -703,8 +703,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let html = '';
         gifts.forEach(gift => {
-            const giftImage = gift.image 
-                ? `<img src="${gift.image.startsWith('http') ? gift.image.replace(/\\.(jpg|jpeg|png|webp)$/i, '.th.$1') : storageBaseUrl + '/' + gift.image}" alt="${gift.name}" class="img-fluid rounded mb-2" style="height: 80px; object-fit: cover;">`
+            const giftImage = gift.image_thumbnail || gift.image 
+                ? `<img src="${gift.image_thumbnail || gift.image}" alt="${gift.name}" class="img-fluid rounded mb-2" style="height: 80px; object-fit: cover;">`
                 : `<div class="bg-light rounded mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-gift fa-2x text-muted"></i></div>`;
             
             const priceText = gift.price_type === 'activity_points' 

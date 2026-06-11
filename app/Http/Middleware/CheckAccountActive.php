@@ -17,11 +17,12 @@ class CheckAccountActive
     {
         // 检查用户是否已登录且账户未激活
         if (auth()->check() && !auth()->user()->is_active) {
-            // 允许访问待激活页面、退出登录和聊天页面
+            // 允许访问待激活页面、退出登录、聊天页面和卡片页面
             if ($request->routeIs('account.pending') || 
                 $request->routeIs('logout') || 
                 $request->routeIs('chat.show') ||
-                $request->routeIs('chat.send')) {
+                $request->routeIs('chat.send') ||
+                $request->routeIs('discover.cards')) {
                 return $next($request);
             }
             

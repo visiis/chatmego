@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#f5f5f5" rx="8"/>
+  <text x="200" y="140" text-anchor="middle" fill="#999" font-family="Arial, sans-serif" font-size="16">暂无图片</text>
+  <text x="200" y="165" text-anchor="middle" fill="#ccc" font-family="Arial, sans-serif" font-size="14">点击上传图片</text>
+</svg>

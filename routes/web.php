@@ -6,6 +6,9 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\StatusController;
+use App\Http\Controllers\DiscoverController;
 
 require __DIR__.'/test-picbed.php';
 
@@ -52,7 +55,7 @@ Route::post('password/reset', [App\Http\Controllers\Auth\ForgotPasswordControlle
 Route::post('password/email', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('password/reset', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
 Route::get('password/reset/{token}', [App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset.token');
-Route::post('password/confirm', [App\Http\Controllers\Auth\ConfirmPasswordController::class, 'confirm'])->name('password.confirm');
+Route::post('password/confirm', [App\Http\Controllers\Auth\ConfirmPasswordController::class, 'confirm'])->name('password.confirm.submit');
 Route::get('password/confirm', [App\Http\Controllers\Auth\ConfirmPasswordController::class, 'showConfirmForm'])->name('password.confirm');
 Route::get('verify', [App\Http\Controllers\Auth\VerificationController::class, 'show'])->name('verification.notice');
 Route::get('verify/{id}/{hash}', [App\Http\Controllers\Auth\VerificationController::class, 'verify'])->name('verification.verify');
@@ -71,10 +74,24 @@ Route::get('/account/pending', [App\Http\Controllers\AccountPendingController::c
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/profile/{id?}', [UserController::class, 'profile'])->name('profile');
+Route::get('/profile', function() {
+    if (auth()->check()) {
+        return redirect()->route('profile.show', auth()->id());
+    }
+    return redirect()->route('login');
+})->name('profile');
+Route::get('/profile/{userId}', [StatusController::class, 'index'])->name('profile.show');
+Route::get('/profile/{userId}/section/{section}', [StatusController::class, 'section'])->name('profile.section');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
     Route::match(['put', 'post'], '/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
+    
+    // 说说相关路由
+    Route::post('/status', [StatusController::class, 'store'])->name('status.store');
+    Route::post('/status/{statusId}/like', [StatusController::class, 'like'])->name('status.like');
+    Route::post('/status/{statusId}/comment', [StatusController::class, 'comment'])->name('status.comment');
+    Route::delete('/status/{statusId}', [StatusController::class, 'destroy'])->name('status.destroy');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
     
@@ -132,4 +149,22 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/upload/url', [UploadController::class, 'uploadFromUrl'])->name('upload.url');
     Route::delete('/upload', [UploadController::class, 'delete'])->name('upload.delete');
     Route::get('/upload/list', [UploadController::class, 'listFiles'])->name('upload.list');
+    
+    // 相册相关路由
+    Route::get('/album/create', [AlbumController::class, 'create'])->name('album.create');
+    Route::post('/album', [AlbumController::class, 'store'])->name('album.store');
+    Route::get('/album/{userId?}', [AlbumController::class, 'index'])->name('album.index');
+    Route::get('/album/{albumId}/edit', [AlbumController::class, 'edit'])->name('album.edit');
+    Route::put('/album/{albumId}', [AlbumController::class, 'update'])->name('album.update');
+    Route::delete('/album/{albumId}', [AlbumController::class, 'destroy'])->name('album.destroy');
+    Route::post('/album/{albumId}/upload', [AlbumController::class, 'uploadPhoto'])->name('album.upload');
+    Route::post('/album/{albumId}/upload-multiple', [AlbumController::class, 'uploadPhotos'])->name('album.upload.multiple');
+    Route::delete('/album/photo/{photoId}', [AlbumController::class, 'deletePhoto'])->name('album.photo.delete');
+    Route::post('/album/{albumId}/purchase', [AlbumController::class, 'purchase'])->name('album.purchase');
+    Route::get('/album/{albumId}/check-purchase', [AlbumController::class, 'checkPurchase'])->name('album.check-purchase');
+    Route::get('/album/{albumId}/photos', [AlbumController::class, 'getPhotos'])->name('album.photos');
+    Route::get('/album/{userId}/{albumId}', [AlbumController::class, 'show'])->name('album.show');
 });
+
+// 探探模式卡片页面（不需要登录）
+Route::get('/cards', [DiscoverController::class, 'cards'])->name('discover.cards');

@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Friendship;
 use App\Models\UserGift;
 use App\Models\Gift;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -127,6 +128,9 @@ class ChatController extends Controller
             'type' => $request->type,
             'attachment_url' => $request->attachment_url,
         ]);
+
+        // 发送消息通知
+        NotificationService::sendMessage($user->id, $authUser->id, $request->message);
 
         return response()->json([
             'success' => true,

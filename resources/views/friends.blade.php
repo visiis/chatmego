@@ -51,8 +51,8 @@
                                         <a href="{{ route('chat.show', $friend->id) }}" class="btn btn-primary btn-sm">
                                             <i class="fas fa-comment"></i> 发消息
                                         </a>
-                                        <a href="{{ route('profile', $friend->id) }}" class="btn btn-secondary btn-sm">
-                                            <i class="fas fa-user"></i> 资料
+                                        <a href="{{ route('profile.show', $friend->id) }}" class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-user"></i> 主页
                                         </a>
                                         <form action="{{ route('friends.remove', $friend->id) }}" method="POST">
                                             @csrf

@@ -17,8 +17,10 @@ class UserGiftController extends Controller
     {
         $user = auth()->user();
         
-        // 获取用户的礼物
-        $allUserGifts = UserGift::with('gift')
+        // 获取用户的礼物（按礼物排序序号排序）
+        $allUserGifts = UserGift::with(['gift' => function ($query) {
+            $query->orderBy('sort_order', 'asc');
+        }])
             ->where('user_id', $user->id)
             ->where('is_redeemed', false)
             ->where('quantity', '>', 0)

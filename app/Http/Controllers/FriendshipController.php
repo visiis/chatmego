@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Friendship;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -53,6 +54,9 @@ class FriendshipController extends Controller
             'friend_id' => $user->id,
             'status' => 'pending',
         ]);
+
+        // 发送通知
+        NotificationService::sendFriendRequest($user->id, $authUser->id);
 
         return response()->json(['success' => true, 'message' => '好友请求已发送']);
     }

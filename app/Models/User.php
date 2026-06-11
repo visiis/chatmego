@@ -253,4 +253,12 @@ class User extends Authenticatable implements FilamentUser
         // 本地测试：允许ID=1和is_admin=true的用户登录
         return $this->id === 1 || $this->is_admin === true;
     }
+    
+    /**
+     * 获取用户的相册
+     */
+    public function albums()
+    {
+        return $this->hasMany(UserAlbum::class)->where('status', true);
+    }
 }

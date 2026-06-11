@@ -95,6 +95,9 @@
 /* 头像加载效果 */
 .avatar-container {
     position: relative;
+    width: 120px;
+    height: 120px;
+    aspect-ratio: 1;
 }
 
 .avatar-container .lazy-image {

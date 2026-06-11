@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\GiftResource\Pages;
 use App\Filament\Resources\GiftResource\RelationManagers;
 use App\Models\Gift;
-use App\Services\PicBedService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -59,23 +58,21 @@ class GiftResource extends Resource
                     
                 Forms\Components\Section::make('详细信息')
                     ->schema([
+                        Forms\Components\TextInput::make('image')
+                            ->label('图片URL')
+                            ->disabled()
+                            ->dehydrated(false),
                         Forms\Components\FileUpload::make('image')
                             ->image()
-                            ->directory('gifts')
-                            ->label('礼物图片')
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                if ($state && !str_starts_with($state, 'http')) {
-                                    $path = storage_path('app/public/' . $state);
-                                    if (file_exists($path)) {
-                                        $picBedService = new PicBedService();
-                                        $result = $picBedService->upload($path, 'gifts');
-                                        if ($result['success']) {
-                                            $set('image', $result['url']);
-                                            unlink($path);
-                                        }
-                                    }
-                                }
-                            }),
+                            ->label('上传图片')
+                            ->imagePreviewHeight('150')
+                            ->helperText('上传新图片会替换原有图片')
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('sort_order')
+                            ->numeric()
+                            ->minValue(1)
+                            ->default(fn () => Gift::max('sort_order') + 1)
+                            ->label('排序序号'),
                         Forms\Components\Textarea::make('description')
                             ->columnSpanFull()
                             ->rows(3)
@@ -88,13 +85,35 @@ class GiftResource extends Resource
             ]);
     }
 
+    public static function convertToThumbnailUrl($url): string
+    {
+        if (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        $parsed = parse_url($url);
+        $path = $parsed['path'] ?? '';
+
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        $filename = pathinfo($path, PATHINFO_FILENAME);
+        $dirname = dirname($path);
+
+        $newPath = $dirname . '/' . $filename . '.th.' . $extension;
+
+        return $parsed['scheme'] . '://' . $parsed['host'] . $newPath;
+    }
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->sortable(),
-                Tables\Columns\ImageColumn::make('image_for_list')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('sort_order')
+                    ->sortable()
+                    ->label('排序序号'),
+                Tables\Columns\ImageColumn::make('image')
                     ->label('图片'),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
@@ -109,11 +128,6 @@ class GiftResource extends Resource
                     ->label('类型'),
                 Tables\Columns\TextColumn::make('price_type')
                     ->badge()
-                    ->color(fn (string $state): string => match($state) {
-                        'activity_points' => 'info',
-                        'coins' => 'warning',
-                        default => 'gray',
-                    })
                     ->formatStateUsing(fn (string $state): string => match($state) {
                         'activity_points' => '活跃度',
                         'coins' => '金币',
@@ -125,26 +139,20 @@ class GiftResource extends Resource
                     ->label('价格'),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
-                    ->label('启用'),
+                    ->label('是否启用'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->label('创建时间'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label('更新时间'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
-                    ->options([
-                        'virtual' => '虚拟礼物',
-                        'physical' => '实体礼物',
-                    ]),
-                Tables\Filters\SelectFilter::make('price_type')
-                    ->options([
-                        'activity_points' => '活跃度',
-                        'coins' => '金币',
-                    ]),
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('是否启用'),
+                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

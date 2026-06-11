@@ -18,6 +18,12 @@ class UserController extends Controller
         return view('profile', compact('user'));
     }
 
+    public function editProfile()
+    {
+        $user = auth()->user();
+        return view('settings', compact('user'));
+    }
+
     public function updateProfile(Request $request)
     {
         $validated = $request->validate([
@@ -73,6 +79,6 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return redirect()->back()->with('success', '个人资料更新成功');
+        return response()->json(['success' => true, 'message' => '个人资料更新成功']);
     }
 }

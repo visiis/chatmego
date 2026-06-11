@@ -1,0 +1,1 @@
+"use strict";const t=require("../utils/request.js");exports.login=function(r,e){return t.post("/api/auth/login",{phone:r,password:e})},exports.register=function(r){return t.post("/api/auth/register",r)};
