@@ -118,6 +118,7 @@ export interface ApiResponse<T = any> {
 
 export interface LoginResponse {
   user: User
+  token: string
   im: {
     account: string
     token: string

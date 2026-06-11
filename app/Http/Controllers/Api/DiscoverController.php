@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserAlbum;
 use Illuminate\Support\Facades\DB;
 
 class DiscoverController extends Controller
@@ -16,7 +17,7 @@ class DiscoverController extends Controller
         $user = auth()->guard('api')->user();
         
         if (!$user) {
-            return response()->json(['message' => '未授权'], 401);
+            return response()->json(['code' => 401, 'message' => '未授权']);
         }
 
         // 获取未喜欢/未跳过的用户
@@ -34,23 +35,64 @@ class DiscoverController extends Controller
             ->get();
 
         $result = $users->map(function ($item) {
+            // 获取用户相册照片
+            $albums = UserAlbum::where('user_id', $item->id)
+                ->where('status', true)
+                ->get();
+            
+            $photos = [];
+            foreach ($albums as $album) {
+                foreach ($album->photos as $photo) {
+                    if (!$photo->is_premium) {
+                        $photos[] = [
+                            'id' => $photo->id,
+                            'url' => $photo->photo_url,
+                            'blur_url' => '',
+                            'is_main' => $photo->is_cover ? 1 : 0,
+                            'is_premium' => $photo->is_premium,
+                            'points_price' => $photo->points_price ?: 0
+                        ];
+                    }
+                }
+            }
+
+            // 如果没有相册照片，使用默认图片
+            if (empty($photos)) {
+                $photos = [
+                    [
+                        'id' => 0,
+                        'url' => $item->avatar_url ?: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=beautiful%20portrait%20dating%20app&image_size=portrait_16_9',
+                        'blur_url' => '',
+                        'is_main' => 1,
+                        'is_premium' => 0,
+                        'points_price' => 0
+                    ]
+                ];
+            }
+
             return [
                 'id' => $item->id,
-                'name' => $item->name,
-                'avatar' => $item->avatar_url,
-                'gender' => $item->gender,
+                'phone' => $item->phone,
+                'nickname' => $item->name,
+                'avatar' => $item->avatar_url ?: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20cute&image_size=square',
+                'gender' => $item->gender === 'male' ? 1 : ($item->gender === 'female' ? 2 : 0),
+                'birthday' => $item->birthday,
                 'age' => $item->age,
                 'height' => $item->height,
+                'weight' => $item->weight,
                 'hobbies' => $item->hobbies,
-                'specialty' => $item->specialty,
                 'love_declaration' => $item->love_declaration,
+                'location' => $item->location ?: '附近',
+                'is_vip' => $item->hasActiveMembership() ? 1 : 0,
+                'photos' => $photos,
                 'distance' => rand(1, 10) . 'km'
             ];
         });
 
         return response()->json([
+            'code' => 200,
             'message' => 'success',
-            'data' => $result
+            'data' => ['users' => $result]
         ]);
     }
 
@@ -90,17 +132,19 @@ class DiscoverController extends Controller
             );
 
             return response()->json([
+                'code' => 200,
                 'message' => '匹配成功！',
                 'data' => [
-                    'matched' => true,
-                    'user' => $this->formatUser(User::find($userId))
+                    'is_match' => true,
+                    'match' => $this->formatUser(User::find($userId))
                 ]
             ]);
         }
 
         return response()->json([
+            'code' => 200,
             'message' => '已喜欢',
-            'data' => ['matched' => false]
+            'data' => ['is_match' => false]
         ]);
     }
 
@@ -126,6 +170,7 @@ class DiscoverController extends Controller
         );
 
         return response()->json([
+            'code' => 200,
             'message' => '已跳过',
             'data' => []
         ]);
@@ -157,9 +202,9 @@ class DiscoverController extends Controller
         $result = $users->map(function ($item) {
             return [
                 'id' => $item->id,
-                'name' => $item->name,
-                'avatar' => $item->avatar_url,
-                'gender' => $item->gender,
+                'nickname' => $item->name,
+                'avatar' => $item->avatar_url ?: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20cute&image_size=square',
+                'gender' => $item->gender === 'male' ? 1 : ($item->gender === 'female' ? 2 : 0),
                 'age' => $item->age,
                 'last_message' => '来聊聊吧',
                 'last_time' => '刚刚'
@@ -167,22 +212,24 @@ class DiscoverController extends Controller
         });
 
         return response()->json([
+            'code' => 200,
             'message' => 'success',
-            'data' => $result
+            'data' => ['matches' => $result]
         ]);
     }
 
     protected function formatUser($user)
     {
+        if (!$user) return null;
+        
         return [
             'id' => $user->id,
-            'name' => $user->name,
-            'avatar' => $user->avatar_url,
-            'gender' => $user->gender,
+            'nickname' => $user->name,
+            'avatar' => $user->avatar_url ?: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20cute&image_size=square',
+            'gender' => $user->gender === 'male' ? 1 : ($user->gender === 'female' ? 2 : 0),
             'age' => $user->age,
             'height' => $user->height,
             'hobbies' => $user->hobbies,
-            'specialty' => $user->specialty,
             'love_declaration' => $user->love_declaration
         ];
     }

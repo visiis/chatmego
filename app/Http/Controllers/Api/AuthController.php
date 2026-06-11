@@ -12,12 +12,12 @@ use Illuminate\Support\Str;
 class AuthController extends Controller
 {
     /**
-     * 手机号密码登录
+     * 邮箱密码登录
      */
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string',
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
@@ -25,10 +25,10 @@ class AuthController extends Controller
             return response()->json(['message' => '参数错误', 'errors' => $validator->errors()], 400);
         }
 
-        $user = User::where('phone', $request->phone)->first();
+        $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => '手机号或密码错误'], 401);
+            return response()->json(['message' => '邮箱或密码错误'], 401);
         }
 
         if ($user->status === 'pending') {
@@ -43,6 +43,7 @@ class AuthController extends Controller
         $token = $this->generateToken($user);
 
         return response()->json([
+            'code' => 200,
             'message' => '登录成功',
             'data' => [
                 'user' => $this->formatUser($user),
@@ -89,6 +90,7 @@ class AuthController extends Controller
         $token = $this->generateToken($user);
 
         return response()->json([
+            'code' => 200,
             'message' => '登录成功',
             'data' => [
                 'user' => $this->formatUser($user),
@@ -263,34 +265,35 @@ class AuthController extends Controller
      */
     protected function formatUser(User $user)
     {
+        $isVip = $user->isVip();
+        
         return [
             'id' => $user->id,
             'phone' => $user->phone,
-            'name' => $user->name,
+            'nickname' => $user->name,
             'avatar' => $user->avatar_url,
-            'gender' => $user->gender,
-            'age' => $user->age,
-            'height' => $user->height,
-            'weight' => $user->weight,
-            'hobbies' => $user->hobbies,
-            'specialty' => $user->specialty,
-            'love_declaration' => $user->love_declaration,
-            'points' => $user->points,
-            'total_points_earned' => $user->total_points_earned,
-            'coins' => $user->coins,
-            'current_level' => $user->current_level ? [
-                'name' => $user->current_level->name,
-                'icon' => $user->current_level->icon,
-                'level_order' => $user->current_level->level_order
-            ] : null,
-            'has_membership' => $user->hasActiveMembership(),
-            'membership' => $user->current_membership ? [
-                'name' => $user->current_membership->name,
-                'code' => $user->current_membership->code,
-                'expired_at' => $user->current_membership->expired_at
-            ] : null,
-            'token' => $user->api_token,
-            'created_at' => $user->created_at->toISOString()
+            'gender' => (int)$user->gender,
+            'birthday' => $user->birthday ?: '',
+            'bio' => '',
+            'love_declaration' => $user->love_declaration ?: '',
+            'location' => '',
+            'height' => (int)$user->height ?: 0,
+            'weight' => (int)$user->weight ?: 0,
+            'zodiac' => '',
+            'marital_status' => '',
+            'personality' => '',
+            'hobbies' => $user->hobbies ?: '',
+            'looking_for' => '',
+            'ideal_partner' => '',
+            'is_vip' => $isVip ? 1 : 0,
+            'vip_level' => $isVip ? ($user->current_membership?->code === 'svip' ? 2 : 1) : 0,
+            'vip_expire_at' => $user->current_membership?->expired_at ?: '',
+            'points' => [
+                'balance' => $user->points ?: 0,
+                'total_earned' => $user->total_points_earned ?: 0,
+                'total_spent' => 0
+            ],
+            'photos' => []
         ];
     }
 }

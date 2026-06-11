@@ -1220,6 +1220,8 @@ function openAlbumLightbox(albumId, index) {
 }
 
 function showLightbox() {
+    console.log('showLightbox called, photos:', currentAlbumPhotos.length, 'index:', currentPhotoIndex);
+    
     if (currentAlbumPhotos.length === 0) return;
     
     const overlay = document.getElementById('album-lightbox-overlay');
@@ -1227,6 +1229,8 @@ function showLightbox() {
     const counter = document.getElementById('album-lightbox-counter');
     const prevBtn = document.getElementById('lightbox-prev');
     const nextBtn = document.getElementById('lightbox-next');
+    
+    console.log('Overlay element:', overlay);
     
     image.src = currentAlbumPhotos[currentPhotoIndex].image_url;
     counter.textContent = `${currentPhotoIndex + 1} / ${currentAlbumPhotos.length}`;

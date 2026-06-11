@@ -17,8 +17,8 @@ export function register(data: {
   return post<LoginResponse>('/api/auth/register', data)
 }
 
-export function login(phone: string, password: string) {
-  return post<LoginResponse>('/api/auth/login', { phone, password })
+export function login(email: string, password: string) {
+  return post<LoginResponse>('/api/auth/login', { email, password })
 }
 
 export function loginByCode(phone: string, code: string) {

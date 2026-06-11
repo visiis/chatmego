@@ -1,6 +1,10 @@
 import { get, post } from '@/utils/request'
 import type { User, Match, LikeRecord } from '@/types'
 
+export function getRecommend() {
+  return get<{ users: User[] }>('/api/discover/recommend')
+}
+
 export function getRecommendUsers(params?: {
   page?: number
   per_page?: number

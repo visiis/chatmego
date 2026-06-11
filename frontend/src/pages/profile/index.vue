@@ -15,15 +15,17 @@
             :src="userStore.user?.avatar || 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20person%20cute&image_size=square'" 
             mode="aspectFill" 
           />
-          <view class="vip-badge" v-if="userStore.user?.is_vip">👑</view>
+          <view class="vip-badge" v-if="userStore.user?.is_vip">
+            <text class="icon-crown">♛</text>
+          </view>
           <view class="edit-avatar" @click="editAvatar">
-            <text class="edit-icon">📷</text>
+            <text class="icon-camera">📷</text>
           </view>
         </view>
         
         <text class="profile-name">{{ userStore.user?.nickname || '用户' }}</text>
         <view class="profile-level" v-if="userStore.user?.vip_level">
-          <text class="level-icon">⭐</text>
+          <text class="icon-star">⭐</text>
           <text class="level-text">VIP{{ userStore.user.vip_level }}</text>
         </view>
         
@@ -54,7 +56,7 @@
     <view class="quick-actions">
       <view class="action-card" @click="goToMembership">
         <view class="action-icon-wrapper vip">
-          <text class="action-icon">👑</text>
+          <text class="icon-crown">♛</text>
         </view>
         <text class="action-title">会员中心</text>
         <text class="action-desc">升级尊享更多特权</text>
@@ -62,7 +64,7 @@
       
       <view class="action-card" @click="goToGifts">
         <view class="action-icon-wrapper gift">
-          <text class="action-icon">🎁</text>
+          <text class="icon-gift">▤</text>
         </view>
         <text class="action-title">礼物中心</text>
         <text class="action-desc">查看收到的礼物</text>
@@ -92,17 +94,17 @@
       </view>
       
       <view class="menu-item" @click="goToMatchRecord">
-        <text class="menu-icon">💘</text>
+        <text class="icon-heart">♥</text>
         <text class="menu-text">匹配记录</text>
       </view>
       
       <view class="menu-item" @click="goToSettings">
-        <text class="menu-icon">⚙️</text>
+        <text class="icon-settings">⚙</text>
         <text class="menu-text">设置</text>
       </view>
       
       <view class="menu-item" @click="logout">
-        <text class="menu-icon">🚪</text>
+        <text class="icon-logout">⎋</text>
         <text class="menu-text">退出登录</text>
         <text class="logout-label">安全退出</text>
       </view>

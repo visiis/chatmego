@@ -34,17 +34,19 @@ class FriendshipController extends Controller
         $result = $users->map(function ($item) {
             return [
                 'id' => $item->id,
-                'name' => $item->name,
+                'nickname' => $item->name,
                 'avatar' => $item->avatar_url,
                 'gender' => $item->gender,
                 'age' => $item->age,
+                'love_declaration' => $item->love_declaration,
                 'status' => 'online'
             ];
         });
 
         return response()->json([
+            'code' => 200,
             'message' => 'success',
-            'data' => $result
+            'data' => ['friends' => $result]
         ]);
     }
 

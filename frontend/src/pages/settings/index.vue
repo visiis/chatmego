@@ -48,13 +48,13 @@
         </view>
         
         <view class="menu-item" @click="goToFeedback">
-          <text class="menu-icon">💬</text>
+          <text class="icon-chat">💬</text>
           <text class="menu-text">意见反馈</text>
           <text class="menu-arrow">→</text>
         </view>
         
         <view class="menu-item" @click="goToAbout">
-          <text class="menu-icon">ℹ️</text>
+          <text class="icon-info">ℹ</text>
           <text class="menu-text">关于我们</text>
           <text class="menu-arrow">→</text>
         </view>
@@ -62,13 +62,13 @@
       
       <view class="section">
         <view class="menu-item danger" @click="clearCache">
-          <text class="menu-icon">🗑️</text>
+          <text class="icon-trash">🗑</text>
           <text class="menu-text">清除缓存</text>
           <text class="menu-value">{{ cacheSize }}</text>
         </view>
         
         <view class="menu-item danger" @click="logout">
-          <text class="menu-icon">🚪</text>
+          <text class="icon-logout">⎋</text>
           <text class="menu-text">退出登录</text>
         </view>
       </view>

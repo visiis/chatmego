@@ -1,1 +1,0 @@
-import{H as s,p as r}from"./index-DWDqou1X.js";function i(r){return s("/api/discover/users",r)}function e(s){return r(`/api/users/${s}/like`)}function n(s){return r(`/api/users/${s}/dislike`)}function a(){return s("/api/matches")}export{a,n as d,i as g,e as l};

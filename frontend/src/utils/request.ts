@@ -1,6 +1,6 @@
 import type { ApiResponse } from '@/types'
 
-const baseUrl = import.meta.env.VUE_APP_API_URL || 'https://api.chatmego.com'
+const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export function request<T = any>(
   url: string,

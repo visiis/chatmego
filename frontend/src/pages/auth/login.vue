@@ -8,68 +8,69 @@
     <view class="login-form">
       <view class="logo-section">
         <view class="logo">
-          <text class="logo-text">❤️</text>
+          <text class="logo-heart">♥</text>
         </view>
         <text class="app-name">ChatMeGo</text>
-        <text class="app-slogan">遇见你的缘分</text>
+        <text class="app-slogan">遇見你的緣分</text>
       </view>
       
       <view class="form-group">
         <view class="input-wrapper">
-          <text class="input-icon">📱</text>
+          <text class="icon-email">📧</text>
           <input 
             class="form-input" 
-            v-model="form.phone" 
-            placeholder="请输入手机号" 
-            type="number"
+            v-model="form.email" 
+            :placeholder="'請輸入信箱'" 
+            type="text"
           />
         </view>
       </view>
       
       <view class="form-group">
         <view class="input-wrapper">
-          <text class="input-icon">🔒</text>
+          <text class="icon-lock">🔒</text>
           <input 
             class="form-input" 
             v-model="form.password" 
-            placeholder="请输入密码" 
+            :placeholder="t('auth.password_error')" 
             :type="showPassword ? 'text' : 'password'"
           />
           <text class="toggle-password" @click="showPassword = !showPassword">
-            {{ showPassword ? '🙈' : '👁️' }}
+            <text class="icon-eye" v-if="showPassword">👁️</text>
+            <text class="icon-eye-off" v-else>🙈</text>
           </text>
         </view>
       </view>
       
       <view class="form-options">
         <view class="option-item">
-          <text class="checkbox" :class="{ checked: form.remember }" @click="form.remember = !form.remember">
-            {{ form.remember ? '✓' : '' }}
-          </text>
-          <text class="option-text">记住我</text>
+          <view class="checkbox" :class="{ checked: form.remember }" @click="form.remember = !form.remember">
+            <text class="icon-check" v-if="form.remember">✓</text>
+          </view>
+          <text class="option-text">{{ t('auth.remember_me') }}</text>
         </view>
-        <text class="forgot-password" @click="goToForgotPassword">忘记密码?</text>
+        <text class="forgot-password" @click="goToForgotPassword">{{ t('auth.forgot_password') }}</text>
       </view>
       
       <view class="btn-login" @click="handleLogin">
-        <text class="btn-text">登录</text>
+        <text class="btn-text">{{ t('common.login') }}</text>
       </view>
       
       <view class="alternative-login">
         <view class="divider">
           <view class="divider-line"></view>
-          <text class="divider-text">或</text>
+          <text class="divider-text">{{ t('common.or') }}</text>
           <view class="divider-line"></view>
         </view>
         
         <view class="sms-login-btn" @click="goToSmsLogin">
-          <text class="sms-btn-text">验证码登录</text>
+          <text class="sms-btn-text">{{ t('auth.login_by_code') }}</text>
         </view>
       </view>
       
       <view class="register-link">
-        <text>还没有账号? </text>
-        <text class="link-text" @click="goToRegister">立即注册</text>
+        <text>{{ t('auth.no_account') }} </text>
+        <text class="link-text" @click="goToRegister">{{ t('auth.sign_up_now') }}</text>
       </view>
     </view>
   </view>
@@ -79,37 +80,56 @@
 import { ref, reactive } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { login } from '@/api/auth'
+import { t } from '@/utils/i18n'
 
 const userStore = useUserStore()
 const showPassword = ref(false)
 
 const form = reactive({
-  phone: '',
+  email: '',
   password: '',
   remember: false
 })
 
 async function handleLogin() {
-  if (!form.phone) {
-    uni.showToast({ title: '请输入手机号', icon: 'none' })
+  if (!form.email) {
+    uni.showToast({ title: '請輸入信箱', icon: 'none' })
     return
   }
   if (!form.password) {
-    uni.showToast({ title: '请输入密码', icon: 'none' })
+    uni.showToast({ title: '請輸入密碼', icon: 'none' })
     return
   }
 
   try {
-    const response = await login(form.phone, form.password)
+    console.log('开始登录...')
+    const response = await login(form.email, form.password)
+    console.log('登录响应:', response)
+    
     userStore.setUser(response.data.user)
     userStore.setToken(response.data.token)
     userStore.setImInfo(response.data.im.account, response.data.im.token)
     
+    console.log('用户信息已保存')
     uni.showToast({ title: '登录成功', icon: 'success' })
+    
     setTimeout(() => {
-      uni.switchTab({ url: '/pages/discover/index' })
-    }, 1500)
+      console.log('尝试跳转到发现页面...')
+      uni.reLaunch({ 
+        url: '/pages/discover/index',
+        success: function() {
+          console.log('uni.reLaunch 跳转成功')
+        },
+        fail: function(err) {
+          console.error('uni.reLaunch 跳转失败:', err)
+          // 尝试直接使用 window.location
+          console.log('尝试使用 window.location 跳转...')
+          window.location.href = '/pages/discover/index'
+        }
+      })
+    }, 500)
   } catch (e: any) {
+    console.error('登录失败:', e)
     uni.showToast({ title: e.message || '登录失败', icon: 'none' })
   }
 }
@@ -185,6 +205,11 @@ function goToForgotPassword() {
   font-size: 64rpx;
 }
 
+.logo-heart {
+  font-size: 64rpx;
+  color: #fff;
+}
+
 .app-name {
   display: block;
   font-size: 48rpx;
@@ -212,7 +237,7 @@ function goToForgotPassword() {
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
-.input-icon {
+.icon-phone, .icon-lock {
   font-size: 36rpx;
   margin-right: 20rpx;
 }
@@ -227,6 +252,11 @@ function goToForgotPassword() {
 .toggle-password {
   font-size: 32rpx;
   padding: 10rpx;
+  cursor: pointer;
+}
+
+.icon-eye, .icon-eye-off {
+  font-size: 32rpx;
 }
 
 .form-options {
@@ -252,11 +282,17 @@ function goToForgotPassword() {
   margin-right: 12rpx;
   color: #fff;
   font-size: 24rpx;
+  transition: all 0.3s;
   
   &.checked {
     background: #f87c7c;
     border-color: #f87c7c;
   }
+}
+
+.icon-check {
+  font-size: 24rpx;
+  font-weight: bold;
 }
 
 .option-text {

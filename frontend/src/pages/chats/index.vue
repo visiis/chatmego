@@ -3,8 +3,8 @@
     <view class="header">
       <text class="page-title">聊天</text>
       <view class="header-actions">
-        <text class="action-icon" @click="goToSearch">🔍</text>
-        <text class="action-icon" @click="goToNewChat">✏️</text>
+        <text class="icon-search" @click="goToSearch">🔍</text>
+        <text class="icon-edit" @click="goToNewChat">✏</text>
       </view>
     </view>
     
@@ -91,7 +91,7 @@ function getLastMessageContent(match: any) {
   if (!match.last_message) return '暂无消息'
   
   if (match.last_message.type === 'gift') {
-    return '🎁 发送了礼物'
+    return '▤ 发送了礼物'
   } else if (match.last_message.type === 'image') {
     return '📷 发送了图片'
   } else if (match.last_message.type === 'voice') {

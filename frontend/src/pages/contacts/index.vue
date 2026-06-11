@@ -23,7 +23,7 @@
           <view class="contact-avatar">
             <image 
               class="avatar" 
-              :src="friend.avatar || 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20person&image_size=square'" 
+              :src="friend.avatar || '/static/images/default-avatar.png'" 
               mode="aspectFill" 
             />
             <view class="online-badge" v-if="isOnline(friend.id)">🟢</view>
@@ -57,7 +57,7 @@
         >
           <image 
             class="request-avatar" 
-            :src="request.user.avatar || 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20person&image_size=square'" 
+            :src="request.user.avatar || '/static/images/default-avatar.png'" 
             mode="aspectFill" 
           />
           <view class="request-info">
@@ -92,7 +92,7 @@
         >
           <image 
             class="avatar blocked" 
-            :src="blocked.avatar || 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20person&image_size=square'" 
+            :src="blocked.avatar || '/static/images/default-avatar.png'" 
             mode="aspectFill" 
           />
           <view class="contact-info">
@@ -110,22 +110,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getFriends, getFriendRequests, acceptFriendRequest, rejectFriendRequest, type Friend, type FriendRequest } from '@/api/friends'
 
-const friends = ref([
-  { id: 1, nickname: '小美', avatar: '', love_declaration: '喜欢旅行和美食' },
-  { id: 2, nickname: '阳光男孩', avatar: '', love_declaration: '热爱生活每一天' },
-  { id: 3, nickname: '小仙女', avatar: '', love_declaration: '努力变优秀' }
-])
+const friends = ref<Friend[]>([])
+const pendingRequests = ref<FriendRequest[]>([])
+const blockedUsers = ref<Friend[]>([])
 
-const pendingRequests = ref([
-  { id: 1, user: { id: 4, nickname: '新用户', avatar: '' }, message: '嗨! 很高兴认识你' },
-  { id: 2, user: { id: 5, nickname: '缘分天注定', avatar: '' }, message: '' }
-])
+onMounted(() => {
+  loadFriends()
+  loadFriendRequests()
+})
 
-const blockedUsers = ref([
-  { id: 6, nickname: '陌生人', avatar: '' }
-])
+async function loadFriends() {
+  try {
+    const response = await getFriends()
+    friends.value = response.data.friends || []
+  } catch (e) {
+    console.error('获取好友列表失败:', e)
+  }
+}
+
+async function loadFriendRequests() {
+  try {
+    const response = await getFriendRequests()
+    pendingRequests.value = response.data.requests || []
+  } catch (e) {
+    console.error('获取好友申请失败:', e)
+  }
+}
 
 function isOnline(userId: number) {
   return Math.random() > 0.5
@@ -143,14 +156,31 @@ function goToAddFriend() {
   uni.showToast({ title: '添加好友功能开发中', icon: 'none' })
 }
 
-function acceptRequest(requestId: number) {
-  uni.showToast({ title: '已接受好友请求', icon: 'success' })
-  pendingRequests.value = pendingRequests.value.filter(r => r.id !== requestId)
+async function acceptRequest(requestId: number) {
+  try {
+    const request = pendingRequests.value.find(r => r.id === requestId)
+    if (request) {
+      await acceptFriendRequest(request.user.id)
+      uni.showToast({ title: '已接受好友请求', icon: 'success' })
+      pendingRequests.value = pendingRequests.value.filter(r => r.id !== requestId)
+      loadFriends()
+    }
+  } catch (e) {
+    uni.showToast({ title: '操作失败', icon: 'none' })
+  }
 }
 
-function rejectRequest(requestId: number) {
-  uni.showToast({ title: '已拒绝好友请求', icon: 'none' })
-  pendingRequests.value = pendingRequests.value.filter(r => r.id !== requestId)
+async function rejectRequest(requestId: number) {
+  try {
+    const request = pendingRequests.value.find(r => r.id === requestId)
+    if (request) {
+      await rejectFriendRequest(request.user.id)
+      uni.showToast({ title: '已拒绝好友请求', icon: 'none' })
+      pendingRequests.value = pendingRequests.value.filter(r => r.id !== requestId)
+    }
+  } catch (e) {
+    uni.showToast({ title: '操作失败', icon: 'none' })
+  }
 }
 </script>
 

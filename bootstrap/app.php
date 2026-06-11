@@ -17,7 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\CheckAccountActive::class,
         ]);
         
-        $middleware->api(prepend: []);
+        $middleware->api(prepend: [
+            \App\Http\Middleware\CorsMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
