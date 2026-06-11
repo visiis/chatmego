@@ -102,7 +102,7 @@ async function handleLogin() {
   try {
     const response = await login(form.phone, form.password)
     userStore.setUser(response.data.user)
-    userStore.setToken(response.data.user.token)
+    userStore.setToken(response.data.token)
     userStore.setImInfo(response.data.im.account, response.data.im.token)
     
     uni.showToast({ title: '登录成功', icon: 'success' })

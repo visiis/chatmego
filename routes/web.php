@@ -11,6 +11,7 @@ use App\Http\Controllers\StatusController;
 use App\Http\Controllers\DiscoverController;
 
 require __DIR__.'/test-picbed.php';
+require __DIR__.'/api.php';
 
 Route::get('/test-locale', function () {
     return response()->json([
