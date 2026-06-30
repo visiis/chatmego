@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\EasemobService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -26,7 +28,7 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->first();
-
+        
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => '邮箱或密码错误'], 401);
         }
@@ -42,6 +44,9 @@ class AuthController extends Controller
         // 生成或更新 token
         $token = $this->generateToken($user);
 
+        // 检查并确保环信用户存在
+        $this->ensureEasemobUser($user);
+
         return response()->json([
             'code' => 200,
             'message' => '登录成功',
@@ -53,7 +58,32 @@ class AuthController extends Controller
                     'token' => $this->generateImToken($user->id)
                 ]
             ]
-        ]);
+        ])->cookie('api_token', $token, 60 * 24 * 7);
+    }
+
+    protected function ensureEasemobUser(User $user)
+    {
+        try {
+            $easemobService = app(EasemobService::class);
+            $username = 'user_' . $user->id;
+            
+            try {
+                $easemobService->getUserInfo($username);
+            } catch (\Exception $e) {
+                $password = bin2hex(random_bytes(16));
+                $easemobService->registerUser($username, $password, $user->name);
+                
+                Log::info('登录时自动注册环信用户', [
+                    'user_id' => $user->id,
+                    'username' => $username,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('环信用户检查/注册失败', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -109,43 +139,31 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string|unique:users',
-            'code' => 'required|string|size:6',
-            'password' => 'required|string|min:6',
-            'nickname' => 'required|string|max:20',
-            'gender' => 'required|integer|in:0,1,2',
-            'birthday' => 'required|date',
-            'invite_code' => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'gender' => 'nullable|string|in:male,female',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['message' => '参数错误', 'errors' => $validator->errors()], 400);
         }
 
-        // 验证验证码
-        $cachedCode = cache()->get('sms_code_' . $request->phone);
-        if (!$cachedCode || $cachedCode !== $request->code) {
-            return response()->json(['message' => '验证码错误或已过期'], 401);
-        }
+        $isActive = $request->gender === 'male' ? 1 : 0;
 
-        // 创建用户
         $user = User::create([
-            'phone' => $request->phone,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
-            'name' => $request->nickname,
-            'gender' => $request->gender,
-            'birthday' => $request->birthday,
-            'points' => 100,
-            'total_points_earned' => 100,
-            'coins' => 0,
-            'is_active' => true,
-            'status' => 'active',
+            'gender' => $request->gender === 'male' ? 1 : ($request->gender === 'female' ? 2 : 0),
+            'is_active' => $isActive,
+            'status' => $isActive ? 'active' : 'pending',
         ]);
 
-        // 生成 token
         $token = $this->generateToken($user);
 
         return response()->json([
+            'code' => 200,
             'message' => '注册成功',
             'data' => [
                 'user' => $this->formatUser($user),
@@ -155,7 +173,7 @@ class AuthController extends Controller
                     'token' => $this->generateImToken($user->id)
                 ]
             ]
-        ], 201);
+        ]);
     }
 
     /**
@@ -249,6 +267,20 @@ class AuthController extends Controller
         $user->save();
         
         return $token;
+    }
+
+    protected function decryptPassword($encryptedPassword)
+    {
+        try {
+            $decoded = base64_decode($encryptedPassword);
+            $decrypted = '';
+            for ($i = 0; $i < strlen($decoded); $i++) {
+                $decrypted .= chr(ord($decoded[$i]) - 1);
+            }
+            return $decrypted;
+        } catch (\Exception $e) {
+            return $encryptedPassword;
+        }
     }
 
     /**

@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Models\Friendship;
+use App\Services\NotificationService;
 
 class FriendshipController extends Controller
 {
@@ -16,29 +17,30 @@ class FriendshipController extends Controller
         $user = auth()->guard('api')->user();
         
         if (!$user) {
-            return response()->json(['message' => '未授权'], 401);
+            return response()->json(['code' => 401, 'message' => '未授权'], 401);
         }
 
-        // 从匹配中获取好友（简化处理）
-        $matchIds = DB::table('matches')
-            ->where('user1_id', $user->id)
-            ->orWhere('user2_id', $user->id)
-            ->get()
-            ->map(function ($match) use ($user) {
-                return $match->user1_id == $user->id ? $match->user2_id : $match->user1_id;
-            })
-            ->toArray();
+        $friendships = Friendship::where(function ($query) use ($user) {
+            $query->where('user_id', $user->id)->orWhere('friend_id', $user->id);
+        })
+        ->where('status', 'accepted')
+        ->with(['user', 'friend'])
+        ->get();
 
-        $users = User::whereIn('id', $matchIds)->get();
-
-        $result = $users->map(function ($item) {
+        $friends = $friendships->map(function ($friendship) use ($user) {
+            if ($friendship->user_id === $user->id) {
+                $friendUser = $friendship->friend;
+            } else {
+                $friendUser = $friendship->user;
+            }
+            
             return [
-                'id' => $item->id,
-                'nickname' => $item->name,
-                'avatar' => $item->avatar_url,
-                'gender' => $item->gender,
-                'age' => $item->age,
-                'love_declaration' => $item->love_declaration,
+                'id' => $friendUser->id,
+                'name' => $friendUser->name ?: $friendUser->nickname,
+                'nickname' => $friendUser->nickname ?: $friendUser->name,
+                'avatar' => $friendUser->avatar ?: '',
+                'gender' => $friendUser->gender ?: 0,
+                'love_declaration' => '',
                 'status' => 'online'
             ];
         });
@@ -46,7 +48,7 @@ class FriendshipController extends Controller
         return response()->json([
             'code' => 200,
             'message' => 'success',
-            'data' => ['friends' => $result]
+            'data' => ['friends' => $friends]
         ]);
     }
 
@@ -58,13 +60,30 @@ class FriendshipController extends Controller
         $user = auth()->guard('api')->user();
         
         if (!$user) {
-            return response()->json(['message' => '未授权'], 401);
+            return response()->json(['code' => 401, 'message' => '未授权'], 401);
         }
 
-        // 模拟好友申请
-        $requests = [];
+        $friendships = Friendship::where('friend_id', $user->id)
+            ->where('status', 'pending')
+            ->with('user')
+            ->get();
+
+        $requests = $friendships->map(function ($friendship) {
+            return [
+                'id' => $friendship->id,
+                'user' => [
+                    'id' => $friendship->user->id,
+                    'name' => $friendship->user->name ?: $friendship->user->nickname,
+                    'nickname' => $friendship->user->nickname ?: $friendship->user->name,
+                    'avatar' => $friendship->user->avatar ?: ''
+                ],
+                'message' => '',
+                'created_at' => $friendship->created_at->toDateTimeString()
+            ];
+        });
 
         return response()->json([
+            'code' => 200,
             'message' => 'success',
             'data' => $requests
         ]);
@@ -78,14 +97,32 @@ class FriendshipController extends Controller
         $user = auth()->guard('api')->user();
         
         if (!$user) {
-            return response()->json(['message' => '未授权'], 401);
+            return response()->json(['code' => 401, 'message' => '未授权'], 401);
         }
 
         if ($user->id == $userId) {
-            return response()->json(['message' => '不能添加自己为好友'], 400);
+            return response()->json(['code' => 400, 'message' => '不能添加自己为好友'], 400);
         }
 
+        $exists = Friendship::where(function ($query) use ($user, $userId) {
+            $query->where('user_id', $user->id)->where('friend_id', $userId)
+                  ->orWhere('user_id', $userId)->where('friend_id', $user->id);
+        })->exists();
+
+        if ($exists) {
+            return response()->json(['code' => 400, 'message' => '已发送过好友请求'], 400);
+        }
+
+        Friendship::create([
+            'user_id' => $user->id,
+            'friend_id' => $userId,
+            'status' => 'pending'
+        ]);
+
+        NotificationService::sendFriendRequest($userId, $user->id);
+
         return response()->json([
+            'code' => 200,
             'message' => '申请已发送',
             'data' => []
         ]);
@@ -99,10 +136,22 @@ class FriendshipController extends Controller
         $user = auth()->guard('api')->user();
         
         if (!$user) {
-            return response()->json(['message' => '未授权'], 401);
+            return response()->json(['code' => 401, 'message' => '未授权'], 401);
         }
 
+        $friendship = Friendship::where('user_id', $userId)
+            ->where('friend_id', $user->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$friendship) {
+            return response()->json(['code' => 400, 'message' => '好友请求不存在'], 400);
+        }
+
+        $friendship->update(['status' => 'accepted']);
+
         return response()->json([
+            'code' => 200,
             'message' => '已添加好友',
             'data' => []
         ]);
@@ -116,11 +165,156 @@ class FriendshipController extends Controller
         $user = auth()->guard('api')->user();
         
         if (!$user) {
-            return response()->json(['message' => '未授权'], 401);
+            return response()->json(['code' => 401, 'message' => '未授权'], 401);
         }
 
+        $friendship = Friendship::where('user_id', $userId)
+            ->where('friend_id', $user->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$friendship) {
+            return response()->json(['code' => 400, 'message' => '好友请求不存在'], 400);
+        }
+
+        $friendship->update(['status' => 'rejected']);
+
         return response()->json([
+            'code' => 200,
             'message' => '已拒绝申请',
+            'data' => []
+        ]);
+    }
+
+    /**
+     * 获取黑名单列表
+     */
+    public function blocked()
+    {
+        $user = auth()->guard('api')->user();
+        
+        if (!$user) {
+            return response()->json(['code' => 401, 'message' => '未授权'], 401);
+        }
+
+        $friendships = Friendship::where(function ($query) use ($user) {
+            $query->where('user_id', $user->id)->orWhere('friend_id', $user->id);
+        })
+        ->where('status', 'blocked')
+        ->with(['user', 'friend'])
+        ->get();
+
+        $blocked = $friendships->map(function ($friendship) use ($user) {
+            if ($friendship->user_id === $user->id) {
+                $friendUser = $friendship->friend;
+            } else {
+                $friendUser = $friendship->user;
+            }
+            
+            return [
+                'id' => $friendUser->id,
+                'name' => $friendUser->name ?: $friendUser->nickname,
+                'nickname' => $friendUser->nickname ?: $friendUser->name,
+                'avatar' => $friendUser->avatar ?: '',
+                'gender' => $friendUser->gender ?: 0,
+                'love_declaration' => ''
+            ];
+        });
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'success',
+            'data' => ['blocked' => $blocked]
+        ]);
+    }
+
+    /**
+     * 拉黑好友
+     */
+    public function block($userId)
+    {
+        $user = auth()->guard('api')->user();
+        
+        if (!$user) {
+            return response()->json(['code' => 401, 'message' => '未授权'], 401);
+        }
+
+        $friendship = Friendship::where(function ($query) use ($user, $userId) {
+            $query->where('user_id', $user->id)->where('friend_id', $userId)
+                  ->orWhere('user_id', $userId)->where('friend_id', $user->id);
+        })->first();
+
+        if (!$friendship) {
+            return response()->json(['code' => 400, 'message' => '好友关系不存在'], 400);
+        }
+
+        $friendship->update(['status' => 'blocked']);
+
+        return response()->json([
+            'code' => 200,
+            'message' => '已拉黑',
+            'data' => []
+        ]);
+    }
+
+    /**
+     * 解除拉黑
+     */
+    public function unblock($userId)
+    {
+        $user = auth()->guard('api')->user();
+        
+        if (!$user) {
+            return response()->json(['code' => 401, 'message' => '未授权'], 401);
+        }
+
+        $friendship = Friendship::where(function ($query) use ($user, $userId) {
+            $query->where('user_id', $user->id)->where('friend_id', $userId)
+                  ->orWhere('user_id', $userId)->where('friend_id', $user->id);
+        })
+        ->where('status', 'blocked')
+        ->first();
+
+        if (!$friendship) {
+            return response()->json(['code' => 400, 'message' => '拉黑关系不存在'], 400);
+        }
+
+        $friendship->update(['status' => 'accepted']);
+
+        return response()->json([
+            'code' => 200,
+            'message' => '已解除拉黑',
+            'data' => []
+        ]);
+    }
+
+    /**
+     * 删除好友
+     */
+    public function delete($userId)
+    {
+        $user = auth()->guard('api')->user();
+        
+        if (!$user) {
+            return response()->json(['code' => 401, 'message' => '未授权'], 401);
+        }
+
+        $friendship = Friendship::where(function ($query) use ($user, $userId) {
+            $query->where('user_id', $user->id)->where('friend_id', $userId)
+                  ->orWhere('user_id', $userId)->where('friend_id', $user->id);
+        })
+        ->where('status', 'accepted')
+        ->first();
+
+        if (!$friendship) {
+            return response()->json(['code' => 400, 'message' => '好友关系不存在'], 400);
+        }
+
+        $friendship->delete();
+
+        return response()->json([
+            'code' => 200,
+            'message' => '已删除好友',
             'data' => []
         ]);
     }

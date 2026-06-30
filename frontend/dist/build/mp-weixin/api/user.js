@@ -1,1 +1,0 @@
-"use strict";const e=require("../utils/request.js");exports.getProfile=function(){return e.get("/api/user/profile")},exports.getUserProfile=function(r){return e.get(`/api/user/${r}/profile`)},exports.updateProfile=function(r){return e.put("/api/user/profile",r)};

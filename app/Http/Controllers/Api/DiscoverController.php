@@ -5,10 +5,85 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserAlbum;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DiscoverController extends Controller
 {
+    /**
+     * 获取用户列表（发现页面）
+     * 完全复制 chatmego.com/home 的逻辑
+     */
+    public function cards(Request $request)
+    {
+        $token = $request->header('Authorization');
+        if ($token && str_starts_with($token, 'Bearer ')) {
+            $token = substr($token, 7);
+        }
+        
+        $user = User::where('api_token', $token)->first();
+        
+        if (!$user) {
+            return response()->json(['code' => 401, 'message' => '未授权']);
+        }
+        
+        $authUserId = $user->id;
+
+        // 获取已是好友的用户 ID（只包括 accepted 状态）
+        $friendIds = DB::table('friendships')
+            ->where('user_id', $authUserId)
+            ->where('status', 'accepted')
+            ->pluck('friend_id')
+            ->merge(
+                DB::table('friendships')
+                    ->where('friend_id', $authUserId)
+                    ->where('status', 'accepted')
+                    ->pluck('user_id')
+            )
+            ->unique()
+            ->toArray();
+        
+        // 排除自己和已是好友的用户
+        $excludedIds = array_merge([$authUserId], $friendIds);
+
+        $search = $request->input('search', '');
+        
+        // 获取用户列表（和 home 页面完全一样的逻辑）
+        $query = User::where('id', '!=', $authUserId)
+                    ->whereNotIn('id', $friendIds);
+        
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('love_declaration', 'like', '%' . $search . '%')
+                  ->orWhere('hobbies', 'like', '%' . $search . '%');
+            });
+        }
+        
+        $users = $query->get();
+
+        $result = $users->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'avatar' => avatar_url($item->avatar),
+                'gender' => $item->gender,
+                'age' => $item->age,
+                'height' => $item->height,
+                'weight' => $item->weight,
+                'hobbies' => $item->hobbies,
+                'love_declaration' => $item->love_declaration,
+                'is_vip' => $item->hasActiveMembership() ? 1 : 0,
+            ];
+        });
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'success',
+            'data' => $result
+        ]);
+    }
+
     /**
      * 获取推荐用户
      */
@@ -163,7 +238,6 @@ class DiscoverController extends Controller
             return response()->json(['message' => '不能跳过自己'], 400);
         }
 
-        // 记录跳过
         DB::table('user_interactions')->updateOrInsert(
             ['user_id' => $user->id, 'target_user_id' => $userId],
             ['type' => 'dislike', 'created_at' => now()]
@@ -174,6 +248,14 @@ class DiscoverController extends Controller
             'message' => '已跳过',
             'data' => []
         ]);
+    }
+
+    /**
+     * 跳过用户（pass接口，与dislike逻辑相同）
+     */
+    public function pass($userId)
+    {
+        return $this->dislike($userId);
     }
 
     /**

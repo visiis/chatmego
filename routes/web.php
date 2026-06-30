@@ -43,6 +43,11 @@ Route::get('/blank', function () {
 })->name('blank');
 
 Route::get('/', function () {
+    $userAgent = request()->header('User-Agent');
+    $isMobile = preg_match('/(android|iphone|ipod|ipad|windows phone|blackberry|opera mini|mobile)/i', $userAgent);
+    if ($isMobile) {
+        return redirect('https://m.chatmego.com');
+    }
     return view('welcome');
 });
 

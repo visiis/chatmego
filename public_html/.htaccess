@@ -9,6 +9,15 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+    # Allow access to mobile directory m/
+    RewriteRule ^m(/.*)?$ - [L]
+
+    # Allow access to mobile/ directory
+    RewriteRule ^mobile(/.*)?$ - [L]
+
+    # Allow access to pic/ directory
+    RewriteRule ^pic(/.*)?$ - [L]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
