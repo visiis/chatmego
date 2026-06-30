@@ -10,13 +10,11 @@ class CorsMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedOrigins = [
+        $localOrigins = [
             'http://localhost:5173',
             'http://localhost:5174',
             'http://localhost:5175',
             'http://localhost:8888',
-            'https://chatmego.com',
-            'https://m.chatmego.com',
             'http://localhost',
             'https://bhr.41c.mytemp.website',
             'http://bhr.41c.mytemp.website',
@@ -24,11 +22,20 @@ class CorsMiddleware
         
         $origin = $request->header('Origin');
         
-        if ($origin && (in_array($origin, $allowedOrigins) || str_ends_with($origin, '.chatmego.com'))) {
-            $allowedOrigin = $origin;
-        } else {
+        $isAllowed = false;
+        if ($origin) {
+            if (in_array($origin, $localOrigins)) {
+                $isAllowed = true;
+            } elseif (preg_match('/^https?:\/\/([a-zA-Z0-9-]+\.)?chatmego\.com$/', $origin)) {
+                $isAllowed = true;
+            }
+        }
+        
+        if (!$isAllowed) {
             return $next($request);
         }
+        
+        $allowedOrigin = $origin;
         
         if ($request->isMethod('OPTIONS')) {
             $response = new Response();
