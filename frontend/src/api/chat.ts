@@ -33,9 +33,10 @@ export function getConversations(): Promise<Conversation[]> {
     const token = uni.getStorageSync('token')
     request('/api/chat/conversations', 'GET', undefined, { 'Authorization': 'Bearer ' + token })
       .then(response => {
-        if (response.success) {
-          const list = Array.isArray(response.data) ? response.data : 
-                       Array.isArray(response.conversations) ? response.conversations : []
+        if (response.code === 200 || response.success) {
+          const list = response.data?.conversations ? response.data.conversations :
+                       Array.isArray(response.conversations) ? response.conversations : 
+                       Array.isArray(response.data) ? response.data : []
           resolve(list as Conversation[])
         } else {
           reject(new Error(response.message || '获取会话列表失败'))
@@ -52,8 +53,9 @@ export function getMessages(userId: number): Promise<Message[]> {
     const token = uni.getStorageSync('token')
     request(`/api/chat/messages/${userId}`, 'GET', undefined, { 'Authorization': 'Bearer ' + token })
       .then(response => {
-        if (response.success) {
-          const msgs = Array.isArray(response.messages) ? response.messages : 
+        if (response.code === 200 || response.success) {
+          const msgs = response.data?.messages ? response.data.messages : 
+                      Array.isArray(response.messages) ? response.messages : 
                       Array.isArray(response.data) ? response.data : []
           resolve(msgs as Message[])
         } else {
@@ -71,8 +73,8 @@ export function sendMessage(userId: number, content: string, type: string = 'tex
     const token = uni.getStorageSync('token')
     request(`/api/chat/send/${userId}`, 'POST', { message: content, type }, { 'Authorization': 'Bearer ' + token })
       .then(response => {
-        if (response.success) {
-          resolve(response.message as Message)
+        if (response.code === 200 || response.success) {
+          resolve(response.data?.message ? response.data.message : response.message as Message)
         } else {
           reject(new Error(response.message || '发送失败'))
         }
@@ -88,8 +90,9 @@ export function fetchMessages(userId: number, lastMessageId: number): Promise<Me
     const token = uni.getStorageSync('token')
     request(`/api/chat/fetch/${userId}?last_message_id=${lastMessageId}`, 'GET', undefined, { 'Authorization': 'Bearer ' + token })
       .then(response => {
-        if (response.success) {
-          const msgs = Array.isArray(response.messages) ? response.messages : 
+        if (response.code === 200 || response.success) {
+          const msgs = response.data?.messages ? response.data.messages : 
+                      Array.isArray(response.messages) ? response.messages : 
                       Array.isArray(response.data) ? response.data : []
           resolve(msgs as Message[])
         } else {
@@ -107,8 +110,9 @@ export function getGifts(): Promise<any[]> {
     const token = uni.getStorageSync('token')
     request('/api/chat/gifts', 'GET', undefined, { 'Authorization': 'Bearer ' + token })
       .then(response => {
-        if (response.success) {
-          const list = Array.isArray(response.gifts) ? response.gifts : 
+        if (response.code === 200 || response.success) {
+          const list = response.data?.gifts ? response.data.gifts :
+                       Array.isArray(response.gifts) ? response.gifts : 
                        Array.isArray(response.data) ? response.data : []
           resolve(list)
         } else {
@@ -126,8 +130,8 @@ export function sendGift(userId: number, giftId: number): Promise<Message> {
     const token = uni.getStorageSync('token')
     request(`/api/chat/send-gift/${userId}`, 'POST', { gift_id: giftId }, { 'Authorization': 'Bearer ' + token })
       .then(response => {
-        if (response.success) {
-          resolve(response.message as Message)
+        if (response.code === 200 || response.success) {
+          resolve(response.data?.message ? response.data.message : response.message as Message)
         } else {
           reject(new Error(response.message || '发送礼物失败'))
         }
@@ -143,8 +147,9 @@ export function fetchHistoryMessages(userId: number, beforeId: number, limit: nu
     const token = uni.getStorageSync('token')
     request(`/api/chat/history/${userId}?before_id=${beforeId}&limit=${limit}`, 'GET', undefined, { 'Authorization': 'Bearer ' + token })
       .then(response => {
-        if (response.success) {
-          const msgs = Array.isArray(response.messages) ? response.messages : 
+        if (response.code === 200 || response.success) {
+          const msgs = response.data?.messages ? response.data.messages : 
+                      Array.isArray(response.messages) ? response.messages : 
                       Array.isArray(response.data) ? response.data : []
           resolve(msgs as Message[])
         } else {

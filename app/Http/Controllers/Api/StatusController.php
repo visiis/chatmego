@@ -27,7 +27,7 @@ class StatusController extends Controller
 
     public function index(Request $request)
     {
-        $user = $this->getUserFromToken($request);
+        $user = auth()->guard('api')->user();
         
         if (!$user) {
             return response()->json(['code' => 401, 'message' => '未授权']);
@@ -40,11 +40,13 @@ class StatusController extends Controller
             ->where('is_private', false)
             ->orderBy('created_at', 'desc')
             ->with(['user' => function ($query) {
-                $query->select('id', 'name', 'nickname', 'avatar', 'avatar_url');
+                $query->select('id', 'name', 'avatar');
             }, 'comments' => function ($query) {
                 $query->where('status', 1)
                     ->orderBy('created_at', 'desc')
-                    ->with('user');
+                    ->with(['user' => function ($q) {
+                        $q->select('id', 'name', 'avatar');
+                    }]);
             }])
             ->paginate($limit, ['*'], 'page', $page);
 
@@ -70,7 +72,7 @@ class StatusController extends Controller
 
     public function getUserStatuses(Request $request, $userId)
     {
-        $user = $this->getUserFromToken($request);
+        $user = auth()->guard('api')->user();
         
         if (!$user) {
             return response()->json(['code' => 401, 'message' => '未授权']);
@@ -117,7 +119,7 @@ class StatusController extends Controller
 
     public function store(Request $request)
     {
-        $user = $this->getUserFromToken($request);
+        $user = auth()->guard('api')->user();
         
         if (!$user) {
             return response()->json(['code' => 401, 'message' => '未授权']);
@@ -145,7 +147,7 @@ class StatusController extends Controller
 
     public function like(Request $request, $statusId)
     {
-        $user = $this->getUserFromToken($request);
+        $user = auth()->guard('api')->user();
         
         if (!$user) {
             return response()->json(['code' => 401, 'message' => '未授权']);
@@ -183,7 +185,7 @@ class StatusController extends Controller
 
     public function comment(Request $request, $statusId)
     {
-        $user = $this->getUserFromToken($request);
+        $user = auth()->guard('api')->user();
         
         if (!$user) {
             return response()->json(['code' => 401, 'message' => '未授权']);
@@ -216,7 +218,7 @@ class StatusController extends Controller
 
     public function destroy(Request $request, $statusId)
     {
-        $user = $this->getUserFromToken($request);
+        $user = auth()->guard('api')->user();
         
         if (!$user) {
             return response()->json(['code' => 401, 'message' => '未授权']);

@@ -8,7 +8,8 @@ export interface Status {
   is_private: boolean
   likes_count: number
   comments_count: number
-  liked: boolean
+  liked?: boolean
+  is_liked?: boolean
   created_at: string
   comments?: StatusComment[]
 }

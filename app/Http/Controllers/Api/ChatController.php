@@ -121,8 +121,11 @@ class ChatController extends Controller
             ->update(['is_read' => true, 'read_at' => now()]);
 
         return response()->json([
-            'success' => true,
-            'messages' => $messages,
+            'code' => 200,
+            'message' => 'success',
+            'data' => [
+                'messages' => $messages->values()->toArray(),
+            ],
         ]);
     }
 
@@ -159,8 +162,11 @@ class ChatController extends Controller
         ]);
 
         return response()->json([
-            'success' => true,
-            'message' => $message,
+            'code' => 200,
+            'message' => 'success',
+            'data' => [
+                'message' => $message,
+            ],
         ]);
     }
 
@@ -201,8 +207,11 @@ class ChatController extends Controller
             ->update(['is_read' => true, 'read_at' => now()]);
 
         return response()->json([
-            'success' => true,
-            'messages' => $messages,
+            'code' => 200,
+            'message' => 'success',
+            'data' => [
+                'messages' => $messages,
+            ],
         ]);
     }
 
@@ -240,8 +249,11 @@ class ChatController extends Controller
             ->reverse();
 
         return response()->json([
-            'success' => true,
-            'messages' => $messages,
+            'code' => 200,
+            'message' => 'success',
+            'data' => [
+                'messages' => $messages,
+            ],
             'has_more' => $messages->count() >= $limit,
         ]);
     }
@@ -263,11 +275,14 @@ class ChatController extends Controller
             ->get();
 
         return response()->json([
-            'success' => true,
-            'gifts' => $gifts,
-            'user' => [
-                'points' => $user->points,
-                'coins' => $user->coins,
+            'code' => 200,
+            'message' => 'success',
+            'data' => [
+                'gifts' => $gifts,
+                'user' => [
+                    'points' => $user->points,
+                    'coins' => $user->coins,
+                ],
             ],
         ]);
     }

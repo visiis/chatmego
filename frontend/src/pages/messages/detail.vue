@@ -20,6 +20,7 @@
       :scroll-top="scrollTop"
       enhanced
       :show-scrollbar="false"
+      @scroll="onScroll"
     >
       <view class="messages-wrapper">
         <view v-if="messages.length === 0 && !isLoaded" class="loading-state">
@@ -29,13 +30,11 @@
         
         <template v-else>
           <view 
-            v-if="hasMoreHistory" 
-            class="history-btn-wrapper"
+            v-if="isLoadingHistory" 
+            class="history-loading"
           >
-            <view class="history-btn" @click="loadMoreHistory">
-              <FontAwesome name="history" size="20px" color="#ff6b9d" />
-              <text>查看歷史記錄</text>
-            </view>
+            <view class="loading-spinner-small"></view>
+            <text>加載歷史記錄...</text>
           </view>
           
           <view 
@@ -291,7 +290,7 @@ async function loadMessages() {
     isLoaded.value = true
     
     nextTick(() => {
-      scrollTop.value = 999999
+      scrollTop.value = scrollTop.value + 1
     })
   }
   
@@ -322,7 +321,7 @@ async function loadMessages() {
       isLoaded.value = true
       
       nextTick(() => {
-        scrollTop.value = 999999
+        scrollTop.value = scrollTop.value + 1
       })
       
       saveCache()
@@ -419,8 +418,15 @@ function formatTime(dateStr: string): string {
 
 function scrollToBottom() {
   setTimeout(() => {
-    scrollTop.value = 999999
+    scrollTop.value = scrollTop.value + 1
   }, 50)
+}
+
+function onScroll(e: any) {
+  // 如果滚动到顶部（scrollTop < 50），加载更多历史记录
+  if (e.detail.scrollTop < 50 && !isLoadingHistory.value && hasMoreHistory.value) {
+    loadMoreHistory()
+  }
 }
 
 async function sendMessage() {
@@ -625,6 +631,29 @@ page {
 .history-btn-wrapper {
   text-align: center;
   padding: 16rpx 0;
+}
+
+.history-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 16rpx 0;
+  color: #ff6b9d;
+  font-size: 24rpx;
+}
+
+.loading-spinner-small {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid #f0f0f0;
+  border-top-color: #ff6b9d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .history-btn {
