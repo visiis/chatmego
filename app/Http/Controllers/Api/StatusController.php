@@ -57,6 +57,7 @@ class StatusController extends Controller
 
         foreach ($statuses as $status) {
             $status->is_liked = in_array($status->id, $likedStatusIds);
+            $status->user->avatar = $status->user->avatar_url;
             foreach ($status->comments as $comment) {
                 $comment->user->avatar = $comment->user->avatar_url;
             }
@@ -91,10 +92,14 @@ class StatusController extends Controller
                 }
             })
             ->orderBy('created_at', 'desc')
-            ->with(['comments' => function ($query) {
+            ->with(['user' => function ($query) {
+                $query->select('id', 'name', 'avatar');
+            }, 'comments' => function ($query) {
                 $query->where('status', 1)
                     ->orderBy('created_at', 'desc')
-                    ->with('user');
+                    ->with(['user' => function ($q) {
+                        $q->select('id', 'name', 'avatar');
+                    }]);
             }])
             ->get();
 
@@ -105,8 +110,14 @@ class StatusController extends Controller
 
         foreach ($statuses as $status) {
             $status->liked = in_array($status->id, $likedStatusIds);
+            $status->is_liked = $status->liked;
+            if ($status->user) {
+                $status->user->avatar = $status->user->avatar_url;
+            }
             foreach ($status->comments as $comment) {
-                $comment->user->avatar = $comment->user->avatar_url;
+                if ($comment->user) {
+                    $comment->user->avatar = $comment->user->avatar_url;
+                }
             }
         }
 
@@ -206,6 +217,14 @@ class StatusController extends Controller
             'content' => $request->content,
             'parent_id' => $request->parent_id ?? null,
         ]);
+
+        $comment->load(['user' => function ($query) {
+            $query->select('id', 'name', 'avatar');
+        }]);
+        
+        if ($comment->user) {
+            $comment->user->avatar = $comment->user->avatar_url;
+        }
 
         $status->increment('comments_count');
 

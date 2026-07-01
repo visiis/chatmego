@@ -304,7 +304,7 @@ class AuthController extends Controller
             'phone' => $user->phone,
             'nickname' => $user->name,
             'avatar' => $user->avatar_url,
-            'gender' => (int)$user->gender,
+            'gender' => (int)$user->gender === 1 ? 'male' : ((int)$user->gender === 2 ? 'female' : ''),
             'birthday' => $user->birthday ?: '',
             'bio' => '',
             'love_declaration' => $user->love_declaration ?: '',

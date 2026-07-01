@@ -56,7 +56,7 @@
           <view class="menu-icon">
             <FontAwesome name="comment-dots" size="28px" color="#ff9f43" />
           </view>
-          <text class="menu-text">我的動態</text>
+          <text class="menu-text">我的朋友圈</text>
           <FontAwesome class="menu-arrow" name="chevron-right" size="24px" color="#999" />
         </view>
         
@@ -145,7 +145,7 @@
       </view>
       <view class="bottom-tab-item" @click="goStatuses">
         <FontAwesome name="comment-dots" size="24px" color="#999" />
-        <text class="tab-text">說說</text>
+        <text class="tab-text">朋友圈</text>
       </view>
       <view class="bottom-tab-item active">
         <FontAwesome name="user" size="24px" color="#ff6b9d" />

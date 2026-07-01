@@ -27,7 +27,7 @@ const tabs: TabItem[] = [
   { text: '发现', icon: 'compass', path: '/pages/discover/cards' },
   { text: '好友', icon: 'users', path: '/pages/friends/index' },
   { text: '聊天', icon: 'comment', path: '/pages/messages/index' },
-  { text: '说说', icon: 'pencil', path: '/pages/statuses/index' },
+  { text: '朋友圈', icon: 'comment-dots', path: '/pages/statuses/index' },
   { text: '我的', icon: 'user', path: '/pages/profile/index' }
 ]
 

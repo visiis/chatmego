@@ -277,6 +277,8 @@ function showFriendActions(friend: Friend) {
 async function handleBlock() {
   if (!selectedFriend.value) return
   
+  showModal.value = false
+  
   uni.showModal({
     title: '加入黑名單',
     content: `確定要將 ${selectedFriend.value.name || selectedFriend.value.nickname} 加入黑名單嗎？`,
@@ -285,7 +287,6 @@ async function handleBlock() {
         try {
           await blockFriend(selectedFriend.value!.id)
           uni.showToast({ title: '已拉黑', icon: 'success' })
-          showModal.value = false
           loadFriends()
           loadBlocked()
         } catch (error) {
@@ -300,6 +301,8 @@ async function handleBlock() {
 async function handleDelete() {
   if (!selectedFriend.value) return
   
+  showModal.value = false
+  
   uni.showModal({
     title: '刪除好友',
     content: `確定要刪除 ${selectedFriend.value.name || selectedFriend.value.nickname} 嗎？`,
@@ -308,7 +311,6 @@ async function handleDelete() {
         try {
           await deleteFriend(selectedFriend.value!.id)
           uni.showToast({ title: '已刪除', icon: 'success' })
-          showModal.value = false
           loadFriends()
         } catch (error) {
           console.error('刪除失敗:', error)

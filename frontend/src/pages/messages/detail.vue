@@ -18,11 +18,12 @@
       class="chat-content"
       scroll-y
       :scroll-top="scrollTop"
-      enhanced
+      :scroll-into-view="scrollToId"
+      scroll-with-animation
       :show-scrollbar="false"
       @scroll="onScroll"
     >
-      <view class="messages-wrapper">
+      <view class="messages-wrapper" :id="scrollWrapperId">
         <view v-if="messages.length === 0 && !isLoaded" class="loading-state">
           <view class="loading-spinner"></view>
           <text class="loading-text">加載中...</text>
@@ -99,26 +100,30 @@
           <FontAwesome name="times" size="28px" color="#999" />
         </view>
       </view>
-      <scroll-view scroll-y class="gift-list">
-        <view 
-          class="gift-item" 
-          v-for="gift in gifts" 
-          :key="gift.id"
-          @click="selectGift(gift)"
-        >
-          <image 
-            class="gift-thumb" 
-            :src="gift.image_thumbnail || gift.image" 
-            mode="aspectFill" 
-          />
-          <text class="gift-item-name">{{ gift.name }}</text>
-          <view class="gift-item-price">
-            <text v-if="gift.price_type === 'activity_points'" class="price-icon">💎</text>
-            <text v-else class="price-icon">💰</text>
-            <text class="price-text">{{ gift.price }}</text>
+      <scroll-view scroll-y class="gift-list" scroll-with-animation>
+        <view class="gift-grid" v-if="gifts.length > 0">
+          <view 
+            class="gift-item" 
+            v-for="gift in gifts" 
+            :key="gift.id"
+            @click="selectGift(gift)"
+          >
+            <view class="gift-thumb-wrapper">
+              <image 
+                class="gift-thumb" 
+                :src="gift.image_thumbnail || gift.image" 
+                mode="aspectFill" 
+              />
+            </view>
+            <text class="gift-item-name">{{ gift.name }}</text>
+            <view class="gift-item-price">
+              <text v-if="gift.price_type === 'activity_points'" class="price-icon">💎</text>
+              <text v-else class="price-icon">💰</text>
+              <text class="price-text">{{ gift.price }}</text>
+            </view>
           </view>
         </view>
-        <view class="no-gifts" v-if="gifts.length === 0">
+        <view class="no-gifts" v-else>
           <FontAwesome name="gift" size="48px" color="#ccc" />
           <text>暫無可用禮物</text>
         </view>
@@ -173,6 +178,7 @@ const myId = ref(0)
 
 const inputText = ref('')
 const scrollTop = ref(0)
+const scrollToId = ref('')
 const showGiftPanel = ref(false)
 const gifts = ref<any[]>([])
 const loading = ref(false)
@@ -180,6 +186,7 @@ const isSendingMessage = ref(false)
 const hasMoreHistory = ref(true)
 const isLoadingHistory = ref(false)
 const isLoaded = ref(false)
+const scrollWrapperId = ref('scroll-wrapper-' + Date.now())
 
 interface ChatMessage {
   id: number
@@ -288,10 +295,6 @@ async function loadMessages() {
     })
     hasMoreHistory.value = messages.value.length >= 20
     isLoaded.value = true
-    
-    nextTick(() => {
-      scrollTop.value = scrollTop.value + 1
-    })
   }
   
   try {
@@ -320,10 +323,6 @@ async function loadMessages() {
       hasMoreHistory.value = messageList.length >= 20
       isLoaded.value = true
       
-      nextTick(() => {
-        scrollTop.value = scrollTop.value + 1
-      })
-      
       saveCache()
     } else {
       if (cachedMessages.length === 0) {
@@ -338,6 +337,9 @@ async function loadMessages() {
   } finally {
     loading.value = false
   }
+  
+  await nextTick()
+  scrollToBottom()
 }
 
 async function loadMoreHistory() {
@@ -351,13 +353,17 @@ async function loadMoreHistory() {
     const oldestMessage = messages.value[0]
     const historyMessages = await fetchHistoryMessages(friendId.value, oldestMessage.id, 20)
     
+    console.log('历史消息:', historyMessages)
+    
     if (historyMessages.length > 0) {
       const formattedMessages = historyMessages.map(msg => formatMessage(msg))
       const existingIds = new Set(messages.value.map(m => m.id))
       
       const filteredMessages = formattedMessages.filter(m => !existingIds.has(m.id))
       
-      messages.value = [...filteredMessages, ...messages.value]
+      if (filteredMessages.length > 0) {
+        messages.value = [...filteredMessages, ...messages.value]
+      }
       
       if (historyMessages.length < 20) {
         hasMoreHistory.value = false
@@ -417,14 +423,21 @@ function formatTime(dateStr: string): string {
 }
 
 function scrollToBottom() {
-  setTimeout(() => {
-    scrollTop.value = scrollTop.value + 1
-  }, 50)
+  nextTick(() => {
+    const query = uni.createSelectorQuery()
+    query.select('#' + scrollWrapperId.value).boundingClientRect((rect: any) => {
+      if (rect && rect.height) {
+        scrollTop.value = rect.height
+      } else {
+        scrollTop.value = 9999999
+      }
+    }).exec()
+  })
 }
 
 function onScroll(e: any) {
-  // 如果滚动到顶部（scrollTop < 50），加载更多历史记录
-  if (e.detail.scrollTop < 50 && !isLoadingHistory.value && hasMoreHistory.value) {
+  const scrollTopVal = e.detail.scrollTop
+  if (scrollTopVal < 50 && !isLoadingHistory.value && hasMoreHistory.value) {
     loadMoreHistory()
   }
 }
@@ -454,9 +467,8 @@ async function sendMessage() {
     messages.value.push(tempMsg)
     inputText.value = ''
     
-    nextTick(() => {
-      scrollToBottom()
-    })
+    await nextTick()
+    scrollToBottom()
     
     const result = await apiSendMessage(friendId.value, content)
     
@@ -471,9 +483,8 @@ async function sendMessage() {
       messages.value[index].to_user_id = parseInt(result.to_user_id) || friendId.value
     }
     
-    nextTick(() => {
-      saveCache()
-    })
+    await nextTick()
+    saveCache()
   } catch (error) {
     console.error('發送消息失敗:', error)
     uni.showToast({ title: '發送失敗', icon: 'none' })
@@ -521,9 +532,8 @@ async function selectGift(gift: any) {
     const msg = formatMessage(result)
     messages.value.push(msg)
     
-    nextTick(() => {
-      scrollToBottom()
-    })
+    await nextTick()
+    scrollToBottom()
     
     saveCache()
     
@@ -617,7 +627,6 @@ page {
 .messages-wrapper {
   padding: 24rpx 0;
   padding-bottom: 180rpx;
-  min-height: 100%;
 }
 
 .loading-state {
@@ -855,7 +864,7 @@ page {
 
 .gift-panel {
   position: fixed;
-  bottom: 140rpx;
+  bottom: 0;
   left: 0;
   right: 0;
   background: #fff;
@@ -865,6 +874,7 @@ page {
   max-height: 60vh;
   display: flex;
   flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .gift-header {
@@ -892,30 +902,48 @@ page {
 .gift-list {
   flex: 1;
   padding: 24rpx;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20rpx;
+  overflow-y: auto;
+}
+
+.gift-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 16rpx;
+  gap: 16rpx;
 }
 
 .gift-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16rpx;
+  width: calc(25% - 12rpx);
+  padding: 16rpx 8rpx;
   border-radius: 16rpx;
   background: #f9f9f9;
-  transition: background 0.2s;
+  box-sizing: border-box;
   
   &:active {
     background: #f0f0f0;
   }
 }
 
-.gift-thumb {
-  width: 100rpx;
-  height: 100rpx;
+.gift-thumb-wrapper {
+  width: 100%;
+  padding-bottom: 100%;
+  position: relative;
   border-radius: 12rpx;
+  overflow: hidden;
+  background: #fff;
   margin-bottom: 12rpx;
+}
+
+.gift-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .gift-item-name {
@@ -926,7 +954,7 @@ page {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 100%;
+  width: 100%;
 }
 
 .gift-item-price {
@@ -947,7 +975,7 @@ page {
 }
 
 .no-gifts {
-  grid-column: 1/-1;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;

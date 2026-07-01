@@ -234,4 +234,75 @@ class GiftController extends Controller
             })
         ]);
     }
+
+    public function getGiftHistory(Request $request)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json(['message' => '未授权'], 401);
+        }
+
+        $receivedGifts = UserGift::where('user_id', $user->id)
+            ->with('gift')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $sentMessages = \App\Models\Message::where('from_user_id', $user->id)
+            ->where('type', 'gift')
+            ->with(['toUser' => function ($query) {
+                $query->select('id', 'name', 'avatar');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $sentGifts = [];
+        foreach ($sentMessages as $msg) {
+            try {
+                $giftData = json_decode($msg->message, true);
+                $giftId = $giftData['gift_id'] ?? null;
+                
+                if ($giftId) {
+                    $gift = Gift::find($giftId);
+                    if ($gift) {
+                        $sentGifts[] = [
+                            'id' => $msg->id,
+                            'gift_id' => $gift->id,
+                            'name' => $gift->name,
+                            'image' => $gift->image,
+                            'description' => $gift->description,
+                            'price_type' => $gift->price_type,
+                            'price' => $gift->price,
+                            'quantity' => 1,
+                            'created_at' => $msg->created_at ? $msg->created_at->toISOString() : null,
+                            'to_user_name' => $msg->toUser->name ?? '用户'
+                        ];
+                    }
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'success',
+            'data' => [
+                'received_gifts' => $receivedGifts->map(function ($ug) {
+                    return [
+                        'id' => $ug->id,
+                        'gift_id' => $ug->gift->id,
+                        'name' => $ug->gift->name,
+                        'image' => $ug->gift->image,
+                        'description' => $ug->gift->description,
+                        'price_type' => $ug->gift->price_type,
+                        'price' => $ug->gift->price,
+                        'quantity' => $ug->quantity,
+                        'created_at' => $ug->created_at ? $ug->created_at->toISOString() : null
+                    ];
+                }),
+                'sent_gifts' => $sentGifts
+            ]
+        ]);
+    }
 }

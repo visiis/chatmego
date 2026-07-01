@@ -148,7 +148,7 @@ class UserController extends Controller
             'phone' => $user->phone,
             'name' => $user->name,
             'avatar' => $user->avatar_url,
-            'gender' => $user->gender,
+            'gender' => (int)$user->gender === 1 ? 'male' : ((int)$user->gender === 2 ? 'female' : ''),
             'age' => $user->age,
             'height' => $user->height,
             'weight' => $user->weight,

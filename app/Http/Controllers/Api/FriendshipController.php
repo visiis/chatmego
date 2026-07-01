@@ -39,7 +39,7 @@ class FriendshipController extends Controller
                 'name' => $friendUser->name ?: $friendUser->nickname,
                 'nickname' => $friendUser->nickname ?: $friendUser->name,
                 'avatar' => $friendUser->avatar ?: '',
-                'gender' => $friendUser->gender ?: 0,
+                'gender' => (int)$friendUser->gender === 1 ? 'male' : ((int)$friendUser->gender === 2 ? 'female' : ''),
                 'love_declaration' => '',
                 'status' => 'online'
             ];
@@ -216,7 +216,7 @@ class FriendshipController extends Controller
                 'name' => $friendUser->name ?: $friendUser->nickname,
                 'nickname' => $friendUser->nickname ?: $friendUser->name,
                 'avatar' => $friendUser->avatar ?: '',
-                'gender' => $friendUser->gender ?: 0,
+                'gender' => (int)$friendUser->gender === 1 ? 'male' : ((int)$friendUser->gender === 2 ? 'female' : ''),
                 'love_declaration' => ''
             ];
         });

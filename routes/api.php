@@ -85,6 +85,7 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::get('my-gifts', [App\Http\Controllers\Api\GiftController::class, 'getUserGifts']);
         Route::get('all', [App\Http\Controllers\Api\GiftController::class, 'getAllGifts']);
         Route::get('redemptions', [App\Http\Controllers\Api\GiftController::class, 'getRedemptionHistory']);
+        Route::get('history', [App\Http\Controllers\Api\GiftController::class, 'getGiftHistory']);
         Route::post('save-redemption-info', [App\Http\Controllers\Api\GiftController::class, 'saveRedemptionInfo']);
         Route::post('redeem', [App\Http\Controllers\Api\GiftController::class, 'redeem']);
     });

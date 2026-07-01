@@ -41,7 +41,7 @@
     {
       "path": "pages/statuses/index",
       "style": {
-        "navigationBarTitleText": "说说"
+        "navigationBarTitleText": "朋友圈"
       }
     },
     {
@@ -90,7 +90,7 @@
       "path": "pages/profile/statuses",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "我的动态"
+        "navigationBarTitleText": "我的朋友圈"
       }
     },
     {
@@ -163,7 +163,7 @@
       },
       {
         "pagePath": "pages/statuses/index",
-        "text": "说说"
+        "text": "朋友圈"
       },
       {
         "pagePath": "pages/profile/index",

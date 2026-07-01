@@ -7,46 +7,44 @@
         <FontAwesome name="arrow-left" size="24px" color="#fff" />
       </view>
       <view class="nav-center">
-        <text class="nav-title">我的动态</text>
+        <text class="nav-title">我的朋友圈</text>
       </view>
       <view class="nav-right"></view>
     </view>
     
-    <scroll-view class="content" scroll-y>
-      <view class="publish-card" v-if="showPublish">
-        <view class="publish-header">
-          <image class="publish-avatar" :src="userAvatar" mode="aspectFill" />
-          <textarea 
-            class="publish-input" 
-            placeholder="分享你的心情..." 
-            v-model="publishContent"
-            :auto-height="true"
-            :maxlength="2000"
-          />
-        </view>
-        <view class="publish-images" v-if="uploadImages.length > 0">
-          <view class="publish-image-item" v-for="(img, index) in uploadImages" :key="index">
-            <image class="publish-image" :src="img" mode="aspectFill" />
-            <view class="remove-image" @click="removeUploadImage(index)">
-              <FontAwesome name="times" size="20px" color="#fff" />
-            </view>
-          </view>
-        </view>
-        <view class="publish-footer">
-          <view class="publish-action" @click="chooseImages">
-            <FontAwesome name="image" size="24px" color="#ff6b9d" />
-            <text>图片</text>
-          </view>
-          <view class="publish-action" @click="togglePrivate">
-            <FontAwesome :name="isPrivate ? 'lock' : 'lock-open'" size="24px" :color="isPrivate ? '#999' : '#ff6b9d'" />
-            <text>{{ isPrivate ? '仅自己可见' : '公开' }}</text>
-          </view>
-          <view class="publish-btn" :class="{ disabled: !publishContent.trim() }" @click="submitStatus">
-            <text>发布</text>
+    <view class="publish-area">
+      <image class="publish-avatar" :src="userAvatar" mode="aspectFill" />
+      <textarea 
+        class="publish-input" 
+        placeholder="分享你的心情..." 
+        v-model="publishContent"
+        :auto-height="true"
+        :maxlength="2000"
+      />
+      <view class="publish-images" v-if="uploadImages.length > 0">
+        <view class="publish-image-item" v-for="(img, index) in uploadImages" :key="index">
+          <image class="publish-image" :src="img" mode="aspectFill" />
+          <view class="remove-image" @click="removeUploadImage(index)">
+            <FontAwesome name="times" size="20px" color="#fff" />
           </view>
         </view>
       </view>
-      
+      <view class="publish-footer">
+        <view class="publish-action" @click="chooseImages">
+          <FontAwesome name="image" size="24px" color="#ff6b9d" />
+          <text>图片</text>
+        </view>
+        <view class="publish-action" @click="togglePrivate">
+          <FontAwesome :name="isPrivate ? 'lock' : 'lock-open'" size="24px" :color="isPrivate ? '#999' : '#ff6b9d'" />
+          <text>{{ isPrivate ? '仅自己可见' : '公开' }}</text>
+        </view>
+        <view class="publish-btn" :class="{ disabled: !publishContent.trim() }" @click="submitStatus">
+          <text>发布</text>
+        </view>
+      </view>
+    </view>
+    
+    <scroll-view class="content" scroll-y>
       <view class="status-list">
         <view class="status-card" v-for="status in statuses" :key="status.id">
           <view class="status-header">
@@ -113,17 +111,18 @@
           </view>
         </view>
         
-        <view class="empty-state" v-if="statuses.length === 0">
+        <view class="empty-state" v-if="statuses.length === 0 && !loading">
           <FontAwesome name="comment-dots" size="80px" color="#ddd" />
-          <text class="empty-text">暂无动态</text>
-          <text class="empty-hint">点击下方按钮发布第一条动态吧</text>
+          <text class="empty-text">暂无朋友圈</text>
+      <text class="empty-hint">在上方输入框发布第一条朋友圈吧</text>
+        </view>
+        
+        <view class="loading-more" v-if="loading">
+          <view class="loading-spinner-small"></view>
+          <text>加载中...</text>
         </view>
       </view>
     </scroll-view>
-    
-    <view class="fab-btn" @click="showPublish = !showPublish">
-      <FontAwesome name="plus" size="32px" color="#fff" />
-    </view>
   </view>
 </template>
 
@@ -141,11 +140,11 @@ import {
 import { getProfile } from '../../api/user'
 
 const statuses = ref<Status[]>([])
-const showPublish = ref(false)
 const publishContent = ref('')
 const uploadImages = ref<string[]>([])
 const isPrivate = ref(false)
 const commentInputs = reactive<Record<number, string>>({})
+const loading = ref(false)
 
 const userAvatar = ref('')
 const userName = ref('')
@@ -153,30 +152,51 @@ const userId = ref(0)
 
 onMounted(() => {
   loadUserInfo()
-  loadStatuses()
 })
 
 async function loadUserInfo() {
   try {
     const user = await getProfile()
     userAvatar.value = user.avatar || user.avatar_url || ''
-    userName.value = user.name || ''
+    userName.value = user.name || user.nickname || ''
     userId.value = user.id || 0
+    uni.setStorageSync('user', JSON.stringify(user))
+    
+    if (userId.value) {
+      loadStatuses()
+    }
   } catch (error) {
     console.error('加载用户信息失败:', error)
+    const userStr = uni.getStorageSync('user')
+    if (userStr) {
+      const user = JSON.parse(userStr)
+      userAvatar.value = user.avatar || user.avatar_url || ''
+      userName.value = user.name || user.nickname || ''
+      userId.value = user.id || 0
+      if (userId.value) {
+        loadStatuses()
+      }
+    }
   }
 }
 
 async function loadStatuses() {
   if (!userId.value) return
+  
+  loading.value = true
+  
   try {
-    statuses.value = await getUserStatuses(userId.value)
+    const data = await getUserStatuses(userId.value)
+    statuses.value = data || []
+    
     statuses.value.forEach(s => {
       s.showComments = false
       commentInputs[s.id] = ''
     })
   } catch (error) {
-    console.error('加载动态失败:', error)
+    console.error('加载朋友圈失败:', error)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -227,16 +247,11 @@ async function submitStatus() {
     publishContent.value = ''
     uploadImages.value = []
     isPrivate.value = false
-    showPublish.value = false
     loadStatuses()
   } catch (error) {
     console.error('发布失败:', error)
     uni.showToast({ title: '发布失败', icon: 'none' })
   }
-}
-
-function getCommentInput(statusId: number): string {
-  return commentInputs[statusId] || ''
 }
 
 function toggleLike(status: Status) {
@@ -278,7 +293,7 @@ function showStatusOptions(status: Status) {
       if (res.tapIndex === 0) {
         uni.showModal({
           title: '确认删除',
-          content: '确定要删除这条动态吗？',
+          content: '确定要删除这条朋友圈吗？',
           success: async (modalRes) => {
             if (modalRes.confirm) {
               try {
@@ -313,6 +328,10 @@ function goBack() {
 </script>
 
 <style lang="scss">
+* {
+  box-sizing: border-box;
+}
+
 .page {
   height: 100%;
   margin: 0;
@@ -322,7 +341,8 @@ function goBack() {
 .statuses-container {
   min-height: 100vh;
   background: #f5f5f5;
-  padding-bottom: 120rpx;
+  display: flex;
+  flex-direction: column;
 }
 
 .status-bar {
@@ -353,46 +373,28 @@ function goBack() {
   font-weight: 600;
 }
 
-.content {
-  padding: 24rpx;
-  height: calc(100vh - 200rpx);
-}
-
-.publish-card {
+.publish-area {
   background: #fff;
-  border-radius: 16rpx;
   padding: 24rpx;
-  margin-bottom: 24rpx;
-}
-
-.publish-header {
-  display: flex;
-  gap: 16rpx;
-}
-
-.publish-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  background: #f0f0f0;
-  flex-shrink: 0;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .publish-input {
-  flex: 1;
+  width: 100%;
   font-size: 28rpx;
   color: #333;
   background: #f8f9fa;
   border-radius: 12rpx;
   padding: 16rpx;
   min-height: 120rpx;
+  margin-bottom: 16rpx;
 }
 
 .publish-images {
   display: flex;
   flex-wrap: wrap;
   gap: 12rpx;
-  margin-top: 16rpx;
+  margin-bottom: 16rpx;
 }
 
 .publish-image-item {
@@ -425,9 +427,6 @@ function goBack() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 20rpx;
-  padding-top: 16rpx;
-  border-top: 1rpx solid #f0f0f0;
 }
 
 .publish-action {
@@ -443,18 +442,29 @@ function goBack() {
 
 .publish-btn {
   background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
-  padding: 16rpx 40rpx;
+  padding: 0 40rpx;
   border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 72rpx;
   
   text {
     font-size: 28rpx;
     color: #fff;
     font-weight: 500;
+    line-height: 1;
   }
   
   &.disabled {
     opacity: 0.5;
   }
+}
+
+.content {
+  flex: 1;
+  padding: 24rpx;
+  height: calc(100vh - 400rpx);
 }
 
 .status-list {
@@ -620,10 +630,12 @@ function goBack() {
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 72rpx;
   
   text {
     font-size: 28rpx;
     color: #fff;
+    line-height: 1;
   }
 }
 
@@ -646,18 +658,26 @@ function goBack() {
   margin-top: 12rpx;
 }
 
-.fab-btn {
-  position: fixed;
-  bottom: 48rpx;
-  right: 48rpx;
-  width: 120rpx;
-  height: 120rpx;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
-  border-radius: 50%;
+.loading-more {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.4);
-  z-index: 100;
+  gap: 12rpx;
+  padding: 24rpx;
+  font-size: 26rpx;
+  color: #999;
+}
+
+.loading-spinner-small {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid #f0f0f0;
+  border-top-color: #ff6b9d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

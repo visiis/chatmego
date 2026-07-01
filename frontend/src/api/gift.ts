@@ -45,6 +45,11 @@ export interface GiftResponse {
   has_redemption_info: boolean
 }
 
+export interface GiftHistory {
+  received_gifts: UserGift[]
+  sent_gifts: UserGift[]
+}
+
 export interface RedemptionInfo {
   recipient_name: string
   phone: string
@@ -84,6 +89,19 @@ export function getRedemptionHistory(): Promise<Redemption[]> {
     request('/api/gift/redemptions', 'GET', undefined, { 'Authorization': 'Bearer ' + token })
       .then(response => {
         resolve(response.data as Redemption[])
+      })
+      .catch(error => {
+        reject(error)
+      })
+  })
+}
+
+export function getGiftHistory(): Promise<GiftHistory> {
+  return new Promise((resolve, reject) => {
+    const token = uni.getStorageSync('token')
+    request('/api/gift/history', 'GET', undefined, { 'Authorization': 'Bearer ' + token })
+      .then(response => {
+        resolve(response.data as GiftHistory)
       })
       .catch(error => {
         reject(error)

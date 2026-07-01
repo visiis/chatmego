@@ -252,7 +252,7 @@ class ChatController extends Controller
             'code' => 200,
             'message' => 'success',
             'data' => [
-                'messages' => $messages,
+                'messages' => $messages->values()->toArray(),
             ],
             'has_more' => $messages->count() >= $limit,
         ]);

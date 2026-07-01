@@ -1,14 +1,40 @@
 <template>
   <view class="statuses-container">
-    <view class="publish-section" @click="showPublishModal">
+    <view class="status-bar"></view>
+    
+    <view class="publish-area">
       <image 
-        v-if="userAvatar" 
         class="publish-avatar" 
         :src="userAvatar" 
         mode="aspectFill"
       />
-      <view class="publish-input-wrap">
-        <text class="publish-placeholder">發表你的心情...</text>
+      <textarea 
+        class="publish-input" 
+        placeholder="分享你的心情..." 
+        v-model="publishContent"
+        :auto-height="true"
+        :maxlength="2000"
+      />
+      <view class="publish-images" v-if="publishImages.length > 0">
+        <view class="publish-image-item" v-for="(img, index) in publishImages" :key="index">
+          <image class="publish-image" :src="img" mode="aspectFill" />
+          <view class="remove-image" @click="removePublishImage(index)">
+            <FontAwesome name="times" size="20px" color="#fff" />
+          </view>
+        </view>
+      </view>
+      <view class="publish-footer">
+        <view class="publish-action" @click="chooseImage">
+          <FontAwesome name="image" size="24px" color="#ff6b9d" />
+          <text>图片</text>
+        </view>
+        <view class="publish-action" @click="togglePrivate">
+          <FontAwesome :name="isPrivate ? 'lock' : 'lock-open'" size="24px" :color="isPrivate ? '#999' : '#ff6b9d'" />
+          <text>{{ isPrivate ? '仅自己可见' : '公开' }}</text>
+        </view>
+        <view class="publish-btn" :class="{ disabled: !publishContent.trim() }" @click="submitStatus">
+          <text>发布</text>
+        </view>
       </view>
     </view>
     
@@ -32,7 +58,7 @@
             mode="aspectFill"
           />
           <view class="status-user-info">
-            <text class="status-nickname">{{ status.user?.name || status.user?.nickname || '用戶' }}</text>
+            <text class="status-nickname">{{ status.user?.name || status.user?.nickname || '用户' }}</text>
             <text class="status-time">{{ formatTime(status.created_at) }}</text>
           </view>
         </view>
@@ -45,7 +71,7 @@
               :key="index" 
               class="status-image" 
               :src="img" 
-              mode="aspectFill"
+              mode="widthFix"
               @click="previewImage(index, status.images)"
             />
           </view>
@@ -76,7 +102,7 @@
             :key="comment.id" 
             class="comment-item"
           >
-            <text class="comment-author">{{ comment.user?.name || comment.user?.nickname || '用戶' }}</text>
+            <text class="comment-author">{{ comment.user?.name || comment.user?.nickname || '用户' }}</text>
             <text class="comment-text">{{ comment.content }}</text>
           </view>
         </view>
@@ -84,62 +110,29 @@
         <view class="comment-input-wrap">
           <input 
             class="comment-input" 
-            :placeholder="'評論 ' + (status.user?.name || '用戶')"
+            :placeholder="'评论 ' + (status.user?.name || '用户')"
             :value="commentInputs[status.id]"
             @input="e => commentInputs[status.id] = e.detail.value"
             @confirm="submitComment(status)"
           />
-          <button class="comment-btn" @click="submitComment(status)">
-            <text>發送</text>
-          </button>
+          <view class="comment-btn" @click="submitComment(status)">
+            <text>发送</text>
+          </view>
         </view>
       </view>
       
       <view class="loading-more" v-if="loading">
-        <text>加載中...</text>
+        <text>加载中...</text>
       </view>
       <view class="no-more" v-if="!loading && !hasMore">
-        <text>沒有更多了</text>
+        <text>没有更多了</text>
       </view>
     </scroll-view>
-    
-    <view class="publish-modal" v-if="showPublish" @click="closePublishModal">
-      <view class="publish-modal-content" @click.stop>
-        <view class="publish-modal-header">
-          <text class="publish-modal-title">發表說說</text>
-          <text class="publish-modal-close" @click="closePublishModal">×</text>
-        </view>
-        <textarea 
-          class="publish-textarea" 
-          v-model="publishContent" 
-          placeholder="分享你的心情..."
-          :maxlength="500"
-        />
-        <view class="publish-image-section">
-          <view class="publish-image-btn" @click="chooseImage">
-            <FontAwesome name="plus" size="32px" color="#999" />
-          </view>
-          <image 
-            v-for="(img, index) in publishImages" 
-            :key="index" 
-            class="publish-image-preview" 
-            :src="img" 
-            mode="aspectFill"
-          />
-        </view>
-        <view class="publish-footer">
-          <text class="publish-count">{{ publishContent.length }}/500</text>
-          <button class="publish-submit-btn" :disabled="!publishContent.trim()" @click="submitStatus">
-            <text>發表</text>
-          </button>
-        </view>
-      </view>
-    </view>
     
     <view class="bottom-tab">
       <view class="bottom-tab-item" @click="goDiscover">
         <FontAwesome name="compass" size="24px" color="#999" />
-        <text class="tab-text">發現</text>
+        <text class="tab-text">发现</text>
       </view>
       <view class="bottom-tab-item" @click="goFriends">
         <FontAwesome name="users" size="24px" color="#999" />
@@ -151,7 +144,7 @@
       </view>
       <view class="bottom-tab-item active">
         <FontAwesome name="comment-dots" size="24px" color="#ff6b9d" />
-        <text class="tab-text active">說說</text>
+        <text class="tab-text active">朋友圈</text>
       </view>
       <view class="bottom-tab-item" @click="goProfile">
         <FontAwesome name="user" size="24px" color="#999" />
@@ -171,6 +164,7 @@ import {
   commentStatus,
   type Status
 } from '../../api/status'
+import { getProfile, type UserProfile } from '../../api/user'
 
 const statuses = ref<Status[]>([])
 const loading = ref(false)
@@ -178,11 +172,13 @@ const refreshing = ref(false)
 const hasMore = ref(true)
 const page = ref(1)
 
-const showPublish = ref(false)
 const publishContent = ref('')
 const publishImages = ref<string[]>([])
+const isPrivate = ref(false)
 
 const userAvatar = ref('')
+const userName = ref('')
+const userId = ref(0)
 const defaultAvatar = 'https://chatmego.com/images/default-avatar.svg'
 
 const commentInputs = reactive<Record<number, string>>({})
@@ -192,11 +188,22 @@ onMounted(() => {
   loadStatuses()
 })
 
-function loadUserInfo() {
-  const userStr = uni.getStorageSync('user')
-  if (userStr) {
-    const user = JSON.parse(userStr)
+async function loadUserInfo() {
+  try {
+    const user = await getProfile()
     userAvatar.value = user.avatar || user.avatar_url || ''
+    userName.value = user.name || user.nickname || ''
+    userId.value = user.id || 0
+    uni.setStorageSync('user', JSON.stringify(user))
+  } catch (error) {
+    console.error('加载用户信息失败:', error)
+    const userStr = uni.getStorageSync('user')
+    if (userStr) {
+      const user = JSON.parse(userStr)
+      userAvatar.value = user.avatar || user.avatar_url || ''
+      userName.value = user.name || user.nickname || ''
+      userId.value = user.id || 0
+    }
   }
 }
 
@@ -225,8 +232,8 @@ async function loadStatuses(isRefresh = false) {
     
     page.value++
   } catch (error) {
-    console.error('加載動態失敗:', error)
-    uni.showToast({ title: '加載失敗', icon: 'none' })
+    console.error('加载动态失败:', error)
+    uni.showToast({ title: '加载失败', icon: 'none' })
   } finally {
     loading.value = false
     refreshing.value = false
@@ -241,16 +248,6 @@ function onRefresh() {
   loadStatuses(true)
 }
 
-function showPublishModal() {
-  showPublish.value = true
-}
-
-function closePublishModal() {
-  showPublish.value = false
-  publishContent.value = ''
-  publishImages.value = []
-}
-
 function chooseImage() {
   uni.chooseImage({
     count: 9 - publishImages.value.length,
@@ -260,24 +257,31 @@ function chooseImage() {
   })
 }
 
+function removePublishImage(index: number) {
+  publishImages.value.splice(index, 1)
+}
+
+function togglePrivate() {
+  isPrivate.value = !isPrivate.value
+}
+
 async function submitStatus() {
   if (!publishContent.value.trim()) {
-    uni.showToast({ title: '請輸入內容', icon: 'none' })
+    uni.showToast({ title: '请输入内容', icon: 'none' })
     return
   }
   
   try {
-    await createStatus({
-      content: publishContent.value,
-      images: publishImages.value
-    })
+    await createStatus(publishContent.value, publishImages.value, isPrivate.value)
     
-    uni.showToast({ title: '發表成功', icon: 'success' })
-    closePublishModal()
+    uni.showToast({ title: '发布成功', icon: 'success' })
+    publishContent.value = ''
+    publishImages.value = []
+    isPrivate.value = false
     loadStatuses(true)
   } catch (error) {
-    console.error('發表失敗:', error)
-    uni.showToast({ title: '發表失敗', icon: 'none' })
+    console.error('发布失败:', error)
+    uni.showToast({ title: '发布失败', icon: 'none' })
   }
 }
 
@@ -287,7 +291,7 @@ async function toggleLike(status: Status) {
     status.is_liked = !status.is_liked
     status.likes_count = status.is_liked ? (status.likes_count || 0) + 1 : Math.max(0, (status.likes_count || 0) - 1)
   } catch (error) {
-    console.error('點贊失敗:', error)
+    console.error('点赞失败:', error)
   }
 }
 
@@ -298,7 +302,7 @@ function focusComment(status: Status) {
 async function submitComment(status: Status) {
   const content = commentInputs[status.id]
   if (!content?.trim()) {
-    uni.showToast({ title: '請輸入評論', icon: 'none' })
+    uni.showToast({ title: '请输入评论', icon: 'none' })
     return
   }
   
@@ -311,10 +315,10 @@ async function submitComment(status: Status) {
     }
     status.comments_count = (status.comments_count || 0) + 1
     commentInputs[status.id] = ''
-    uni.showToast({ title: '評論成功', icon: 'success' })
+    uni.showToast({ title: '评论成功', icon: 'success' })
   } catch (error) {
-    console.error('評論失敗:', error)
-    uni.showToast({ title: '評論失敗', icon: 'none' })
+    console.error('评论失败:', error)
+    uni.showToast({ title: '评论失败', icon: 'none' })
   }
 }
 
@@ -336,9 +340,9 @@ function formatTime(dateStr: string | undefined): string {
   const day = 24 * hour
   const week = 7 * day
   
-  if (diff < minute) return '剛才'
-  if (diff < hour) return Math.floor(diff / minute) + '分鐘前'
-  if (diff < day) return Math.floor(diff / hour) + '小時前'
+  if (diff < minute) return '刚刚'
+  if (diff < hour) return Math.floor(diff / minute) + '分钟前'
+  if (diff < day) return Math.floor(diff / hour) + '小时前'
   if (diff < week) return Math.floor(diff / day) + '天前'
   
   return `${date.getMonth() + 1}月${date.getDate()}日`
@@ -374,38 +378,108 @@ page {
   padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
 }
 
-.publish-section {
+.status-bar {
+  height: var(--status-bar-height, 44px);
+}
+
+.publish-area {
   background: #fff;
-  margin: 20rpx;
   padding: 24rpx;
-  border-radius: 16rpx;
-  display: flex;
-  align-items: center;
-  
-  &:active {
-    background: #f8f9fa;
-  }
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .publish-avatar {
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
-  margin-right: 20rpx;
-  background: #eee;
+  background: #f0f0f0;
+  margin-bottom: 16rpx;
 }
 
-.publish-input-wrap {
-  flex: 1;
-}
-
-.publish-placeholder {
+.publish-input {
+  width: 100%;
   font-size: 30rpx;
-  color: #999;
+  color: #333;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  min-height: 120rpx;
+  margin-bottom: 16rpx;
+}
+
+.publish-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.publish-image-item {
+  width: calc(33.33% - 8rpx);
+  aspect-ratio: 1;
+  position: relative;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.publish-image {
+  width: 100%;
+  height: 100%;
+}
+
+.remove-image {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.publish-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.publish-action {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  
+  text {
+    font-size: 26rpx;
+    color: #ff6b9d;
+  }
+}
+
+.publish-btn {
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  padding: 0 40rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 72rpx;
+  
+  text {
+    font-size: 28rpx;
+    color: #fff;
+    font-weight: 500;
+    line-height: 1;
+  }
+  
+  &.disabled {
+    opacity: 0.5;
+  }
 }
 
 .status-list {
-  height: calc(100vh - 280rpx - 120rpx - env(safe-area-inset-bottom));
+  height: calc(100vh - 400rpx - 120rpx - env(safe-area-inset-bottom));
 }
 
 .status-card {
@@ -459,14 +533,13 @@ page {
 .status-images {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
+  gap: 8rpx;
   margin-top: 16rpx;
 }
 
 .status-image {
-  width: calc(33.33% - 8rpx);
-  height: 200rpx;
-  border-radius: 12rpx;
+  width: calc(33.33% - 6rpx);
+  border-radius: 8rpx;
 }
 
 .status-stats {
@@ -538,17 +611,16 @@ page {
 .comment-btn {
   height: 72rpx;
   padding: 0 32rpx;
-  background: #ff6b9d;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   border-radius: 36rpx;
-  border: none;
-  
-  &::after {
-    border: none;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   text {
     color: #fff;
     font-size: 28rpx;
+    line-height: 1;
   }
 }
 
@@ -557,112 +629,6 @@ page {
   padding: 24rpx;
   font-size: 26rpx;
   color: #999;
-}
-
-.publish-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: flex-end;
-  z-index: 1000;
-}
-
-.publish-modal-content {
-  width: 100%;
-  background: #fff;
-  border-radius: 24rpx 24rpx 0 0;
-  padding: 24rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-}
-
-.publish-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24rpx;
-}
-
-.publish-modal-title {
-  font-size: 34rpx;
-  color: #333;
-  font-weight: bold;
-}
-
-.publish-modal-close {
-  font-size: 48rpx;
-  color: #999;
-}
-
-.publish-textarea {
-  width: 100%;
-  height: 200rpx;
-  font-size: 32rpx;
-  line-height: 1.6;
-  border: 1rpx solid #eee;
-  border-radius: 12rpx;
-  padding: 16rpx;
-  box-sizing: border-box;
-}
-
-.publish-image-section {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-  margin-top: 20rpx;
-}
-
-.publish-image-btn {
-  width: 120rpx;
-  height: 120rpx;
-  border: 2rpx dashed #ddd;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.publish-image-preview {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 12rpx;
-}
-
-.publish-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 24rpx;
-}
-
-.publish-count {
-  font-size: 26rpx;
-  color: #999;
-}
-
-.publish-submit-btn {
-  height: 80rpx;
-  padding: 0 48rpx;
-  background: #ff6b9d;
-  border-radius: 40rpx;
-  border: none;
-  
-  &::after {
-    border: none;
-  }
-  
-  &[disabled] {
-    background: #ccc;
-  }
-  
-  text {
-    color: #fff;
-    font-size: 30rpx;
-    font-weight: 500;
-  }
 }
 
 .bottom-tab {
