@@ -20,7 +20,7 @@
     <view class="form-section">
       <view class="input-item">
         <view class="input-box">
-          <FontAwesome class="input-icon" name="envelope-o" size="20px" color="#999" />
+          <FontAwesome class="input-icon" name="envelope" type="regular" size="20px" color="#999" />
           <input 
             v-model="form.email" 
             class="input-field" 

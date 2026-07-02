@@ -1,1 +1,0 @@
-import{r as t}from"./request.DXuJK752.js";const a="./static/images/logo.svg";function e(a){return new Promise((e,r)=>{t("/api/auth/login","POST",a).then(t=>{e(t.data)}).catch(t=>{r(t)})})}function r(a){return new Promise((e,r)=>{t("/api/auth/register","POST",a).then(t=>{e(t.data)}).catch(t=>{r(t)})})}export{a as _,e as l,r};
