@@ -1,5 +1,5 @@
 <template>
-  <text class="fa fa-lg" :class="iconClass" :style="iconStyle"></text>
+  <text class="fa" :class="iconClass" :style="iconStyle"></text>
 </template>
 
 <script setup lang="ts">
@@ -14,38 +14,60 @@ const props = defineProps<{
 
 const iconNameMap: Record<string, string> = {
   'coins': 'coins',
-  'calendar-check': 'calendar-check-o',
-  'comment-dots': 'comments-o',
-  'user-circle': 'user-circle-o',
-  'pencil': 'pencil-square-o',
-  'image': 'picture-o',
+  'calendar-check': 'calendar-check',
+  'comment-dots': 'comment-dots',
+  'user-circle': 'user-circle',
+  'pencil': 'pencil',
+  'image': 'image',
   'gift': 'gift',
-  'heart': 'heart-o',
-  'star': 'star-o',
+  'heart': 'heart',
+  'star': 'star',
   'cog': 'gear',
   'compass': 'compass',
   'users': 'users',
-  'comment': 'comment-o',
+  'comment': 'comment',
   'user': 'user',
   'chevron-right': 'chevron-right',
-  'ellipsis-v': 'ellipsis-v',
+  'ellipsis-v': 'ellipsis-vertical',
   'ban': 'ban',
-  'trash': 'trash-o',
-  'check-circle': 'check-circle-o',
+  'trash': 'trash',
+  'check-circle': 'check-circle',
   'mars': 'mars',
   'venus': 'venus',
   'ruler': 'ruler',
-  'weight': 'balance-scale',
+  'weight': 'weight',
   'graduation-cap': 'graduation-cap',
   'gamepad': 'gamepad',
   'user-plus': 'user-plus',
   'crown': 'crown',
-  'bell': 'bell-o'
+  'bell': 'bell',
+  'arrow-left': 'arrow-left',
+  'plus': 'plus',
+  'minus': 'minus',
+  'exchange': 'arrow-right-left',
+  'history': 'history',
+  'credit-card': 'credit-card',
+  'calendar-alt': 'calendar-days',
+  'list-alt': 'list-alt',
+  'info-circle': 'info-circle',
+  'file-text': 'file-text',
+  'file-contract': 'file-contract',
+  'heart-o': 'heart',
+  'star-o': 'star',
+  'bell-o': 'bell',
+  'check-circle-o': 'check-circle',
+  'comment-o': 'comment',
+  'comments-o': 'comment-dots',
+  'user-circle-o': 'user-circle',
+  'picture-o': 'image',
+  'trash-o': 'trash',
+  'pencil-square-o': 'pencil',
+  'calendar-check-o': 'calendar-check',
 }
 
 const iconClass = computed(() => {
   const name = iconNameMap[props.name] || props.name
-  const prefix = props.type === 'brands' ? 'fa' : 'fa'
+  const prefix = props.type === 'brands' ? 'fab' : props.type === 'regular' ? 'far' : 'fas'
   return `${prefix} fa-${name}`
 })
 
