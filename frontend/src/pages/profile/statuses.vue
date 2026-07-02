@@ -1,17 +1,5 @@
 <template>
   <view class="statuses-container">
-    <view class="status-bar"></view>
-    
-    <view class="nav-bar">
-      <view class="nav-left" @click="goBack">
-        <FontAwesome name="arrow-left" size="24px" color="#fff" />
-      </view>
-      <view class="nav-center">
-        <text class="nav-title">我的朋友圈</text>
-      </view>
-      <view class="nav-right"></view>
-    </view>
-    
     <view class="publish-area">
       <image class="publish-avatar" :src="userAvatar" mode="aspectFill" />
       <textarea 
@@ -48,9 +36,14 @@
       <view class="status-list">
         <view class="status-card" v-for="status in statuses" :key="status.id">
           <view class="status-header">
-            <image class="status-avatar" :src="userAvatar" mode="aspectFill" />
+            <image 
+              class="status-avatar" 
+              :src="getStatusAvatar(status)" 
+              mode="aspectFill" 
+              @error="onAvatarError($event, status)"
+            />
             <view class="status-user-info">
-              <text class="status-user-name">{{ userName }}</text>
+              <text class="status-user-name">{{ status.user?.name || status.user?.nickname || userName }}</text>
               <text class="status-time">{{ formatTime(status.created_at) }}</text>
             </view>
             <view class="status-options" v-if="isOwnStatus(status)" @click="showStatusOptions(status)">
@@ -149,10 +142,43 @@ const loading = ref(false)
 const userAvatar = ref('')
 const userName = ref('')
 const userId = ref(0)
+const defaultAvatar = 'https://chatmego.com/images/default-avatar.svg'
 
 onMounted(() => {
   loadUserInfo()
 })
+
+function getStatusAvatar(status: Status): string {
+  const user = status.user
+  if (!user) return defaultAvatar
+  
+  let avatarUrl = user.avatar_url || user.avatar || ''
+  
+  if (!avatarUrl) {
+    return defaultAvatar
+  }
+  
+  if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+    return avatarUrl
+  }
+  
+  if (avatarUrl.startsWith('/storage/')) {
+    avatarUrl = 'https://chatmego.com' + avatarUrl
+  } else if (avatarUrl.startsWith('storage/')) {
+    avatarUrl = 'https://chatmego.com/' + avatarUrl
+  } else if (!avatarUrl.startsWith('/')) {
+    avatarUrl = 'https://chatmego.com/storage/' + avatarUrl
+  }
+  
+  return avatarUrl
+}
+
+function onAvatarError(e: any, status: Status) {
+  if (status.user) {
+    status.user.avatar = defaultAvatar
+    status.user.avatar_url = defaultAvatar
+  }
+}
 
 async function loadUserInfo() {
   try {
@@ -318,13 +344,7 @@ function previewImage(index: number, images: string[]) {
   })
 }
 
-function goBack() {
-  uni.navigateBack({
-    fail: () => {
-      uni.switchTab({ url: '/pages/profile/index' })
-    }
-  })
-}
+
 </script>
 
 <style lang="scss">
@@ -345,34 +365,6 @@ function goBack() {
   flex-direction: column;
 }
 
-.status-bar {
-  height: var(--status-bar-height, 44px);
-}
-
-.nav-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
-  padding: 16rpx 24rpx;
-  position: relative;
-  z-index: 100;
-}
-
-.nav-left, .nav-right {
-  width: 80rpx;
-  height: 80rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-title {
-  font-size: 34rpx;
-  color: #fff;
-  font-weight: 600;
-}
-
 .publish-area {
   background: #fff;
   padding: 24rpx;
@@ -386,7 +378,8 @@ function goBack() {
   background: #f8f9fa;
   border-radius: 12rpx;
   padding: 16rpx;
-  min-height: 120rpx;
+  min-height: 80rpx;
+  height: 80rpx;
   margin-bottom: 16rpx;
 }
 
@@ -483,6 +476,16 @@ function goBack() {
   display: flex;
   align-items: center;
   margin-bottom: 16rpx;
+}
+
+.publish-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #fff;
+  border: 4rpx solid #fff;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
 .status-avatar {

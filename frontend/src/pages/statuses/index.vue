@@ -26,14 +26,14 @@
       <view class="publish-footer">
         <view class="publish-action" @click="chooseImage">
           <FontAwesome name="image" size="24px" color="#ff6b9d" />
-          <text>图片</text>
+          <text>圖片</text>
         </view>
         <view class="publish-action" @click="togglePrivate">
           <FontAwesome :name="isPrivate ? 'lock' : 'lock-open'" size="24px" :color="isPrivate ? '#999' : '#ff6b9d'" />
-          <text>{{ isPrivate ? '仅自己可见' : '公开' }}</text>
+          <text>{{ isPrivate ? '僅自己可見' : '公開' }}</text>
         </view>
         <view class="publish-btn" :class="{ disabled: !publishContent.trim() }" @click="submitStatus">
-          <text>发布</text>
+          <text>發佈</text>
         </view>
       </view>
     </view>
@@ -54,8 +54,9 @@
         <view class="status-header">
           <image 
             class="status-avatar" 
-            :src="status.user?.avatar || status.user?.avatar_url || defaultAvatar" 
+            :src="getStatusAvatar(status)" 
             mode="aspectFill"
+            @error="onAvatarError($event, status)"
           />
           <view class="status-user-info">
             <text class="status-nickname">{{ status.user?.name || status.user?.nickname || '用户' }}</text>
@@ -102,7 +103,7 @@
             :key="comment.id" 
             class="comment-item"
           >
-            <text class="comment-author">{{ comment.user?.name || comment.user?.nickname || '用户' }}</text>
+            <text class="comment-author">{{ comment.user?.name || comment.user?.nickname || '用戶' }}</text>
             <text class="comment-text">{{ comment.content }}</text>
           </view>
         </view>
@@ -110,29 +111,29 @@
         <view class="comment-input-wrap">
           <input 
             class="comment-input" 
-            :placeholder="'评论 ' + (status.user?.name || '用户')"
+            :placeholder="'評論 ' + (status.user?.name || '用戶')"
             :value="commentInputs[status.id]"
             @input="e => commentInputs[status.id] = e.detail.value"
             @confirm="submitComment(status)"
           />
           <view class="comment-btn" @click="submitComment(status)">
-            <text>发送</text>
+            <text>發送</text>
           </view>
         </view>
       </view>
       
       <view class="loading-more" v-if="loading">
-        <text>加载中...</text>
+        <text>載入中...</text>
       </view>
       <view class="no-more" v-if="!loading && !hasMore">
-        <text>没有更多了</text>
+        <text>沒有更多了</text>
       </view>
     </scroll-view>
     
     <view class="bottom-tab">
       <view class="bottom-tab-item" @click="goDiscover">
         <FontAwesome name="compass" size="24px" color="#999" />
-        <text class="tab-text">发现</text>
+        <text class="tab-text">發現</text>
       </view>
       <view class="bottom-tab-item" @click="goFriends">
         <FontAwesome name="users" size="24px" color="#999" />
@@ -144,7 +145,7 @@
       </view>
       <view class="bottom-tab-item active">
         <FontAwesome name="comment-dots" size="24px" color="#ff6b9d" />
-        <text class="tab-text active">朋友圈</text>
+        <text class="tab-text active">說說</text>
       </view>
       <view class="bottom-tab-item" @click="goProfile">
         <FontAwesome name="user" size="24px" color="#999" />
@@ -187,6 +188,38 @@ onMounted(() => {
   loadUserInfo()
   loadStatuses()
 })
+
+function getStatusAvatar(status: Status): string {
+  const user = status.user
+  if (!user) return defaultAvatar
+  
+  let avatarUrl = user.avatar_url || user.avatar || ''
+  
+  if (!avatarUrl) {
+    return defaultAvatar
+  }
+  
+  if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+    return avatarUrl
+  }
+  
+  if (avatarUrl.startsWith('/storage/')) {
+    avatarUrl = 'https://chatmego.com' + avatarUrl
+  } else if (avatarUrl.startsWith('storage/')) {
+    avatarUrl = 'https://chatmego.com/' + avatarUrl
+  } else if (!avatarUrl.startsWith('/')) {
+    avatarUrl = 'https://chatmego.com/storage/' + avatarUrl
+  }
+  
+  return avatarUrl
+}
+
+function onAvatarError(e: any, status: Status) {
+  if (status.user) {
+    status.user.avatar = defaultAvatar
+    status.user.avatar_url = defaultAvatar
+  }
+}
 
 async function loadUserInfo() {
   try {
@@ -403,7 +436,8 @@ page {
   background: #f8f9fa;
   border-radius: 12rpx;
   padding: 16rpx;
-  min-height: 120rpx;
+  min-height: 80rpx;
+  height: 80rpx;
   margin-bottom: 16rpx;
 }
 

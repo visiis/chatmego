@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Friendship;
 use App\Models\Status;
 use App\Models\StatusComment;
 use App\Models\StatusLike;
@@ -36,8 +37,22 @@ class StatusController extends Controller
         $page = $request->input('page', 1);
         $limit = $request->input('limit', 10);
 
+        $friendIds = Friendship::where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                    ->orWhere('friend_id', $user->id);
+            })
+            ->where('status', 'accepted')
+            ->get()
+            ->map(function ($friendship) use ($user) {
+                return $friendship->user_id === $user->id ? $friendship->friend_id : $friendship->user_id;
+            })
+            ->toArray();
+
+        $friendIds[] = $user->id;
+
         $statuses = Status::where('status', 1)
             ->where('is_private', false)
+            ->whereIn('user_id', $friendIds)
             ->orderBy('created_at', 'desc')
             ->with(['user' => function ($query) {
                 $query->select('id', 'name', 'avatar');

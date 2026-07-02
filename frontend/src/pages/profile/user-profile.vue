@@ -51,6 +51,10 @@
             <FontAwesome name="heart" size="24px" color="#fff" />
             <text>{{ attractionStatus === 1 ? '已讚' : attractionStatus === 2 ? '已踩' : '好感' }}</text>
           </view>
+          <view class="action-btn add-friend" @click="sendFriendRequest">
+            <FontAwesome name="user-plus" size="24px" color="#fff" />
+            <text>加為好友</text>
+          </view>
         </view>
       </view>
       
@@ -73,7 +77,7 @@
         
         <view class="detail-item">
           <view class="detail-icon">
-            <FontAwesome name="ruler" size="24px" color="#ff9f43" />
+            <FontAwesome name="tree" size="24px" color="#ff9f43" />
           </view>
           <text class="detail-label">身高</text>
           <text class="detail-value">{{ user?.height ? user.height + 'cm' : '未填' }}</text>
@@ -174,6 +178,7 @@ import { ref, computed, onMounted } from 'vue'
 import FontAwesome from '../../components/FontAwesome.vue'
 import { getUserProfile, type UserProfile } from '../../api/user'
 import { likeUser, dislikeUser, cancelAttraction, getAttractionStatus } from '../../api/attraction'
+import { sendFriendRequest as apiSendFriendRequest } from '../../api/friends'
 
 const user = ref<UserProfile | null>(null)
 const userId = ref(0)
@@ -278,6 +283,18 @@ async function handleAttraction() {
       }
     }
   })
+}
+
+async function sendFriendRequest() {
+  if (!userId.value) return
+  
+  try {
+    await apiSendFriendRequest(userId.value)
+    uni.showToast({ title: '已發送好友請求', icon: 'success' })
+  } catch (error) {
+    console.error('發送好友請求失敗:', error)
+    uni.showToast({ title: (error as any)?.message || '發送失敗', icon: 'none' })
+  }
 }
 
 function formatDate(dateStr?: string): string {
@@ -407,17 +424,17 @@ page {
 
 .action-buttons {
   display: flex;
-  gap: 32rpx;
+  gap: 24rpx;
   margin-top: 40rpx;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 20rpx 48rpx;
+  gap: 8rpx;
+  padding: 16rpx 32rpx;
   border-radius: 40rpx;
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #fff;
 }
 
@@ -435,6 +452,10 @@ page {
 
 .action-btn.attraction.disliked {
   background: #ff4757;
+}
+
+.action-btn.add-friend {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .detail-section, .member-section, .created-section {

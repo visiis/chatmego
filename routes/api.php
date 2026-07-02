@@ -67,7 +67,10 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // 会员相关 API
     Route::prefix('membership')->group(function () {
-        Route::get('levels', [App\Http\Controllers\Api\MembershipController::class, 'levels']);
+        Route::get('/', [App\Http\Controllers\Api\MembershipApiController::class, 'index']);
+        Route::post('purchase', [App\Http\Controllers\Api\MembershipApiController::class, 'purchase']);
+        Route::post('convert-points', [App\Http\Controllers\Api\MembershipApiController::class, 'convertPoints']);
+        Route::post('cancel', [App\Http\Controllers\Api\MembershipApiController::class, 'cancel']);
     });
 
     // 说说相关 API

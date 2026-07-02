@@ -6,19 +6,19 @@
       <view class="nav-left" @click="goBack">
         <FontAwesome name="arrow-left" size="24px" color="#fff" />
       </view>
-      <text class="nav-title">设置</text>
+      <text class="nav-title">設定</text>
       <view class="nav-right"></view>
     </view>
     
     <scroll-view class="settings-content" scroll-y>
       <view class="section">
-        <view class="section-title">账户设置</view>
+        <view class="section-title">帳戶設定</view>
         
         <view class="menu-item" @click="changePassword">
           <view class="menu-icon">
             <FontAwesome name="lock" size="24px" color="#999" />
           </view>
-          <text class="menu-text">修改密码</text>
+          <text class="menu-text">修改密碼</text>
           <FontAwesome class="menu-arrow" name="chevron-right" size="20px" color="#999" />
         </view>
         
@@ -26,7 +26,7 @@
           <view class="menu-icon">
             <FontAwesome name="phone" size="24px" color="#999" />
           </view>
-          <text class="menu-text">绑定手机号</text>
+          <text class="menu-text">綁定手機號</text>
           <FontAwesome class="menu-arrow" name="chevron-right" size="20px" color="#999" />
         </view>
         
@@ -34,19 +34,19 @@
           <view class="menu-icon">
             <FontAwesome name="envelope" size="24px" color="#999" />
           </view>
-          <text class="menu-text">修改邮箱</text>
+          <text class="menu-text">修改郵箱</text>
           <FontAwesome class="menu-arrow" name="chevron-right" size="20px" color="#999" />
         </view>
       </view>
       
       <view class="section">
-        <view class="section-title">隐私设置</view>
+        <view class="section-title">隱私設定</view>
         
         <view class="menu-item">
           <view class="menu-icon">
             <FontAwesome name="eye" size="24px" color="#999" />
           </view>
-          <text class="menu-text">在线状态</text>
+          <text class="menu-text">在線狀態</text>
           <switch :checked="privacy.onlineStatus" @change="toggleOnlineStatus" color="#ff6b9d" />
         </view>
         
@@ -54,7 +54,7 @@
           <view class="menu-icon">
             <FontAwesome name="location-arrow" size="24px" color="#999" />
           </view>
-          <text class="menu-text">显示距离</text>
+          <text class="menu-text">顯示距離</text>
           <switch :checked="privacy.showDistance" @change="toggleShowDistance" color="#ff6b9d" />
         </view>
         
@@ -62,13 +62,13 @@
           <view class="menu-icon">
             <FontAwesome name="heart" size="24px" color="#999" />
           </view>
-          <text class="menu-text">允许他人喜欢我</text>
+          <text class="menu-text">允許他人喜歡我</text>
           <switch :checked="privacy.allowLikes" @change="toggleAllowLikes" color="#ff6b9d" />
         </view>
       </view>
       
       <view class="section">
-        <view class="section-title">通知设置</view>
+        <view class="section-title">通知設定</view>
         
         <view class="menu-item">
           <view class="menu-icon">
@@ -90,19 +90,19 @@
           <view class="menu-icon">
             <FontAwesome name="gift" size="24px" color="#ffd700" />
           </view>
-          <text class="menu-text">礼物通知</text>
+          <text class="menu-text">禮物通知</text>
           <switch :checked="notification.gift" @change="toggleGiftNotification" color="#ff6b9d" />
         </view>
       </view>
       
       <view class="section">
-        <view class="section-title">关于</view>
+        <view class="section-title">關於</view>
         
         <view class="menu-item" @click="showAbout">
           <view class="menu-icon">
             <FontAwesome name="info-circle" size="24px" color="#999" />
           </view>
-          <text class="menu-text">关于我们</text>
+          <text class="menu-text">關於我們</text>
           <FontAwesome class="menu-arrow" name="chevron-right" size="20px" color="#999" />
         </view>
         
@@ -110,7 +110,7 @@
           <view class="menu-icon">
             <FontAwesome name="file-text" size="24px" color="#999" />
           </view>
-          <text class="menu-text">隐私政策</text>
+          <text class="menu-text">隱私政策</text>
           <FontAwesome class="menu-arrow" name="chevron-right" size="20px" color="#999" />
         </view>
         
@@ -118,7 +118,7 @@
           <view class="menu-icon">
             <FontAwesome name="file-contract" size="24px" color="#999" />
           </view>
-          <text class="menu-text">服务条款</text>
+          <text class="menu-text">服務條款</text>
           <FontAwesome class="menu-arrow" name="chevron-right" size="20px" color="#999" />
         </view>
       </view>
@@ -151,15 +151,15 @@ function goBack() {
 }
 
 function changePassword() {
-  uni.showToast({ title: '修改密码功能开发中', icon: 'none' })
+  uni.showToast({ title: '修改密碼功能開發中', icon: 'none' })
 }
 
 function changePhone() {
-  uni.showToast({ title: '绑定手机号功能开发中', icon: 'none' })
+  uni.showToast({ title: '綁定手機號功能開發中', icon: 'none' })
 }
 
 function changeEmail() {
-  uni.showToast({ title: '修改邮箱功能开发中', icon: 'none' })
+  uni.showToast({ title: '修改郵箱功能開發中', icon: 'none' })
 }
 
 function toggleOnlineStatus(e: any) {
@@ -250,6 +250,7 @@ page {
   flex: 1;
   padding: 24rpx;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .section {

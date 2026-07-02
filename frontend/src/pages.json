@@ -4,26 +4,26 @@
       "path": "pages/auth/login",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "登录"
+        "navigationBarTitleText": "登入"
       }
     },
     {
       "path": "pages/auth/register",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "注册"
+        "navigationBarTitleText": "註冊"
       }
     },
     {
       "path": "pages/auth/success",
       "style": {
-        "navigationBarTitleText": "登录成功"
+        "navigationBarTitleText": "登入成功"
       }
     },
     {
       "path": "pages/discover/cards",
       "style": {
-        "navigationBarTitleText": "发现"
+        "navigationBarTitleText": "發現"
       }
     },
     {
@@ -41,7 +41,7 @@
     {
       "path": "pages/statuses/index",
       "style": {
-        "navigationBarTitleText": "朋友圈"
+        "navigationBarTitleText": "說說"
       }
     },
     {
@@ -62,69 +62,67 @@
       "path": "pages/profile/settings",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "设置"
+        "navigationBarTitleText": "設定"
       }
     },
     {
       "path": "pages/profile/edit",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "编辑资料"
+        "navigationBarTitleText": "編輯資料"
       }
     },
     {
       "path": "pages/profile/album",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "我的相册"
+        "navigationBarTitleText": "我的相冊"
       }
     },
     {
       "path": "pages/profile/membership",
       "style": {
-        "navigationStyle": "custom",
-        "navigationBarTitleText": "会员中心"
+        "navigationBarTitleText": "會員中心"
       }
     },
     {
       "path": "pages/profile/statuses",
       "style": {
-        "navigationStyle": "custom",
-        "navigationBarTitleText": "我的朋友圈"
+        "navigationBarTitleText": "我的說說"
       }
     },
     {
       "path": "pages/profile/gifts",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "我的礼物"
+        "navigationBarTitleText": "我的禮物"
       }
     },
     {
       "path": "pages/profile/redemption-history",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "兑换记录"
+        "navigationBarTitleText": "兌換記錄"
       }
     },
     {
       "path": "pages/profile/album-detail",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "相册详情"
+        "navigationBarTitleText": "相冊詳情"
       }
     },
     {
       "path": "pages/profile/points",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "积分中心"
+        "navigationBarTitleText": "積分中心"
       }
     },
     {
       "path": "pages/profile/user-profile",
       "style": {
-        "navigationBarTitleText": "用户资料",
+        "navigationBarTitleText": "用戶資料",
         "navigationBarRightButtonText": "更多"
       }
     }
@@ -151,7 +149,7 @@
     "list": [
       {
         "pagePath": "pages/discover/cards",
-        "text": "发现"
+        "text": "發現"
       },
       {
         "pagePath": "pages/friends/index",
@@ -163,7 +161,7 @@
       },
       {
         "pagePath": "pages/statuses/index",
-        "text": "朋友圈"
+        "text": "說說"
       },
       {
         "pagePath": "pages/profile/index",
