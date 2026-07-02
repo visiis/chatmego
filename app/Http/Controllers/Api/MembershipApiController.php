@@ -14,16 +14,31 @@ class MembershipApiController extends Controller
 {
     protected function getUserFromToken(Request $request): ?User
     {
-        $token = $request->header('Authorization');
-        if ($token && str_starts_with($token, 'Bearer ')) {
+        $token = $request->bearerToken() ?: $request->header('Authorization');
+        
+        if ($token && strpos($token, 'Bearer ') === 0) {
             $token = substr($token, 7);
         }
-        
+
         if (!$token) {
             return null;
         }
+
+        $user = User::where('api_token', $token)->first();
         
-        return User::where('api_token', $token)->first();
+        if (!$user) {
+            try {
+                $decoded = \Firebase\JWT\JWT::decode(
+                    $token,
+                    new \Firebase\JWT\Key(env('JWT_SECRET'), 'HS256')
+                );
+                $user = User::find($decoded->sub);
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+
+        return $user;
     }
 
     public function index(Request $request)

@@ -199,16 +199,16 @@ function getStatusAvatar(status: Status): string {
     return defaultAvatar
   }
   
-  if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
-    return avatarUrl
-  }
-  
-  if (avatarUrl.startsWith('/storage/')) {
-    avatarUrl = 'https://chatmego.com' + avatarUrl
-  } else if (avatarUrl.startsWith('storage/')) {
-    avatarUrl = 'https://chatmego.com/' + avatarUrl
-  } else if (!avatarUrl.startsWith('/')) {
-    avatarUrl = 'https://chatmego.com/storage/' + avatarUrl
+  if (!avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://')) {
+    if (avatarUrl.startsWith('/storage/')) {
+      avatarUrl = 'https://chatmego.com' + avatarUrl
+    } else if (avatarUrl.startsWith('storage/')) {
+      avatarUrl = 'https://chatmego.com/' + avatarUrl
+    } else if (!avatarUrl.startsWith('/')) {
+      avatarUrl = 'https://chatmego.com/storage/' + avatarUrl
+    } else {
+      avatarUrl = 'https://chatmego.com' + avatarUrl
+    }
   }
   
   return avatarUrl

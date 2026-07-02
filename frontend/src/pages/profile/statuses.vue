@@ -81,7 +81,7 @@
           
           <view class="status-comments" v-if="status.showComments">
             <view class="comment-item" v-for="comment in status.comments" :key="comment.id">
-              <image class="comment-avatar" :src="comment.user.avatar || 'https://chatmego.com/images/default-avatar.svg'" mode="aspectFill" />
+              <image class="comment-avatar" :src="getCommentAvatar(comment)" mode="aspectFill" />
               <view class="comment-content">
                 <text class="comment-user">{{ comment.user.name }}</text>
                 <text class="comment-text">{{ comment.content }}</text>
@@ -158,16 +158,41 @@ function getStatusAvatar(status: Status): string {
     return defaultAvatar
   }
   
-  if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
-    return avatarUrl
+  if (!avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://')) {
+    if (avatarUrl.startsWith('/storage/')) {
+      avatarUrl = 'https://chatmego.com' + avatarUrl
+    } else if (avatarUrl.startsWith('storage/')) {
+      avatarUrl = 'https://chatmego.com/' + avatarUrl
+    } else if (!avatarUrl.startsWith('/')) {
+      avatarUrl = 'https://chatmego.com/storage/' + avatarUrl
+    } else {
+      avatarUrl = 'https://chatmego.com' + avatarUrl
+    }
   }
   
-  if (avatarUrl.startsWith('/storage/')) {
-    avatarUrl = 'https://chatmego.com' + avatarUrl
-  } else if (avatarUrl.startsWith('storage/')) {
-    avatarUrl = 'https://chatmego.com/' + avatarUrl
-  } else if (!avatarUrl.startsWith('/')) {
-    avatarUrl = 'https://chatmego.com/storage/' + avatarUrl
+  return avatarUrl
+}
+
+function getCommentAvatar(comment: any): string {
+  const user = comment.user
+  if (!user) return defaultAvatar
+  
+  let avatarUrl = user.avatar_url || user.avatar || ''
+  
+  if (!avatarUrl) {
+    return defaultAvatar
+  }
+  
+  if (!avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://')) {
+    if (avatarUrl.startsWith('/storage/')) {
+      avatarUrl = 'https://chatmego.com' + avatarUrl
+    } else if (avatarUrl.startsWith('storage/')) {
+      avatarUrl = 'https://chatmego.com/' + avatarUrl
+    } else if (!avatarUrl.startsWith('/')) {
+      avatarUrl = 'https://chatmego.com/storage/' + avatarUrl
+    } else {
+      avatarUrl = 'https://chatmego.com' + avatarUrl
+    }
   }
   
   return avatarUrl

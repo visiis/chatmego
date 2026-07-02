@@ -1,55 +1,54 @@
-from PIL import Image, ImageDraw
 import os
+from PIL import Image, ImageDraw
 
-def create_heart_icon(width, height):
-    img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+logo_path = '../src/static/images/logo.svg'
+output_dir = '../src/static/images/apple-icons'
+
+os.makedirs(output_dir, exist_ok=True)
+
+pink_color = '#ff6b9d'
+white_color = '#ffffff'
+
+sizes = [
+    (57, 57),
+    (76, 76),
+    (87, 87),
+    (120, 120),
+    (152, 152),
+    (167, 167),
+    (180, 180),
+]
+
+for size in sizes:
+    img = Image.new('RGBA', size, pink_color)
     draw = ImageDraw.Draw(img)
     
-    x_center = width // 2
-    y_center = height // 2
-    scale = min(width, height) / 160
+    center_x = size[0] // 2
+    center_y = size[1] // 2
+    heart_size = min(size) * 0.5
+    
+    top_y = center_y - heart_size * 0.4
+    bottom_y = center_y + heart_size * 0.6
+    left_x = center_x - heart_size * 0.5
+    right_x = center_x + heart_size * 0.5
     
     points = [
-        (x_center, y_center - 45 * scale),
-        (x_center + 80 * scale, y_center - 85 * scale),
-        (x_center + 80 * scale, y_center - 40 * scale),
-        (x_center + 120 * scale, y_center + 10 * scale),
-        (x_center + 60 * scale, y_center + 60 * scale),
-        (x_center, y_center + 85 * scale),
-        (x_center - 60 * scale, y_center + 60 * scale),
-        (x_center - 120 * scale, y_center + 10 * scale),
-        (x_center - 80 * scale, y_center - 40 * scale),
-        (x_center - 80 * scale, y_center - 85 * scale),
+        (center_x, top_y),
+        (right_x, center_y),
+        (center_x, bottom_y),
+        (left_x, center_y),
     ]
     
-    draw.polygon(points, fill=(255, 107, 157, 255))
+    draw.polygon(points, fill=white_color)
     
-    return img
+    circle_size = heart_size * 0.35
+    draw.ellipse([
+        (center_x - circle_size * 0.5, center_y - circle_size * 0.5),
+        (center_x + circle_size * 0.5, center_y + circle_size * 0.5)
+    ], fill=pink_color)
+    
+    filename = f'apple-touch-icon-{size[0]}x{size[1]}.png'
+    img.save(os.path.join(output_dir, filename))
+    print(f'Generated: {filename}')
 
-def generate_ios_icons():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    output_dir = os.path.join(base_dir, 'src', 'static', 'images', 'apple-icons')
-    os.makedirs(output_dir, exist_ok=True)
-    
-    icon_sizes = [
-        (180, 180, 'apple-touch-icon-180x180.png'),
-        (167, 167, 'apple-touch-icon-167x167.png'),
-        (152, 152, 'apple-touch-icon-152x152.png'),
-        (120, 120, 'apple-touch-icon-120x120.png'),
-        (87, 87, 'apple-touch-icon-87x87.png'),
-        (76, 76, 'apple-touch-icon-76x76.png'),
-        (57, 57, 'apple-touch-icon-57x57.png'),
-    ]
-    
-    print("Generating iOS icons...")
-    
-    for width, height, filename in icon_sizes:
-        img = create_heart_icon(width, height)
-        output_path = os.path.join(output_dir, filename)
-        img.save(output_path, 'PNG')
-        print(f"  Generated: {filename} ({width}x{height})")
-    
-    print("\nAll iOS icons generated successfully!")
-
-if __name__ == '__main__':
-    generate_ios_icons()
+print('All icons generated successfully!')

@@ -236,6 +236,9 @@ page {
 .content {
   flex: 1;
   padding: 24rpx;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .balance-section {
