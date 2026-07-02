@@ -13,7 +13,7 @@ const props = defineProps<{
 }>()
 
 const iconNameMap: Record<string, string> = {
-  'coins': 'bitcoin',
+  'coins': 'coins',
   'calendar-check': 'calendar-check-o',
   'comment-dots': 'comments-o',
   'user-circle': 'user-circle-o',
