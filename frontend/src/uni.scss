@@ -1,4 +1,6 @@
-$uni-color-primary: #f87c7c;
+@import 'uview-plus/theme.scss';
+
+$uni-color-primary: #ff6b9d;
 $uni-color-success: #52c41a;
 $uni-color-warning: #faad14;
 $uni-color-error: #ff4d4f;
@@ -9,7 +11,7 @@ $uni-text-color-placeholder: #999999;
 $uni-text-color-disabled: #cccccc;
 
 $uni-bg-color: #ffffff;
-$uni-bg-color-grey: #ff6b9d;
+$uni-bg-color-grey: #f8f9fa;
 
 $uni-border-color: #eeeeee;
 
@@ -20,3 +22,34 @@ $uni-font-size-lg: 32rpx;
 $uni-spacing-sm: 16rpx;
 $uni-spacing-base: 24rpx;
 $uni-spacing-lg: 32rpx;
+
+$u-primary: #ff6b9d;
+$u-primary-light: #ff9fbd;
+$u-primary-dark: #c44569;
+$u-success: #52c41a;
+$u-warning: #faad14;
+$u-error: #ff4d4f;
+$u-info: #1890ff;
+
+$u-bg-color: #ffffff;
+$u-bg-color-grey: #f8f9fa;
+$u-text-color: #333333;
+$u-text-color-secondary: #666666;
+$u-text-color-placeholder: #999999;
+
+$u-border-color: #eeeeee;
+$u-border-radius-sm: 8rpx;
+$u-border-radius-md: 16rpx;
+$u-border-radius-lg: 24rpx;
+
+$u-font-size-xs: 20rpx;
+$u-font-size-sm: 24rpx;
+$u-font-size-base: 28rpx;
+$u-font-size-lg: 32rpx;
+$u-font-size-xl: 36rpx;
+
+$u-spacing-xs: 8rpx;
+$u-spacing-sm: 16rpx;
+$u-spacing-md: 24rpx;
+$u-spacing-lg: 32rpx;
+$u-spacing-xl: 48rpx;

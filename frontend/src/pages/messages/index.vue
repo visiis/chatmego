@@ -59,22 +59,47 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { onShow, onHide } from '@dcloudio/uni-app'
 import FontAwesome from '../../components/FontAwesome.vue'
 import { getConversations, type Conversation } from '../../api/chat'
 
 const chats = ref<Conversation[]>([])
 const loading = ref(false)
 const activeTab = ref('chat')
+let refreshTimer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   loadConversations()
+  startRefreshTimer()
 })
 
 onShow(() => {
   loadConversations()
+  startRefreshTimer()
 })
+
+onHide(() => {
+  stopRefreshTimer()
+})
+
+onUnmounted(() => {
+  stopRefreshTimer()
+})
+
+function startRefreshTimer() {
+  if (refreshTimer) return
+  refreshTimer = setInterval(() => {
+    loadConversations()
+  }, 10000)
+}
+
+function stopRefreshTimer() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+    refreshTimer = null
+  }
+}
 
 async function loadConversations() {
   loading.value = true

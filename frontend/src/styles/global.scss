@@ -5,6 +5,15 @@ page {
   font-size: $font-size-base;
   color: $text-primary;
   line-height: 1.5;
+  height: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+view, text {
+  box-sizing: border-box;
 }
 
 .container {

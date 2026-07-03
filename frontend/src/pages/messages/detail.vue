@@ -202,15 +202,68 @@ interface ChatMessage {
 }
 
 const messages = ref<ChatMessage[]>([])
+let refreshTimer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   initPage()
 })
 
+onShow(() => {
+  startRefreshTimer()
+})
+
+onHide(() => {
+  stopRefreshTimer()
+})
+
 onUnmounted(() => {
   showGiftPanel.value = false
   saveCache()
+  stopRefreshTimer()
 })
+
+function startRefreshTimer() {
+  if (refreshTimer) return
+  refreshTimer = setInterval(() => {
+    refreshMessages()
+  }, 10000)
+}
+
+function stopRefreshTimer() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+    refreshTimer = null
+  }
+}
+
+async function refreshMessages() {
+  try {
+    const data = await getMessages(friendId.value)
+    const messageList = Array.isArray(data) ? data : (data?.messages || [])
+    
+    if (messageList.length > 0) {
+      const serverMessages = messageList.map(msg => formatMessage(msg))
+      const existingIds = new Set(messages.value.map(m => m.id))
+      let hasNewMessages = false
+      
+      for (const msg of serverMessages) {
+        if (!existingIds.has(msg.id)) {
+          messages.value.push(msg)
+          hasNewMessages = true
+        }
+      }
+      
+      if (hasNewMessages) {
+        messages.value.sort((a, b) => a.id - b.id)
+        saveCache()
+        await nextTick()
+        scrollToBottom()
+      }
+    }
+  } catch (error) {
+    console.error('刷新消息失败:', error)
+  }
+}
 
 const DEFAULT_AVATAR = 'https://chatmego.com/images/default-avatar.svg'
 

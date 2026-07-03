@@ -31,6 +31,8 @@ onHide(() => {
 </script>
 
 <style lang="scss">
+@import 'uview-plus/index.scss';
+@import './styles/variables.scss';
 @import './styles/global.scss';
 @import '@dcloudio/uni-ui/lib/uni-icons/uniicons.css';
 @import '@fortawesome/fontawesome-free/css/all.min.css';
