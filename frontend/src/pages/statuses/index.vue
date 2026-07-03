@@ -91,9 +91,9 @@
             <FontAwesome name="comment" size="28px" color="#999" />
             <text class="stat-text">{{ status.comments_count }}</text>
           </view>
-          <view class="stat-item">
-            <FontAwesome name="share-alt" size="28px" color="#999" />
-            <text class="stat-text">分享</text>
+          <view class="stat-item delete-btn" v-if="status.user_id === userId" @click="handleDelete(status)">
+            <FontAwesome name="trash" size="28px" color="#ff4757" />
+            <text class="stat-text">删除</text>
           </view>
         </view>
         
@@ -163,6 +163,7 @@ import {
   createStatus, 
   likeStatus, 
   commentStatus,
+  deleteStatus,
   type Status
 } from '../../api/status'
 import { getProfile, type UserProfile } from '../../api/user'
@@ -199,16 +200,18 @@ function getStatusAvatar(status: Status): string {
     return defaultAvatar
   }
   
-  if (!avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://')) {
-    if (avatarUrl.startsWith('/storage/')) {
-      avatarUrl = 'https://chatmego.com' + avatarUrl
-    } else if (avatarUrl.startsWith('storage/')) {
-      avatarUrl = 'https://chatmego.com/' + avatarUrl
-    } else if (!avatarUrl.startsWith('/')) {
-      avatarUrl = 'https://chatmego.com/storage/' + avatarUrl
-    } else {
-      avatarUrl = 'https://chatmego.com' + avatarUrl
-    }
+  if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+    return avatarUrl
+  }
+  
+  if (avatarUrl.startsWith('/storage/')) {
+    avatarUrl = 'https://chatmego.com' + avatarUrl
+  } else if (avatarUrl.startsWith('storage/')) {
+    avatarUrl = 'https://chatmego.com/' + avatarUrl
+  } else if (!avatarUrl.startsWith('/')) {
+    avatarUrl = 'https://chatmego.com/storage/' + avatarUrl
+  } else {
+    avatarUrl = 'https://chatmego.com' + avatarUrl
   }
   
   return avatarUrl
@@ -353,6 +356,25 @@ async function submitComment(status: Status) {
     console.error('评论失败:', error)
     uni.showToast({ title: '评论失败', icon: 'none' })
   }
+}
+
+function handleDelete(status: Status) {
+  uni.showModal({
+    title: '确认删除',
+    content: '确定要删除这条说说吗？',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await deleteStatus(status.id)
+          uni.showToast({ title: '删除成功', icon: 'success' })
+          loadStatuses(true)
+        } catch (error) {
+          console.error('删除失败:', error)
+          uni.showToast({ title: '删除失败', icon: 'none' })
+        }
+      }
+    }
+  })
 }
 
 function previewImage(index: number, images: string[]) {

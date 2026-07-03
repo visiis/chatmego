@@ -1,5 +1,12 @@
 import { request } from '../utils/request'
 
+export interface StatusUser {
+  id: number
+  name: string
+  avatar: string
+  avatar_url?: string
+}
+
 export interface Status {
   id: number
   user_id: number
@@ -11,6 +18,7 @@ export interface Status {
   liked?: boolean
   is_liked?: boolean
   created_at: string
+  user?: StatusUser
   comments?: StatusComment[]
 }
 
