@@ -215,7 +215,7 @@ page {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  background: #ffffff;
 }
 
 .status-bar {

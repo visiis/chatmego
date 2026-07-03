@@ -175,7 +175,7 @@ page {
   flex-direction: column;
   height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  background: #ffffff;
   overflow-x: hidden;
 }
 

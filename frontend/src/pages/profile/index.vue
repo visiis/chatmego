@@ -294,7 +294,7 @@ page {
 
 .profile-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  background: #ffffff;
   padding-bottom: calc(160rpx + env(safe-area-inset-bottom));
 }
 
