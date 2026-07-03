@@ -64,7 +64,7 @@ function goToDiscover() {
 <style lang="scss">
 .success-container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   display: flex;
   flex-direction: column;
   align-items: center;

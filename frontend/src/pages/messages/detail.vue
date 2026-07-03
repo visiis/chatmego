@@ -561,7 +561,7 @@ page {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   width: 100%;
   overflow-x: hidden;
@@ -572,7 +572,7 @@ page {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   width: 100%;
   overflow: hidden;
 }
@@ -815,7 +815,7 @@ page {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   border-radius: 8rpx;
   padding: 8rpx 16rpx;
   
@@ -1011,7 +1011,7 @@ page {
 
 .input-wrapper {
   flex: 1;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   border-radius: 32rpx;
   margin: 0 16rpx;
 }

@@ -1,0 +1,1 @@
+import{Y as t}from"./index-CSAP-OC5.js";function e(e,s="GET",r,o){const a=e.startsWith("http")?e:"https://chatmego.com"+e;return new Promise((e,n)=>{t({url:a,method:s,data:r,header:{"Content-Type":"application/json",...o},success:t=>{const s=t.data;200===s.code||!0===s.success?e(s):n(new Error(s.message))},fail:t=>{n(new Error(t.errMsg||"请求失败"))}})})}export{e as r};

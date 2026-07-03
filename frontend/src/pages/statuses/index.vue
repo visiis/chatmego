@@ -407,7 +407,7 @@ page {
 
 .statuses-container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
 }
 
@@ -636,7 +636,7 @@ page {
 .comment-input {
   flex: 1;
   height: 72rpx;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   border-radius: 36rpx;
   padding: 0 24rpx;
   font-size: 28rpx;

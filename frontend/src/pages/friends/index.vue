@@ -369,7 +369,7 @@ page {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -378,7 +378,7 @@ page {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
 }
 
 .content {
@@ -498,7 +498,7 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   
   &.chat {
@@ -701,7 +701,7 @@ page {
   }
   
   &:active {
-    background: #f5f5f5;
+    background: rgba(255, 255, 255, 0.7);
   }
   
   &.cancel {

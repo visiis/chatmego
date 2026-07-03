@@ -196,7 +196,7 @@ page {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
 }
 
 .points-container {
@@ -348,7 +348,7 @@ page {
   flex: 1;
   display: flex;
   align-items: center;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   border-radius: 12rpx;
   padding: 0 20rpx;
   height: 88rpx;
@@ -374,7 +374,7 @@ page {
 
 .quick-btn {
   flex: 1;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   border-radius: 12rpx;
   padding: 16rpx;
   text-align: center;
@@ -447,7 +447,7 @@ page {
   display: flex;
   align-items: center;
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
+  border-bottom: 1rpx solid #eee;
   
   &:last-child {
     border-bottom: none;

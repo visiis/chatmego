@@ -315,7 +315,7 @@ page {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
 }
 
 .user-profile-container {
@@ -469,7 +469,7 @@ page {
   display: flex;
   align-items: center;
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
+  border-bottom: 1rpx solid #eee;
 }
 
 .detail-item:last-child {
