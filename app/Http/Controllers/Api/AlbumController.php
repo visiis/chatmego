@@ -252,7 +252,7 @@ class AlbumController extends Controller
 
             if ($result['success']) {
                 $imageUrl = $result['url'];
-                $thumbnailUrl = preg_replace('/\.(jpg|jpeg|png|webp)$/i', '.th.$1', $imageUrl);
+                $thumbnailUrl = str_contains($imageUrl, '.th.') ? $imageUrl : preg_replace('/\.(jpg|jpeg|png|webp)$/i', '.th.$1', $imageUrl);
 
                 $photo = AlbumPhoto::create([
                     'album_id' => $albumId,

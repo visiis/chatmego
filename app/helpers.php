@@ -34,6 +34,11 @@ if (!function_exists('avatar_url')) {
                 $pathInfo = $parsed['path'] ?? '';
                 $extension = pathinfo($pathInfo, PATHINFO_EXTENSION);
                 $filename = pathinfo($pathInfo, PATHINFO_FILENAME);
+                
+                if (str_ends_with($filename, '.th')) {
+                    return $path;
+                }
+                
                 $dirname = dirname($pathInfo);
                 $newPath = $dirname . '/' . $filename . '.th.' . $extension;
                 return $parsed['scheme'] . '://' . $parsed['host'] . $newPath;

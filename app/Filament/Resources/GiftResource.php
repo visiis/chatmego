@@ -96,6 +96,11 @@ class GiftResource extends Resource
 
         $extension = pathinfo($path, PATHINFO_EXTENSION);
         $filename = pathinfo($path, PATHINFO_FILENAME);
+        
+        if (str_ends_with($filename, '.th')) {
+            return $url;
+        }
+
         $dirname = dirname($path);
 
         $newPath = $dirname . '/' . $filename . '.th.' . $extension;

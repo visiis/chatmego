@@ -109,9 +109,13 @@ function uploadPhoto() {
               // 生成缩略图URL（原图URL加.th.jpg）
               const photoData = data.data
               if (photoData.url && !photoData.thumbnail_url) {
-                const urlParts = photoData.url.split('.')
-                const ext = urlParts.pop()
-                photoData.thumbnail_url = urlParts.join('.') + '.th.' + ext
+                if (photoData.url.includes('.th.')) {
+                  photoData.thumbnail_url = photoData.url
+                } else {
+                  const urlParts = photoData.url.split('.')
+                  const ext = urlParts.pop()
+                  photoData.thumbnail_url = urlParts.join('.') + '.th.' + ext
+                }
               }
               photos.value.unshift(photoData)
               uni.showToast({ title: '上傳成功', icon: 'success' })
