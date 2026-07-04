@@ -35,7 +35,6 @@ onHide(() => {
 @import './styles/variables.scss';
 @import './styles/global.scss';
 @import '@dcloudio/uni-ui/lib/uni-icons/uniicons.css';
-@import '@fortawesome/fontawesome-free/css/all.min.css';
 
 @font-face {
   font-family: uniicons;

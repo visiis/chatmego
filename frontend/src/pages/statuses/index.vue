@@ -156,7 +156,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { onShow, onHide } from '@dcloudio/uni-app'
 import FontAwesome from '../../components/FontAwesome.vue'
 import { 
   getStatuses, 
@@ -167,6 +168,7 @@ import {
   type Status
 } from '../../api/status'
 import { getProfile, type UserProfile } from '../../api/user'
+import { useRefreshTimer } from '../../utils/refresh'
 
 const statuses = ref<Status[]>([])
 const loading = ref(false)
@@ -185,9 +187,25 @@ const defaultAvatar = 'https://chatmego.com/images/default-avatar.svg'
 
 const commentInputs = reactive<Record<number, string>>({})
 
+const { start: startRefresh, stop: stopRefresh } = useRefreshTimer(() => {
+  loadStatuses(true)
+}, 15000)
+
 onMounted(() => {
   loadUserInfo()
   loadStatuses()
+})
+
+onShow(() => {
+  startRefresh()
+})
+
+onHide(() => {
+  stopRefresh()
+})
+
+onUnmounted(() => {
+  stopRefresh()
 })
 
 function getStatusAvatar(status: Status): string {
@@ -658,10 +676,12 @@ page {
 .comment-input {
   flex: 1;
   height: 72rpx;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  background: #ffffff;
   border-radius: 36rpx;
   padding: 0 24rpx;
   font-size: 28rpx;
+  color: #333333;
+  border: 1rpx solid #eeeeee;
 }
 
 .comment-btn {

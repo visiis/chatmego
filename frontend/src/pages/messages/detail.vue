@@ -1,5 +1,7 @@
 <template>
   <view class="chat-container">
+    <NetworkStatus />
+    
     <view class="status-bar"></view>
     
     <view class="nav-bar">
@@ -24,18 +26,20 @@
       @scroll="onScroll"
     >
       <view class="messages-wrapper" :id="scrollWrapperId">
-        <view v-if="messages.length === 0 && !isLoaded" class="loading-state">
-          <view class="loading-spinner"></view>
-          <text class="loading-text">加載中...</text>
-        </view>
+        <LoadingState 
+          v-if="!isLoaded" 
+          type="spin" 
+          text="加载中..." 
+          :show="true" 
+        />
         
         <template v-else>
           <view 
             v-if="isLoadingHistory" 
             class="history-loading"
           >
-            <view class="loading-spinner-small"></view>
-            <text>加載歷史記錄...</text>
+            <LoadingState type="dots" :show="true" />
+            <text>加载历史记录...</text>
           </view>
           
           <view 
@@ -59,7 +63,7 @@
                   mode="aspectFit" 
                 />
                 <view class="gift-name-bg" :class="{ 'me': item.isMe }">
-                  <FontAwesome class="gift-icon" name="gift" size="16px" color="#ff6b9d" />
+                  <uni-icons class="gift-icon" type="gift" size="16" color="#ff6b9d" />
                   <text class="gift-name">{{ item.giftName }}</text>
                 </view>
               </view>
@@ -74,20 +78,14 @@
               <text v-else class="message-content">{{ item.content }}</text>
               <view class="message-footer">
                 <text class="message-time">{{ item.time }}</text>
-                <view v-if="item.isMe && item.isRead" class="read-status">
-                  <FontAwesome name="check" size="10px" color="#4fc3f7" />
-                  <FontAwesome name="check" size="10px" color="#4fc3f7" class="read-check-second" />
-                </view>
-                <view v-else-if="item.isMe" class="read-status">
-                  <FontAwesome name="check" size="10px" color="#999" />
-                </view>
+                <MessageStatus v-if="item.isMe" :status="item.status" />
               </view>
             </view>
           </view>
           
           <view class="empty-state" v-if="messages.length === 0 && !loading">
-            <FontAwesome name="comment-slash" size="48px" color="#ccc" />
-            <text class="empty-text">還沒有消息，發送第一條消息開始聊天吧！</text>
+            <uni-icons type="chat" size="48" color="#ccc" />
+            <text class="empty-text">还没有消息，发送第一条消息开始聊天吧！</text>
           </view>
         </template>
       </view>
@@ -95,9 +93,9 @@
     
     <view class="gift-panel" v-if="showGiftPanel">
       <view class="gift-header">
-        <text class="gift-title">選擇禮物</text>
+        <text class="gift-title">选择礼物</text>
         <view class="gift-close" @click="showGiftPanel = false">
-          <FontAwesome name="times" size="28px" color="#999" />
+          <uni-icons type="close" size="28" color="#999" />
         </view>
       </view>
       <scroll-view scroll-y class="gift-list" scroll-with-animation>
@@ -124,8 +122,8 @@
           </view>
         </view>
         <view class="no-gifts" v-else>
-          <FontAwesome name="gift" size="48px" color="#ccc" />
-          <text>暫無可用禮物</text>
+          <uni-icons type="gift" size="48" color="#ccc" />
+          <text>暂无可用礼物</text>
         </view>
       </scroll-view>
     </view>
@@ -133,7 +131,7 @@
     <view class="input-bar">
       <view class="input-actions">
         <view class="action-btn" @click="toggleGift">
-          <FontAwesome name="gift" size="36px" color="#666" />
+          <uni-icons type="gift" size="36" color="#666" />
         </view>
       </view>
       <view class="input-wrapper">
@@ -141,7 +139,7 @@
           v-model="inputText" 
           class="input-field" 
           type="text" 
-          placeholder="輸入消息..."
+          placeholder="输入消息..."
           placeholder-class="input-placeholder"
           @confirm="sendMessage"
         />
@@ -151,7 +149,7 @@
         :class="{ active: inputText.trim() }"
         @click="sendMessage"
       >
-        <FontAwesome name="paper-plane" size="24px" color="#fff" />
+        <uni-icons type="send" size="24" color="#fff" />
       </view>
     </view>
   </view>
@@ -159,6 +157,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
+import { onShow, onHide } from '@dcloudio/uni-app'
 import { 
   getMessages, 
   sendMessage as apiSendMessage, 
@@ -167,7 +166,12 @@ import {
   fetchHistoryMessages
 } from '../../api/chat'
 import { request } from '../../utils/request'
-import FontAwesome from '../../components/FontAwesome.vue'
+import { wsManager } from '../../utils/websocket'
+import { storageManager } from '../../utils/storage'
+import { messageSyncManager, type MessageStatus } from '../../utils/messageSync'
+import NetworkStatus from '../../components/NetworkStatus.vue'
+import MessageStatusComponent from '../../components/MessageStatus.vue'
+import LoadingState from '../../components/LoadingState.vue'
 
 const userId = ref(0)
 const friendId = ref(0)
@@ -195,6 +199,7 @@ interface ChatMessage {
   isMe: boolean
   isRead: boolean
   type: string
+  status: MessageStatus
   giftName?: string
   giftImage?: string
   from_user_id?: number
@@ -202,66 +207,37 @@ interface ChatMessage {
 }
 
 const messages = ref<ChatMessage[]>([])
-let refreshTimer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   initPage()
 })
 
 onShow(() => {
-  startRefreshTimer()
+  wsManager.connect()
+  messageSyncManager.subscribeToMessages(handleWebSocketMessage)
 })
 
 onHide(() => {
-  stopRefreshTimer()
+  messageSyncManager.stopSync()
 })
 
 onUnmounted(() => {
   showGiftPanel.value = false
   saveCache()
-  stopRefreshTimer()
+  messageSyncManager.unsubscribeFromMessages()
 })
 
-function startRefreshTimer() {
-  if (refreshTimer) return
-  refreshTimer = setInterval(() => {
-    refreshMessages()
-  }, 10000)
-}
-
-function stopRefreshTimer() {
-  if (refreshTimer) {
-    clearInterval(refreshTimer)
-    refreshTimer = null
-  }
-}
-
-async function refreshMessages() {
-  try {
-    const data = await getMessages(friendId.value)
-    const messageList = Array.isArray(data) ? data : (data?.messages || [])
+function handleWebSocketMessage(data: any) {
+  if (data.to_user_id === myId.value || data.from_user_id === friendId.value) {
+    const newMsg = formatMessage(data)
+    const existingIds = new Set(messages.value.map(m => m.id))
     
-    if (messageList.length > 0) {
-      const serverMessages = messageList.map(msg => formatMessage(msg))
-      const existingIds = new Set(messages.value.map(m => m.id))
-      let hasNewMessages = false
-      
-      for (const msg of serverMessages) {
-        if (!existingIds.has(msg.id)) {
-          messages.value.push(msg)
-          hasNewMessages = true
-        }
-      }
-      
-      if (hasNewMessages) {
-        messages.value.sort((a, b) => a.id - b.id)
-        saveCache()
-        await nextTick()
-        scrollToBottom()
-      }
+    if (!existingIds.has(newMsg.id)) {
+      messages.value.push(newMsg)
+      messages.value.sort((a, b) => a.id - b.id)
+      saveCache()
+      nextTick(() => scrollToBottom())
     }
-  } catch (error) {
-    console.error('刷新消息失败:', error)
   }
 }
 
@@ -272,23 +248,16 @@ function getCacheKey(): string {
 }
 
 function loadCache(): ChatMessage[] {
-  try {
-    const cached = uni.getStorageSync(getCacheKey())
-    if (cached) {
-      return JSON.parse(cached)
-    }
-  } catch (e) {
-    console.error('读取缓存失败:', e)
-  }
-  return []
+  const cached = storageManager.getMessageCache(friendId.value)
+  return cached.map(msg => ({
+    ...msg,
+    isMe: parseInt(msg.from_user_id) === myId.value,
+    status: msg.status || 'sent' as MessageStatus
+  }))
 }
 
 function saveCache() {
-  try {
-    uni.setStorageSync(getCacheKey(), JSON.stringify(messages.value))
-  } catch (e) {
-    console.error('保存缓存失败:', e)
-  }
+  storageManager.saveMessageCache(friendId.value, messages.value)
 }
 
 async function initPage() {
@@ -340,12 +309,7 @@ async function loadMessages() {
   const cachedMessages = loadCache()
   
   if (cachedMessages.length > 0) {
-    messages.value = cachedMessages.map(msg => {
-      return {
-        ...msg,
-        isMe: parseInt(msg.from_user_id) === myId.value
-      }
-    })
+    messages.value = cachedMessages
     hasMoreHistory.value = messages.value.length >= 20
     isLoaded.value = true
   }
@@ -353,8 +317,6 @@ async function loadMessages() {
   try {
     const data = await getMessages(friendId.value)
     const messageList = Array.isArray(data) ? data : (data?.messages || [])
-    
-    console.log('服务器返回消息:', messageList)
     
     if (messageList.length > 0) {
       const serverMessages = messageList.map(msg => formatMessage(msg))
@@ -383,7 +345,7 @@ async function loadMessages() {
       }
     }
   } catch (error) {
-    console.error('載入消息失敗:', error)
+    console.error('载入消息失败:', error)
     if (cachedMessages.length === 0) {
       isLoaded.value = true
     }
@@ -406,8 +368,6 @@ async function loadMoreHistory() {
     const oldestMessage = messages.value[0]
     const historyMessages = await fetchHistoryMessages(friendId.value, oldestMessage.id, 20)
     
-    console.log('历史消息:', historyMessages)
-    
     if (historyMessages.length > 0) {
       const formattedMessages = historyMessages.map(msg => formatMessage(msg))
       const existingIds = new Set(messages.value.map(m => m.id))
@@ -427,7 +387,7 @@ async function loadMoreHistory() {
     
     saveCache()
   } catch (error) {
-    console.error('載入歷史消息失敗:', error)
+    console.error('载入历史消息失败:', error)
   } finally {
     isLoadingHistory.value = false
   }
@@ -445,7 +405,7 @@ function formatMessage(msg: any): ChatMessage {
       giftImage = giftData.gift_image || msg.attachment_url || ''
       content = ''
     } catch (e) {
-      content = '[禮物]'
+      content = '[礼物]'
     }
   } else if (msg.type === 'image') {
     content = msg.attachment_url || msg.message
@@ -461,6 +421,7 @@ function formatMessage(msg: any): ChatMessage {
     isMe: fromUserId === myId.value,
     isRead: msg.is_read,
     type: msg.type,
+    status: (msg.status || 'sent') as MessageStatus,
     giftName,
     giftImage,
     from_user_id: fromUserId,
@@ -502,17 +463,17 @@ async function sendMessage() {
   try {
     isSendingMessage.value = true
     
-    const tempId = Date.now()
     const now = new Date()
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
     
     const tempMsg: ChatMessage = {
-      id: tempId,
+      id: Date.now() + Math.random(),
       content,
       time: timeStr,
       isMe: true,
       isRead: false,
       type: 'text',
+      status: 'sending',
       from_user_id: myId.value,
       to_user_id: friendId.value
     }
@@ -525,26 +486,34 @@ async function sendMessage() {
     
     const result = await apiSendMessage(friendId.value, content)
     
-    console.log('发送消息结果:', result)
-    
-    const index = messages.value.findIndex(m => m.id === tempId)
+    const index = messages.value.findIndex(m => m.id === tempMsg.id)
     if (index !== -1) {
       messages.value[index].id = result.id
       messages.value[index].isRead = result.is_read
       messages.value[index].time = formatTime(result.created_at)
+      messages.value[index].status = 'sent'
       messages.value[index].from_user_id = parseInt(result.from_user_id) || myId.value
       messages.value[index].to_user_id = parseInt(result.to_user_id) || friendId.value
     }
     
     await nextTick()
     saveCache()
-  } catch (error) {
-    console.error('發送消息失敗:', error)
-    uni.showToast({ title: '發送失敗', icon: 'none' })
     
-    const index = messages.value.findIndex(m => m.id === tempId)
+    if (wsManager.connected) {
+      wsManager.send('message', {
+        to_user_id: friendId.value,
+        message: content,
+        type: 'text'
+      })
+    }
+  } catch (error) {
+    console.error('发送消息失败:', error)
+    uni.showToast({ title: '发送失败', icon: 'none' })
+    
+    const index = messages.value.findIndex(m => m.id === tempMsg.id)
     if (index !== -1) {
-      messages.value.splice(index, 1)
+      messages.value[index].status = 'error'
+      storageManager.addUnsyncedMessage(messages.value[index])
     }
   } finally {
     isSendingMessage.value = false
@@ -572,7 +541,7 @@ async function loadGifts() {
     const data = await getGifts()
     gifts.value = Array.isArray(data) ? data : (data?.gifts || [])
   } catch (error) {
-    console.error('載入禮物失敗:', error)
+    console.error('载入礼物失败:', error)
   }
 }
 
@@ -590,10 +559,18 @@ async function selectGift(gift: any) {
     
     saveCache()
     
-    uni.showToast({ title: '禮物發送成功', icon: 'success' })
+    if (wsManager.connected) {
+      wsManager.send('message', {
+        to_user_id: friendId.value,
+        message: result.message,
+        type: 'gift'
+      })
+    }
+    
+    uni.showToast({ title: '礼物发送成功', icon: 'success' })
   } catch (error) {
-    console.error('發送禮物失敗:', error)
-    uni.showToast({ title: '發送失敗', icon: 'none' })
+    console.error('发送礼物失败:', error)
+    uni.showToast({ title: '发送失败', icon: 'none' })
   }
 }
 
@@ -625,7 +602,7 @@ page {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  background: #ffffff;
   width: 100%;
   overflow: hidden;
 }
@@ -682,19 +659,6 @@ page {
   padding-bottom: 180rpx;
 }
 
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 200rpx 0;
-}
-
-.history-btn-wrapper {
-  text-align: center;
-  padding: 16rpx 0;
-}
-
 .history-loading {
   display: flex;
   align-items: center;
@@ -703,55 +667,6 @@ page {
   padding: 16rpx 0;
   color: #ff6b9d;
   font-size: 24rpx;
-}
-
-.loading-spinner-small {
-  width: 32rpx;
-  height: 32rpx;
-  border: 3rpx solid #f0f0f0;
-  border-top-color: #ff6b9d;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.history-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8rpx;
-  padding: 12rpx 24rpx;
-  background: rgba(255, 107, 157, 0.1);
-  border-radius: 32rpx;
-  font-size: 24rpx;
-  color: #ff6b9d;
-  
-  &:active {
-    background: rgba(255, 107, 157, 0.2);
-  }
-}
-
-.loading-spinner {
-  width: 60rpx;
-  height: 60rpx;
-  border: 4rpx solid #f0f0f0;
-  border-top-color: #ff6b9d;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 20rpx;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.loading-text {
-  font-size: 28rpx;
-  color: #999;
 }
 
 .message-item {
@@ -771,10 +686,6 @@ page {
       }
       
       .message-time {
-        color: rgba(255, 255, 255, 0.7);
-      }
-      
-      .read-status {
         color: rgba(255, 255, 255, 0.7);
       }
       
@@ -840,15 +751,6 @@ page {
 .message-time {
   font-size: 22rpx;
   color: #999;
-}
-
-.read-status {
-  display: flex;
-  align-items: center;
-}
-
-.read-check-second {
-  margin-left: -6rpx;
 }
 
 .gift-message {
@@ -1064,9 +966,10 @@ page {
 
 .input-wrapper {
   flex: 1;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  background: #ffffff;
   border-radius: 32rpx;
   margin: 0 16rpx;
+  border: 1rpx solid #eeeeee;
 }
 
 .input-field {
@@ -1074,10 +977,11 @@ page {
   height: 72rpx;
   padding: 0 28rpx;
   font-size: 30rpx;
+  color: #333333;
 }
 
 .input-placeholder {
-  color: #ccc;
+  color: #999999;
 }
 
 .send-btn {

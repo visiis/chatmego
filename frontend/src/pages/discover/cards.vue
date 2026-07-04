@@ -114,7 +114,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { onShow, onHide } from '@dcloudio/uni-app'
 import FontAwesome from '../../components/FontAwesome.vue'
 import { request } from '../../utils/request'
 import { 
@@ -124,6 +125,7 @@ import {
   getAttractionStatus,
   type AttractionStatus 
 } from '../../api/attraction'
+import { useRefreshTimer } from '../../utils/refresh'
 
 interface User {
   id: number
@@ -145,6 +147,12 @@ const defaultAvatar = 'https://chatmego.com/images/default-avatar.svg'
 const searchKeyword = ref('')
 
 const attractionStatuses = reactive<Record<number, AttractionStatus>>({})
+
+const { start: startRefresh, stop: stopRefresh } = useRefreshTimer(() => {
+  if (!searchKeyword.value.trim()) {
+    loadUsers(true)
+  }
+}, 20000)
 
 function onAvatarError(e: any, user: User) {
   user.avatar = defaultAvatar
@@ -172,14 +180,13 @@ async function loadUsers(refresh = false) {
     if (response.code === 200) {
       users.value = response.data
       
-      for (const user of users.value) {
-        try {
-          const status = await getAttractionStatus(user.id)
+      const statusPromises = users.value.map(user => {
+        return getAttractionStatus(user.id).then(status => {
           attractionStatuses[user.id] = status
-        } catch (e) {
-          console.error('获取好感度状态失败:', e)
-        }
-      }
+        }).catch(() => {})
+      })
+      
+      await Promise.all(statusPromises)
     }
   } catch (error) {
     console.error('加载用户失败:', error)
@@ -194,6 +201,18 @@ function onRefresh() {
   refreshing.value = true
   loadUsers(true)
 }
+
+onShow(() => {
+  startRefresh()
+})
+
+onHide(() => {
+  stopRefresh()
+})
+
+onUnmounted(() => {
+  stopRefresh()
+})
 
 async function handleAttraction(user: User) {
   const currentStatus = getUserStatus(user.id)
@@ -333,11 +352,16 @@ page {
   background: #ffffff;
 }
 
+.search-section {
+  padding: 24rpx;
+  background: #ffffff;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 40rpx;
+  background: #f5f5f5;
+  border-radius: 32rpx;
   padding: 16rpx 24rpx;
 }
 
@@ -346,6 +370,7 @@ page {
   font-size: 28rpx;
   padding: 0 16rpx;
   color: #333;
+  background: transparent;
 }
 
 .search-input::placeholder {

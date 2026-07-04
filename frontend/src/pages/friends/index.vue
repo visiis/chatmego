@@ -151,7 +151,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
+import { onShow, onHide } from '@dcloudio/uni-app'
 import FontAwesome from '../../components/FontAwesome.vue'
 import { 
   getFriends, 
@@ -165,6 +166,7 @@ import {
   type Friend, 
   type FriendRequest 
 } from '../../api/friends'
+import { useRefreshTimer } from '../../utils/refresh'
 
 const activeTab = ref('friends')
 const requestCount = ref(0)
@@ -175,6 +177,10 @@ const friends = ref<Friend[]>([])
 const requests = ref<FriendRequest[]>([])
 const blocked = ref<Friend[]>([])
 
+const { start: startRefresh, stop: stopRefresh } = useRefreshTimer(() => {
+  loadFriendRequests()
+}, 15000)
+
 onMounted(() => {
   loadFriends()
   loadFriendRequests()
@@ -184,6 +190,18 @@ watch(activeTab, (newTab) => {
   if (newTab === 'blocked') {
     loadBlocked()
   }
+})
+
+onShow(() => {
+  startRefresh()
+})
+
+onHide(() => {
+  stopRefresh()
+})
+
+onUnmounted(() => {
+  stopRefresh()
 })
 
 async function loadFriends() {

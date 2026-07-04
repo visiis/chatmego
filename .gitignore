@@ -23,3 +23,7 @@ frontend/node_modules
 Homestead.json
 Homestead.yaml
 Thumbs.db
+frontend/dist
+storage/framework/views
+realtime/node_modules
+realtime/dist
