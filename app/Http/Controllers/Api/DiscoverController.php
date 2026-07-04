@@ -101,15 +101,19 @@ class DiscoverController extends Controller
         }
 
         // 获取未喜欢/未跳过的用户
-        $excludedIds = DB::table('user_interactions')
-            ->where('user_id', $user->id)
-            ->pluck('target_user_id')
-            ->toArray();
-        $excludedIds[] = $user->id;
+        $excludedIds = [$user->id];
+        try {
+            $interactionIds = DB::table('user_interactions')
+                ->where('user_id', $user->id)
+                ->pluck('target_user_id')
+                ->toArray();
+            $excludedIds = array_merge($excludedIds, $interactionIds);
+        } catch (\Exception $e) {
+            // 表不存在时忽略
+        }
 
         $users = User::whereNotIn('id', $excludedIds)
             ->where('is_active', true)
-            ->where('status', 'active')
             ->inRandomOrder()
             ->limit(10)
             ->get();
@@ -122,7 +126,7 @@ class DiscoverController extends Controller
             
             $photos = [];
             foreach ($albums as $album) {
-                foreach ($album->photos as $photo) {
+                foreach ($album->photos()->orderBy('created_at', 'desc')->get() as $photo) {
                     if (!$photo->is_premium) {
                         $photos[] = [
                             'id' => $photo->id,
@@ -196,23 +200,30 @@ class DiscoverController extends Controller
             return response()->json(['code' => 400, 'message' => '不能喜欢自己']);
         }
 
-        DB::table('user_interactions')->updateOrInsert(
-            ['user_id' => $user->id, 'target_user_id' => $userId],
-            ['type' => 'like', 'created_at' => now()]
-        );
-
-        $matched = DB::table('user_interactions')
-            ->where('user_id', $userId)
-            ->where('target_user_id', $user->id)
-            ->where('type', 'like')
-            ->exists();
-
-        if ($matched) {
-            DB::table('matches')->updateOrInsert(
-                ['user1_id' => min($user->id, $userId), 'user2_id' => max($user->id, $userId)],
-                ['created_at' => now()]
+        $matched = false;
+        try {
+            DB::table('user_interactions')->updateOrInsert(
+                ['user_id' => $user->id, 'target_user_id' => $userId],
+                ['type' => 'like', 'created_at' => now()]
             );
 
+            $matched = DB::table('user_interactions')
+                ->where('user_id', $userId)
+                ->where('target_user_id', $user->id)
+                ->where('type', 'like')
+                ->exists();
+
+            if ($matched) {
+                DB::table('matches')->updateOrInsert(
+                    ['user1_id' => min($user->id, $userId), 'user2_id' => max($user->id, $userId)],
+                    ['created_at' => now()]
+                );
+            }
+        } catch (\Exception $e) {
+            // 表不存在时忽略
+        }
+
+        if ($matched) {
             return response()->json([
                 'code' => 200,
                 'message' => '匹配成功！',
@@ -250,10 +261,14 @@ class DiscoverController extends Controller
             return response()->json(['code' => 400, 'message' => '不能跳过自己']);
         }
 
-        DB::table('user_interactions')->updateOrInsert(
-            ['user_id' => $user->id, 'target_user_id' => $userId],
-            ['type' => 'dislike', 'created_at' => now()]
-        );
+        try {
+            DB::table('user_interactions')->updateOrInsert(
+                ['user_id' => $user->id, 'target_user_id' => $userId],
+                ['type' => 'dislike', 'created_at' => now()]
+            );
+        } catch (\Exception $e) {
+            // 表不存在时忽略
+        }
 
         return response()->json([
             'code' => 200,
@@ -287,14 +302,19 @@ class DiscoverController extends Controller
         }
 
         // 获取匹配的用户
-        $matchIds = DB::table('matches')
-            ->where('user1_id', $user->id)
-            ->orWhere('user2_id', $user->id)
-            ->get()
-            ->map(function ($match) use ($user) {
-                return $match->user1_id == $user->id ? $match->user2_id : $match->user1_id;
-            })
-            ->toArray();
+        $matchIds = [];
+        try {
+            $matchIds = DB::table('matches')
+                ->where('user1_id', $user->id)
+                ->orWhere('user2_id', $user->id)
+                ->get()
+                ->map(function ($match) use ($user) {
+                    return $match->user1_id == $user->id ? $match->user2_id : $match->user1_id;
+                })
+                ->toArray();
+        } catch (\Exception $e) {
+            // 表不存在时忽略
+        }
 
         $users = User::whereIn('id', $matchIds)->get();
 

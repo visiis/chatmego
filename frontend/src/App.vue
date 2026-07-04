@@ -23,7 +23,6 @@ onLaunch(() => {
 })
 
 onShow(() => {
-  checkLogin()
 })
 
 onHide(() => {

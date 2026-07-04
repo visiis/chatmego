@@ -2,7 +2,7 @@
   <view class="chat-container">
     <NetworkStatus />
     
-    <view class="status-bar"></view>
+    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
     
     <view class="nav-bar">
       <view class="nav-left" @click="goBack">
@@ -11,7 +11,7 @@
       <view class="nav-center">
         <text class="nav-title">{{ friendName }}</text>
       </view>
-      <view class="nav-right">
+      <view class="nav-right" @click="toggleMenu">
         <text class="nav-icon">⋯</text>
       </view>
     </view>
@@ -45,7 +45,7 @@
           <view 
             class="message-item" 
             :class="{ 'me': item.isMe }"
-            v-for="(item, index) in messages"
+            v-for="(item, index) in messages.filter(m => m.type === 'gift' || (m.content && m.content.trim()))"
             :key="item.id"
             :id="'msg-' + index"
           >
@@ -63,7 +63,7 @@
                   mode="aspectFit" 
                 />
                 <view class="gift-name-bg" :class="{ 'me': item.isMe }">
-                  <uni-icons class="gift-icon" type="gift" size="16" color="#ff6b9d" />
+                  <text class="fa fas fa-gift gift-icon" style="font-size: 16px; color: #ff6b9d;"></text>
                   <text class="gift-name">{{ item.giftName }}</text>
                 </view>
               </view>
@@ -84,7 +84,7 @@
           </view>
           
           <view class="empty-state" v-if="messages.length === 0 && !loading">
-            <uni-icons type="chat" size="48" color="#ccc" />
+            <text class="fa fas fa-comment" style="font-size: 48px; color: #ccc;"></text>
             <text class="empty-text">还没有消息，发送第一条消息开始聊天吧！</text>
           </view>
         </template>
@@ -95,7 +95,7 @@
       <view class="gift-header">
         <text class="gift-title">选择礼物</text>
         <view class="gift-close" @click="showGiftPanel = false">
-          <uni-icons type="close" size="28" color="#999" />
+          <text class="fa fas fa-times" style="font-size: 28px; color: #999;"></text>
         </view>
       </view>
       <scroll-view scroll-y class="gift-list" scroll-with-animation>
@@ -122,7 +122,7 @@
           </view>
         </view>
         <view class="no-gifts" v-else>
-          <uni-icons type="gift" size="48" color="#ccc" />
+          <text class="fa fas fa-gift" style="font-size: 48px; color: #ccc;"></text>
           <text>暂无可用礼物</text>
         </view>
       </scroll-view>
@@ -131,7 +131,7 @@
     <view class="input-bar">
       <view class="input-actions">
         <view class="action-btn" @click="toggleGift">
-          <uni-icons type="gift" size="36" color="#666" />
+          <text class="fa fas fa-gift" style="font-size: 36rpx; color: #666;"></text>
         </view>
       </view>
       <view class="input-wrapper">
@@ -149,7 +149,23 @@
         :class="{ active: inputText.trim() }"
         @click="sendMessage"
       >
-        <uni-icons type="send" size="24" color="#fff" />
+        <text class="fa fas fa-paper-plane" style="font-size: 36rpx; color: #fff;"></text>
+      </view>
+    </view>
+    
+    <view class="menu-overlay" v-if="showMenu" @click="showMenu = false"></view>
+    <view class="menu-panel" :class="{ show: showMenu }">
+      <view class="menu-item" @click="viewProfile">
+        <text class="fa fas fa-user-circle" style="font-size: 28rpx; color: #ff6b9d;"></text>
+        <text class="menu-text">查看资料</text>
+      </view>
+      <view class="menu-item" @click="viewMoments">
+        <text class="fa fas fa-comment" style="font-size: 28rpx; color: #ff6b9d;"></text>
+        <text class="menu-text">查看说说</text>
+      </view>
+      <view class="menu-item" @click="viewPhotos">
+        <text class="fa fas fa-images" style="font-size: 28rpx; color: #ff6b9d;"></text>
+        <text class="menu-text">查看照片</text>
       </view>
     </view>
   </view>
@@ -179,11 +195,13 @@ const friendName = ref('')
 const friendAvatar = ref('')
 const myAvatar = ref('')
 const myId = ref(0)
+const statusBarHeight = ref(0)
 
 const inputText = ref('')
 const scrollTop = ref(0)
 const scrollToId = ref('')
 const showGiftPanel = ref(false)
+const showMenu = ref(false)
 const gifts = ref<any[]>([])
 const loading = ref(false)
 const isSendingMessage = ref(false)
@@ -209,6 +227,8 @@ interface ChatMessage {
 const messages = ref<ChatMessage[]>([])
 
 onMounted(() => {
+  const sysInfo = uni.getSystemInfoSync()
+  statusBarHeight.value = sysInfo.statusBarHeight || 44
   initPage()
 })
 
@@ -312,6 +332,13 @@ async function loadMessages() {
     messages.value = cachedMessages
     hasMoreHistory.value = messages.value.length >= 20
     isLoaded.value = true
+    loading.value = false
+    
+    await nextTick()
+    scrollToBottom()
+    
+    syncMessagesInBackground()
+    return
   }
   
   try {
@@ -319,42 +346,51 @@ async function loadMessages() {
     const messageList = Array.isArray(data) ? data : (data?.messages || [])
     
     if (messageList.length > 0) {
-      const serverMessages = messageList.map(msg => formatMessage(msg))
-      
-      if (cachedMessages.length === 0) {
-        messages.value = serverMessages
-      } else {
-        const cachedIds = new Set(messages.value.map(m => m.id))
-        for (const msg of serverMessages) {
-          if (!cachedIds.has(msg.id)) {
-            messages.value.push(msg)
-          }
-        }
-        
-        messages.value = [...new Map(messages.value.map(m => [m.id, m])).values()]
-        messages.value.sort((a, b) => a.id - b.id)
-      }
-      
+      messages.value = messageList.map(msg => formatMessage(msg))
       hasMoreHistory.value = messageList.length >= 20
-      isLoaded.value = true
-      
       saveCache()
-    } else {
-      if (cachedMessages.length === 0) {
-        isLoaded.value = true
-      }
     }
+    
+    isLoaded.value = true
   } catch (error) {
     console.error('载入消息失败:', error)
-    if (cachedMessages.length === 0) {
-      isLoaded.value = true
-    }
+    isLoaded.value = true
   } finally {
     loading.value = false
   }
   
   await nextTick()
   scrollToBottom()
+}
+
+async function syncMessagesInBackground() {
+  try {
+    const data = await getMessages(friendId.value)
+    const messageList = Array.isArray(data) ? data : (data?.messages || [])
+    
+    if (messageList.length > 0) {
+      const serverMessages = messageList.map(msg => formatMessage(msg))
+      const cachedIds = new Set(messages.value.map(m => m.id))
+      let hasNewMessage = false
+      
+      for (const msg of serverMessages) {
+        if (!cachedIds.has(msg.id)) {
+          messages.value.push(msg)
+          hasNewMessage = true
+        }
+      }
+      
+      if (hasNewMessage) {
+        messages.value = [...new Map(messages.value.map(m => [m.id, m])).values()]
+        messages.value.sort((a, b) => a.id - b.id)
+        saveCache()
+        await nextTick()
+        scrollToBottom()
+      }
+    }
+  } catch (error) {
+    console.error('后台同步消息失败:', error)
+  }
 }
 
 async function loadMoreHistory() {
@@ -528,6 +564,31 @@ function goBack() {
   })
 }
 
+function toggleMenu() {
+  showMenu.value = !showMenu.value
+}
+
+function viewProfile() {
+  showMenu.value = false
+  uni.navigateTo({
+    url: `/pages/profile/user-profile?id=${friendId.value}&name=${encodeURIComponent(friendName.value)}&avatar=${encodeURIComponent(friendAvatar.value)}`
+  })
+}
+
+function viewMoments() {
+  showMenu.value = false
+  uni.navigateTo({
+    url: `/pages/moments/index?id=${friendId.value}&name=${encodeURIComponent(friendName.value)}&avatar=${encodeURIComponent(friendAvatar.value)}`
+  })
+}
+
+function viewPhotos() {
+  showMenu.value = false
+  uni.navigateTo({
+    url: `/pages/photos/index?id=${friendId.value}&name=${encodeURIComponent(friendName.value)}&avatar=${encodeURIComponent(friendAvatar.value)}`
+  })
+}
+
 function toggleGift() {
   showGiftPanel.value = !showGiftPanel.value
   
@@ -600,8 +661,11 @@ page {
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: #ffffff;
   width: 100%;
   overflow: hidden;
@@ -656,7 +720,7 @@ page {
 
 .messages-wrapper {
   padding: 24rpx 0;
-  padding-bottom: 180rpx;
+  padding-bottom: 60rpx;
 }
 
 .history-loading {
@@ -998,5 +1062,56 @@ page {
   &.active {
     background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   }
+}
+
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 300;
+}
+
+.menu-panel {
+  position: fixed;
+  top: 160rpx;
+  right: 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.15);
+  z-index: 301;
+  min-width: 240rpx;
+  opacity: 0;
+  transform: translateY(-20rpx) scale(0.95);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  
+  &.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:active {
+    background: #f9f9f9;
+  }
+}
+
+.menu-text {
+  font-size: 28rpx;
+  color: #333;
 }
 </style>

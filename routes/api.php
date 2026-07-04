@@ -108,6 +108,7 @@ Route::group(['middleware' => 'bearer'], function () {
         Route::get('{albumId}/check-purchase', [App\Http\Controllers\Api\AlbumController::class, 'checkPurchase']);
         Route::get('purchases/history', [App\Http\Controllers\Api\AlbumController::class, 'getPurchaseHistory']);
         Route::get('photos/all', [App\Http\Controllers\Api\AlbumController::class, 'getUserPhotos']);
+        Route::get('user/{userId}/photos', [App\Http\Controllers\Api\AlbumController::class, 'getUserPhotosById']);
         Route::post('photos/upload', [App\Http\Controllers\Api\AlbumController::class, 'uploadPhotoToDefault']);
     });
 

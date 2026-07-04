@@ -441,6 +441,57 @@ class AlbumController extends Controller
         ]);
     }
 
+    public function getUserPhotosById(Request $request, $userId)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json(['message' => '未授权'], 401);
+        }
+
+        $targetUser = User::find($userId);
+        
+        if (!$targetUser) {
+            return response()->json(['code' => 404, 'message' => '用户不存在'], 404);
+        }
+
+        $isOwner = $user->id == $userId;
+
+        $photos = AlbumPhoto::whereHas('album', function ($query) use ($userId) {
+                $query->where('user_id', $userId)->where('status', 1);
+            })
+            ->where('status', 1)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $purchasedAlbumIds = AlbumPurchase::where('buyer_id', $user->id)
+            ->where('status', 1)
+            ->where(function ($query) {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->pluck('album_id')
+            ->toArray();
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'success',
+            'data' => $photos->map(function ($photo) use ($isOwner, $purchasedAlbumIds) {
+                $canViewFull = $isOwner || $photo->album->privacy || in_array($photo->album_id, $purchasedAlbumIds);
+                return [
+                    'id' => $photo->id,
+                    'image_url' => $canViewFull ? $photo->image_url : $photo->thumbnail_url,
+                    'thumbnail_url' => $photo->thumbnail_url,
+                    'title' => $photo->title,
+                    'description' => $photo->description,
+                    'album_id' => $photo->album_id,
+                    'album_name' => $photo->album->name,
+                    'can_view_full' => $canViewFull,
+                    'created_at' => $photo->created_at ? $photo->created_at->toISOString() : null
+                ];
+            })
+        ]);
+    }
+
     public function uploadPhotoToDefault(Request $request)
     {
         $user = $this->getUserFromToken($request);

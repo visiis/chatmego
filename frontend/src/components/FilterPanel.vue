@@ -19,7 +19,7 @@
               :class="{ active: filters.gender === '' }"
               @click="setGender('')"
             >
-              <text>全部</text>
+              <text>不限</text>
             </view>
             <view 
               class="filter-option"
@@ -27,7 +27,7 @@
               @click="setGender('male')"
             >
               <FontAwesome name="mars" size="20px" color="#4a90d9" />
-              <text>男性</text>
+              <text>男</text>
             </view>
             <view 
               class="filter-option"
@@ -35,52 +35,70 @@
               @click="setGender('female')"
             >
               <FontAwesome name="venus" size="20px" color="#ff6b9d" />
-              <text>女性</text>
+              <text>女</text>
             </view>
           </view>
         </view>
         
         <view class="filter-section">
-          <text class="section-title">年龄</text>
-          <view class="filter-options">
-            <view 
-              v-for="range in ageRanges" 
-              :key="range.value"
-              class="filter-option"
-              :class="{ active: filters.age === range.value }"
-              @click="setAge(range.value)"
-            >
-              <text>{{ range.label }}</text>
+          <text class="section-title">年龄 {{ filters.ageMin }}-{{ filters.ageMax }}岁</text>
+          <view class="range-slider">
+            <slider 
+              class="slider"
+              :min="18" 
+              :max="50" 
+              :step="1"
+              :value="[filters.ageMin, filters.ageMax]"
+              activeColor="#ff6b9d"
+              backgroundColor="#eee"
+              block-size="24"
+              @change="onAgeChange"
+            />
+            <view class="slider-labels">
+              <text>18</text>
+              <text>50</text>
             </view>
           </view>
         </view>
         
         <view class="filter-section">
-          <text class="section-title">身高</text>
-          <view class="filter-options">
-            <view 
-              v-for="range in heightRanges" 
-              :key="range.value"
-              class="filter-option"
-              :class="{ active: filters.height === range.value }"
-              @click="setHeight(range.value)"
-            >
-              <text>{{ range.label }}</text>
+          <text class="section-title">身高 {{ filters.heightMin }}-{{ filters.heightMax }}cm</text>
+          <view class="range-slider">
+            <slider 
+              class="slider"
+              :min="140" 
+              :max="190" 
+              :step="5"
+              :value="[filters.heightMin, filters.heightMax]"
+              activeColor="#ff6b9d"
+              backgroundColor="#eee"
+              block-size="24"
+              @change="onHeightChange"
+            />
+            <view class="slider-labels">
+              <text>140</text>
+              <text>190</text>
             </view>
           </view>
         </view>
         
         <view class="filter-section">
-          <text class="section-title">体重</text>
-          <view class="filter-options">
-            <view 
-              v-for="range in weightRanges" 
-              :key="range.value"
-              class="filter-option"
-              :class="{ active: filters.weight === range.value }"
-              @click="setWeight(range.value)"
-            >
-              <text>{{ range.label }}</text>
+          <text class="section-title">体重 {{ filters.weightMin }}-{{ filters.weightMax }}kg</text>
+          <view class="range-slider">
+            <slider 
+              class="slider"
+              :min="40" 
+              :max="100" 
+              :step="5"
+              :value="[filters.weightMin, filters.weightMax]"
+              activeColor="#ff6b9d"
+              backgroundColor="#eee"
+              block-size="24"
+              @change="onWeightChange"
+            />
+            <view class="slider-labels">
+              <text>40</text>
+              <text>100</text>
             </view>
           </view>
         </view>
@@ -104,9 +122,12 @@ import FontAwesome from './FontAwesome.vue'
 
 interface FilterData {
   gender: string
-  age: string
-  height: string
-  weight: string
+  ageMin: number
+  ageMax: number
+  heightMin: number
+  heightMax: number
+  weightMin: number
+  weightMax: number
 }
 
 const props = defineProps<{
@@ -120,56 +141,48 @@ const emit = defineEmits<{
 
 const filters = reactive<FilterData>({
   gender: '',
-  age: '',
-  height: '',
-  weight: ''
+  ageMin: 18,
+  ageMax: 50,
+  heightMin: 140,
+  heightMax: 190,
+  weightMin: 40,
+  weightMax: 100
 })
 
-const ageRanges = [
-  { label: '全部', value: '' },
-  { label: '18-24', value: '18-24' },
-  { label: '25-30', value: '25-30' },
-  { label: '31-40', value: '31-40' },
-  { label: '40+', value: '40+' }
-]
-
-const heightRanges = [
-  { label: '全部', value: '' },
-  { label: '<160cm', value: '<160' },
-  { label: '160-170cm', value: '160-170' },
-  { label: '170-180cm', value: '170-180' },
-  { label: '180cm+', value: '180+' }
-]
-
-const weightRanges = [
-  { label: '全部', value: '' },
-  { label: '<50kg', value: '<50' },
-  { label: '50-60kg', value: '50-60' },
-  { label: '60-70kg', value: '60-70' },
-  { label: '70kg+', value: '70+' }
-]
+const defaultFilters = {
+  gender: '',
+  ageMin: 18,
+  ageMax: 50,
+  heightMin: 140,
+  heightMax: 190,
+  weightMin: 40,
+  weightMax: 100
+}
 
 function setGender(value: string) {
   filters.gender = value
 }
 
-function setAge(value: string) {
-  filters.age = value
+function onAgeChange(e: any) {
+  const values = e.detail.value as number[]
+  filters.ageMin = values[0]
+  filters.ageMax = values[1]
 }
 
-function setHeight(value: string) {
-  filters.height = value
+function onHeightChange(e: any) {
+  const values = e.detail.value as number[]
+  filters.heightMin = values[0]
+  filters.heightMax = values[1]
 }
 
-function setWeight(value: string) {
-  filters.weight = value
+function onWeightChange(e: any) {
+  const values = e.detail.value as number[]
+  filters.weightMin = values[0]
+  filters.weightMax = values[1]
 }
 
 function reset() {
-  filters.gender = ''
-  filters.age = ''
-  filters.height = ''
-  filters.weight = ''
+  Object.assign(filters, defaultFilters)
 }
 
 function confirm() {
@@ -257,11 +270,11 @@ watch(() => props.visible, (val) => {
 
 .filter-scroll {
   flex: 1;
-  padding: 24rpx;
+  padding: 24rpx 32rpx;
 }
 
 .filter-section {
-  margin-bottom: 32rpx;
+  margin-bottom: 36rpx;
 }
 
 .section-title {
@@ -297,6 +310,22 @@ watch(() => props.visible, (val) => {
   &:active {
     opacity: 0.7;
   }
+}
+
+.range-slider {
+  padding: 16rpx 0;
+}
+
+.slider {
+  margin: 0;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #999;
 }
 
 .filter-footer {

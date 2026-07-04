@@ -47,6 +47,7 @@
     {
       "path": "pages/messages/detail",
       "style": {
+        "navigationStyle": "custom",
         "navigationBarTitleText": "聊天"
       }
     },
@@ -116,6 +117,18 @@
       "style": {
         "navigationBarTitleText": "用戶資料",
         "navigationBarRightButtonText": "更多"
+      }
+    },
+    {
+      "path": "pages/moments/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/photos/index",
+      "style": {
+        "navigationStyle": "custom"
       }
     }
   ],
