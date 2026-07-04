@@ -31,6 +31,7 @@ onHide(() => {
 </script>
 
 <style lang="scss">
+@import '@fortawesome/fontawesome-free/css/all.min.css';
 @import 'uview-plus/index.scss';
 @import './styles/variables.scss';
 @import './styles/global.scss';

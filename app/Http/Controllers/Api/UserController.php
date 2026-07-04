@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserAlbum;
+use App\Models\AlbumPhoto;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -171,5 +173,108 @@ class UserController extends Controller
             ] : null,
             'created_at' => $user->created_at ? $user->created_at->toISOString() : null
         ];
+    }
+
+    public function getAlbum(Request $request)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json(['message' => '未授权'], 401);
+        }
+
+        $photos = AlbumPhoto::whereHas('album', function ($query) use ($user) {
+                $query->where('user_id', $user->id)->where('status', 1);
+            })
+            ->where('status', 1)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'success',
+            'data' => [
+                'photos' => $photos->map(function ($photo) {
+                    return [
+                        'id' => $photo->id,
+                        'url' => $photo->image_url,
+                        'thumbnail_url' => $photo->thumbnail_url,
+                        'title' => $photo->title,
+                        'is_main' => $photo->is_main ?? 0,
+                        'is_premium' => $photo->is_premium ?? 0,
+                        'points_price' => $photo->points_price ?? 0,
+                        'created_at' => $photo->created_at ? $photo->created_at->toISOString() : null
+                    ];
+                })
+            ]
+        ]);
+    }
+
+    public function uploadAlbumPhoto(Request $request)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json(['message' => '未授权'], 401);
+        }
+
+        $defaultAlbum = UserAlbum::where('user_id', $user->id)
+            ->where('status', 1)
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        if (!$defaultAlbum) {
+            $defaultAlbum = UserAlbum::create([
+                'user_id' => $user->id,
+                'name' => '我的照片',
+                'description' => '',
+                'privacy' => 1,
+                'price' => 0,
+            ]);
+        }
+
+        $request->validate([
+            'photo' => 'required|image|max:10240',
+        ]);
+
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $picBedService = app(\App\Services\PicBedService::class);
+            $result = $picBedService->upload($file->getRealPath());
+
+            if ($result['success']) {
+                $imageUrl = $result['url'];
+                $thumbnailUrl = str_contains($imageUrl, '.th.') ? $imageUrl : preg_replace('/\.(jpg|jpeg|png|webp)$/i', '.th.$1', $imageUrl);
+
+                $photo = AlbumPhoto::create([
+                    'album_id' => $defaultAlbum->id,
+                    'image_url' => $imageUrl,
+                    'thumbnail_url' => $thumbnailUrl,
+                    'title' => '',
+                    'description' => '',
+                    'is_main' => 0,
+                    'is_premium' => 0,
+                    'points_price' => 0,
+                    'sort_order' => AlbumPhoto::where('album_id', $defaultAlbum->id)->count() + 1,
+                ]);
+
+                return response()->json([
+                    'code' => 200,
+                    'message' => '图片上传成功',
+                    'data' => [
+                        'id' => $photo->id,
+                        'url' => $photo->image_url,
+                        'thumbnail_url' => $photo->thumbnail_url,
+                        'is_main' => $photo->is_main,
+                        'is_premium' => $photo->is_premium,
+                        'points_price' => $photo->points_price
+                    ]
+                ]);
+            }
+
+            return response()->json(['code' => 400, 'message' => $result['message']]);
+        }
+
+        return response()->json(['code' => 400, 'message' => '请选择图片']);
     }
 }

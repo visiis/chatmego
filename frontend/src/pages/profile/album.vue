@@ -1,19 +1,5 @@
 <template>
   <view class="album-container">
-    <view class="status-bar"></view>
-    
-    <view class="nav-bar">
-      <view class="nav-left" @click="goBack">
-        <FontAwesome name="arrow-left" size="24px" color="#fff" />
-      </view>
-      <view class="nav-center">
-        <text class="nav-title">我的相册</text>
-      </view>
-      <view class="nav-right">
-        <FontAwesome name="plus" size="24px" color="#fff" @click="uploadPhoto" />
-      </view>
-    </view>
-    
     <scroll-view class="content" scroll-y>
       <view class="photos-grid">
         <view class="photo-item" v-for="photo in photos" :key="photo.id">
@@ -26,7 +12,6 @@
           </view>
         </view>
 
-        <!-- 上传进度条 -->
         <view class="photo-item uploading-item" v-if="uploading">
           <view class="upload-progress">
             <view class="progress-bar">
@@ -42,10 +27,14 @@
           </view>
         </view>
       </view>
-      
+
       <view class="empty-state" v-if="photos.length === 0">
         <FontAwesome name="image" size="80px" color="#ddd" />
-        <text class="empty-text">还没有照片，点击右上角添加</text>
+        <text class="empty-text">还没有照片，点击添加</text>
+        <view class="upload-btn-large" @click="uploadPhoto">
+          <FontAwesome name="plus" size="32px" color="#fff" />
+          <text>上传照片</text>
+        </view>
       </view>
     </scroll-view>
   </view>
@@ -106,7 +95,6 @@ function uploadPhoto() {
           try {
             const data = JSON.parse(uploadRes.data)
             if (data.code === 200) {
-              // 生成缩略图URL（原图URL加.th.jpg）
               const photoData = data.data
               if (photoData.url && !photoData.thumbnail_url) {
                 if (photoData.url.includes('.th.')) {
@@ -135,24 +123,8 @@ function uploadPhoto() {
         }
       })
 
-      // 监听上传进度
       uploadTask.onProgressUpdate((res) => {
         uploadProgress.value = res.progress
-      })
-    }
-  })
-}
-
-function goBack() {
-  uni.navigateBack({
-    fail: () => {
-      uni.switchTab({
-        url: '/pages/profile/index',
-        fail: () => {
-          uni.reLaunch({
-            url: '/pages/profile/index'
-          })
-        }
       })
     }
   })
@@ -168,6 +140,7 @@ page {
   height: 100%;
   width: 100%;
   overflow-x: hidden;
+  background: #ffffff;
 }
 
 .album-container {
@@ -177,36 +150,6 @@ page {
   width: 100%;
   background: #ffffff;
   overflow-x: hidden;
-}
-
-.status-bar {
-  height: var(--status-bar-height, 44px);
-}
-
-.nav-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
-  padding: 16rpx 24rpx;
-  position: relative;
-  z-index: 100;
-}
-
-.nav-left, .nav-right {
-  width: 80rpx;
-  height: 80rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
-  cursor: pointer;
-}
-
-.nav-title {
-  font-size: 34rpx;
-  color: #fff;
-  font-weight: 600;
 }
 
 .content {
@@ -226,7 +169,7 @@ page {
   overflow: hidden;
   position: relative;
   background: #fff;
-  
+
   &.upload-btn {
     display: flex;
     align-items: center;
@@ -315,5 +258,17 @@ page {
   font-size: 28rpx;
   color: #999;
   margin-top: 24rpx;
+}
+
+.upload-btn-large {
+  margin-top: 40rpx;
+  padding: 24rpx 48rpx;
+  background: linear-gradient(135deg, #ff6b9d, #c44569);
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 30rpx;
+  color: #fff;
 }
 </style>

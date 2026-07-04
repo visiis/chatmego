@@ -87,9 +87,14 @@ class DiscoverController extends Controller
     /**
      * 获取推荐用户
      */
-    public function recommend()
+    public function recommend(Request $request)
     {
-        $user = auth()->guard('api')->user();
+        $token = $request->header('Authorization');
+        if ($token && str_starts_with($token, 'Bearer ')) {
+            $token = substr($token, 7);
+        }
+        
+        $user = User::where('api_token', $token)->first();
         
         if (!$user) {
             return response()->json(['code' => 401, 'message' => '未授权']);
@@ -174,25 +179,28 @@ class DiscoverController extends Controller
     /**
      * 喜欢用户
      */
-    public function like($userId)
+    public function like(Request $request, $userId)
     {
-        $user = auth()->guard('api')->user();
+        $token = $request->header('Authorization');
+        if ($token && str_starts_with($token, 'Bearer ')) {
+            $token = substr($token, 7);
+        }
+        
+        $user = User::where('api_token', $token)->first();
         
         if (!$user) {
-            return response()->json(['message' => '未授权'], 401);
+            return response()->json(['code' => 401, 'message' => '未授权']);
         }
 
         if ($user->id == $userId) {
-            return response()->json(['message' => '不能喜欢自己'], 400);
+            return response()->json(['code' => 400, 'message' => '不能喜欢自己']);
         }
 
-        // 记录喜欢
         DB::table('user_interactions')->updateOrInsert(
             ['user_id' => $user->id, 'target_user_id' => $userId],
             ['type' => 'like', 'created_at' => now()]
         );
 
-        // 检查是否匹配（对方也喜欢了自己）
         $matched = DB::table('user_interactions')
             ->where('user_id', $userId)
             ->where('target_user_id', $user->id)
@@ -200,7 +208,6 @@ class DiscoverController extends Controller
             ->exists();
 
         if ($matched) {
-            // 创建匹配记录
             DB::table('matches')->updateOrInsert(
                 ['user1_id' => min($user->id, $userId), 'user2_id' => max($user->id, $userId)],
                 ['created_at' => now()]
@@ -226,16 +233,21 @@ class DiscoverController extends Controller
     /**
      * 跳过用户
      */
-    public function dislike($userId)
+    public function dislike(Request $request, $userId)
     {
-        $user = auth()->guard('api')->user();
+        $token = $request->header('Authorization');
+        if ($token && str_starts_with($token, 'Bearer ')) {
+            $token = substr($token, 7);
+        }
+        
+        $user = User::where('api_token', $token)->first();
         
         if (!$user) {
-            return response()->json(['message' => '未授权'], 401);
+            return response()->json(['code' => 401, 'message' => '未授权']);
         }
 
         if ($user->id == $userId) {
-            return response()->json(['message' => '不能跳过自己'], 400);
+            return response()->json(['code' => 400, 'message' => '不能跳过自己']);
         }
 
         DB::table('user_interactions')->updateOrInsert(
@@ -253,20 +265,25 @@ class DiscoverController extends Controller
     /**
      * 跳过用户（pass接口，与dislike逻辑相同）
      */
-    public function pass($userId)
+    public function pass(Request $request, $userId)
     {
-        return $this->dislike($userId);
+        return $this->dislike($request, $userId);
     }
 
     /**
      * 获取匹配列表
      */
-    public function matches()
+    public function matches(Request $request)
     {
-        $user = auth()->guard('api')->user();
+        $token = $request->header('Authorization');
+        if ($token && str_starts_with($token, 'Bearer ')) {
+            $token = substr($token, 7);
+        }
+        
+        $user = User::where('api_token', $token)->first();
         
         if (!$user) {
-            return response()->json(['message' => '未授权'], 401);
+            return response()->json(['code' => 401, 'message' => '未授权']);
         }
 
         // 获取匹配的用户

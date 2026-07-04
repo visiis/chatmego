@@ -51,7 +51,12 @@ export function getRecommend(): Promise<UserCard[]> {
     const token = uni.getStorageSync('token')
     request('/api/discover/recommend', 'GET', undefined, { 'Authorization': 'Bearer ' + token })
       .then(response => {
-        resolve(response.data as UserCard[])
+        const data = response.data as { users?: UserCard[] }
+        if (data && data.users) {
+          resolve(data.users)
+        } else {
+          resolve(response.data as UserCard[])
+        }
       })
       .catch(error => {
         reject(error)

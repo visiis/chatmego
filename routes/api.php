@@ -11,7 +11,7 @@ Route::prefix('auth')->group(function () {
 });
 
 // 需要登录的 API
-Route::group(['middleware' => 'auth:api'], function () {
+Route::group(['middleware' => 'bearer'], function () {
     // 用户相关 API
     Route::prefix('user')->group(function () {
         Route::get('profile', [App\Http\Controllers\Api\UserController::class, 'profile']);
@@ -19,6 +19,8 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::put('profile', [App\Http\Controllers\Api\UserController::class, 'updateProfile']);
         Route::get('points', [App\Http\Controllers\Api\UserController::class, 'points']);
         Route::post('sign-in', [App\Http\Controllers\Api\UserController::class, 'signIn']);
+        Route::get('album', [App\Http\Controllers\Api\UserController::class, 'getAlbum']);
+        Route::post('album/upload', [App\Http\Controllers\Api\UserController::class, 'uploadAlbumPhoto']);
     });
 
     // 发现相关 API
@@ -105,6 +107,8 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::post('{albumId}/purchase', [App\Http\Controllers\Api\AlbumController::class, 'purchaseAlbum']);
         Route::get('{albumId}/check-purchase', [App\Http\Controllers\Api\AlbumController::class, 'checkPurchase']);
         Route::get('purchases/history', [App\Http\Controllers\Api\AlbumController::class, 'getPurchaseHistory']);
+        Route::get('photos/all', [App\Http\Controllers\Api\AlbumController::class, 'getUserPhotos']);
+        Route::post('photos/upload', [App\Http\Controllers\Api\AlbumController::class, 'uploadPhotoToDefault']);
     });
 
     // 积分相关 API

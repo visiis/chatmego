@@ -39,6 +39,7 @@ class User extends Authenticatable implements FilamentUser
         'total_coins_recharged',
         'is_active',
         'is_admin',
+        'api_token',
     ];
 
     /**

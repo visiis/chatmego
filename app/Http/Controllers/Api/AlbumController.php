@@ -408,6 +408,65 @@ class AlbumController extends Controller
         ]);
     }
 
+    public function getUserPhotos(Request $request)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json(['message' => '未授权'], 401);
+        }
+
+        $photos = AlbumPhoto::whereHas('album', function ($query) use ($user) {
+                $query->where('user_id', $user->id)->where('status', 1);
+            })
+            ->where('status', 1)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'success',
+            'data' => $photos->map(function ($photo) {
+                return [
+                    'id' => $photo->id,
+                    'image_url' => $photo->image_url,
+                    'thumbnail_url' => $photo->thumbnail_url,
+                    'title' => $photo->title,
+                    'description' => $photo->description,
+                    'album_id' => $photo->album_id,
+                    'album_name' => $photo->album->name,
+                    'created_at' => $photo->created_at ? $photo->created_at->toISOString() : null
+                ];
+            })
+        ]);
+    }
+
+    public function uploadPhotoToDefault(Request $request)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json(['message' => '未授权'], 401);
+        }
+
+        $defaultAlbum = UserAlbum::where('user_id', $user->id)
+            ->where('status', 1)
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        if (!$defaultAlbum) {
+            $defaultAlbum = UserAlbum::create([
+                'user_id' => $user->id,
+                'name' => '我的照片',
+                'description' => '',
+                'privacy' => 1,
+                'price' => 0,
+            ]);
+        }
+
+        return $this->uploadPhoto($request, $defaultAlbum->id);
+    }
+
     public function getPurchaseHistory(Request $request)
     {
         $user = $this->getUserFromToken($request);

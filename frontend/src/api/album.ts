@@ -22,6 +22,17 @@ export interface AlbumPhoto {
   can_view_full: boolean
 }
 
+export interface UserPhoto {
+  id: number
+  image_url: string
+  thumbnail_url: string
+  title: string
+  description: string
+  album_id: number
+  album_name: string
+  created_at: string
+}
+
 export interface AlbumDetail {
   id: number
   name: string
@@ -199,5 +210,47 @@ export function getPurchaseHistory(): Promise<PurchaseRecord[]> {
       .catch(error => {
         reject(error)
       })
+  })
+}
+
+export function getUserPhotos(): Promise<UserPhoto[]> {
+  return new Promise((resolve, reject) => {
+    const token = uni.getStorageSync('token')
+    request('/api/album/photos/all', 'GET', undefined, { 'Authorization': 'Bearer ' + token })
+      .then(response => {
+        resolve(response.data as UserPhoto[])
+      })
+      .catch(error => {
+        reject(error)
+      })
+  })
+}
+
+export function uploadPhotoToDefault(filePath: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const token = uni.getStorageSync('token')
+    uni.uploadFile({
+      url: 'https://chatmego.com/api/album/photos/upload',
+      filePath: filePath,
+      name: 'image',
+      header: {
+        'Authorization': 'Bearer ' + token
+      },
+      success: (res) => {
+        try {
+          const data = JSON.parse(res.data)
+          if (data.code === 200) {
+            resolve(data)
+          } else {
+            reject(new Error(data.message || '上传失败'))
+          }
+        } catch (e) {
+          reject(new Error('上传失败'))
+        }
+      },
+      fail: (err) => {
+        reject(new Error(err.errMsg || '上传失败'))
+      }
+    })
   })
 }
