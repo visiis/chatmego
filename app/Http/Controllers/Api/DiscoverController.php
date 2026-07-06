@@ -63,17 +63,38 @@ class DiscoverController extends Controller
         $users = $query->get();
 
         $result = $users->map(function ($item) {
+            $albums = UserAlbum::where('user_id', $item->id)
+                ->where('status', true)
+                ->get();
+            
+            $photos = [];
+            foreach ($albums as $album) {
+                foreach ($album->photos()->orderBy('created_at', 'desc')->get() as $photo) {
+                    $photos[] = [
+                        'id' => $photo->id,
+                        'url' => $photo->image_url,
+                        'blur_url' => '',
+                        'is_main' => 0,
+                        'is_premium' => 0,
+                        'points_price' => 0
+                    ];
+                }
+            }
+            
+            
+
             return [
                 'id' => $item->id,
                 'name' => $item->name,
-                'avatar' => avatar_url($item->avatar),
-                'gender' => (int)$item->gender === 1 ? 'male' : ((int)$item->gender === 2 ? 'female' : ''),
+                'avatar' => $item->avatar_url ?: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20cute&image_size=square',
+                'gender' => $item->gender === 'male' ? 'male' : ($item->gender === 'female' ? 'female' : ''),
                 'age' => $item->age,
                 'height' => $item->height,
                 'weight' => $item->weight,
                 'hobbies' => $item->hobbies,
                 'love_declaration' => $item->love_declaration,
                 'is_vip' => $item->hasActiveMembership() ? 1 : 0,
+                'photos' => $photos,
             ];
         });
 
@@ -127,39 +148,26 @@ class DiscoverController extends Controller
             $photos = [];
             foreach ($albums as $album) {
                 foreach ($album->photos()->orderBy('created_at', 'desc')->get() as $photo) {
-                    if (!$photo->is_premium) {
-                        $photos[] = [
-                            'id' => $photo->id,
-                            'url' => $photo->photo_url,
-                            'blur_url' => '',
-                            'is_main' => $photo->is_cover ? 1 : 0,
-                            'is_premium' => $photo->is_premium,
-                            'points_price' => $photo->points_price ?: 0
-                        ];
-                    }
+                    $photos[] = [
+                        'id' => $photo->id,
+                        'url' => $photo->image_url,
+                        'blur_url' => '',
+                        'is_main' => 0,
+                        'is_premium' => 0,
+                        'points_price' => 0
+                    ];
                 }
             }
 
             // 如果没有相册照片，使用默认图片
-            if (empty($photos)) {
-                $photos = [
-                    [
-                        'id' => 0,
-                        'url' => $item->avatar_url ?: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=beautiful%20portrait%20dating%20app&image_size=portrait_16_9',
-                        'blur_url' => '',
-                        'is_main' => 1,
-                        'is_premium' => 0,
-                        'points_price' => 0
-                    ]
-                ];
-            }
+            
 
             return [
                 'id' => $item->id,
                 'phone' => $item->phone,
                 'nickname' => $item->name,
                 'avatar' => $item->avatar_url ?: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20cute&image_size=square',
-                'gender' => (int)$item->gender === 1 ? 'male' : ((int)$item->gender === 2 ? 'female' : ''),
+                'gender' => $item->gender === 'male' ? 'male' : ($item->gender === 'female' ? 'female' : ''),
                 'birthday' => $item->birthday,
                 'age' => $item->age,
                 'height' => $item->height,
@@ -323,7 +331,7 @@ class DiscoverController extends Controller
                 'id' => $item->id,
                 'nickname' => $item->name,
                 'avatar' => $item->avatar_url ?: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20cute&image_size=square',
-                'gender' => (int)$item->gender === 1 ? 'male' : ((int)$item->gender === 2 ? 'female' : ''),
+                'gender' => $item->gender === 'male' ? 'male' : ($item->gender === 'female' ? 'female' : ''),
                 'age' => $item->age,
                 'last_message' => '来聊聊吧',
                 'last_time' => '刚刚'

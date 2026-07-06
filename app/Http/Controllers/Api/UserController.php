@@ -81,6 +81,7 @@ class UserController extends Controller
         $user->save();
 
         return response()->json([
+            'code' => 200,
             'message' => '更新成功',
             'data' => $this->formatUser($user)
         ]);
@@ -150,7 +151,7 @@ class UserController extends Controller
             'phone' => $user->phone,
             'name' => $user->name,
             'avatar' => $user->avatar_url,
-            'gender' => (int)$user->gender === 1 ? 'male' : ((int)$user->gender === 2 ? 'female' : ''),
+            'gender' => $user->gender === 'male' ? 'male' : ($user->gender === 'female' ? 'female' : ''),
             'age' => $user->age,
             'height' => $user->height,
             'weight' => $user->weight,
@@ -173,6 +174,42 @@ class UserController extends Controller
             ] : null,
             'created_at' => $user->created_at ? $user->created_at->toISOString() : null
         ];
+    }
+
+    public function uploadAvatar(Request $request)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json(['message' => '未授权'], 401);
+        }
+
+        $request->validate([
+            'avatar' => 'required|image|max:10240',
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $picBedService = app(\App\Services\PicBedService::class);
+            $result = $picBedService->upload($file->getRealPath());
+
+            if ($result['success']) {
+                $user->avatar_url = $result['url'];
+                $user->save();
+
+                return response()->json([
+                    'code' => 200,
+                    'message' => '头像上传成功',
+                    'data' => [
+                        'avatar_url' => $user->avatar_url
+                    ]
+                ]);
+            }
+
+            return response()->json(['code' => 400, 'message' => $result['message']]);
+        }
+
+        return response()->json(['code' => 400, 'message' => '请选择图片']);
     }
 
     public function getAlbum(Request $request)

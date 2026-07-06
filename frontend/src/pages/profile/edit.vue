@@ -124,6 +124,36 @@ function uploadAvatar() {
     success: (res) => {
       const tempFilePath = res.tempFilePaths[0]
       form.avatar_url = tempFilePath
+      
+      uni.showLoading({ title: '上传中...' })
+      
+      const token = uni.getStorageSync('token')
+      uni.uploadFile({
+        url: `${process.env.VUE_APP_BASE_URL}/api/user/avatar/upload`,
+        filePath: tempFilePath,
+        name: 'avatar',
+        header: {
+          'Authorization': 'Bearer ' + token
+        },
+        success: (uploadRes) => {
+          uni.hideLoading()
+          try {
+            const result = JSON.parse(uploadRes.data)
+            if (result.code === 200) {
+              form.avatar_url = result.data.avatar_url
+              uni.showToast({ title: '头像上传成功', icon: 'success' })
+            } else {
+              uni.showToast({ title: result.message || '上传失败', icon: 'none' })
+            }
+          } catch (e) {
+            uni.showToast({ title: '上传失败', icon: 'none' })
+          }
+        },
+        fail: () => {
+          uni.hideLoading()
+          uni.showToast({ title: '上传失败', icon: 'none' })
+        }
+      })
     }
   })
 }

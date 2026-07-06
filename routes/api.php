@@ -21,6 +21,7 @@ Route::group(['middleware' => 'bearer'], function () {
         Route::post('sign-in', [App\Http\Controllers\Api\UserController::class, 'signIn']);
         Route::get('album', [App\Http\Controllers\Api\UserController::class, 'getAlbum']);
         Route::post('album/upload', [App\Http\Controllers\Api\UserController::class, 'uploadAlbumPhoto']);
+        Route::post('avatar/upload', [App\Http\Controllers\Api\UserController::class, 'uploadAvatar']);
     });
 
     // 发现相关 API

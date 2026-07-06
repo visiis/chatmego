@@ -155,7 +155,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'gender' => $request->gender === 'male' ? 1 : ($request->gender === 'female' ? 2 : 0),
+            'gender' => $request->gender === 'male' ? 'male' : ($request->gender === 'female' ? 'female' : ''),
             'is_active' => $isActive,
             'status' => $isActive ? 'active' : 'pending',
         ]);
@@ -304,7 +304,7 @@ class AuthController extends Controller
             'phone' => $user->phone,
             'nickname' => $user->name,
             'avatar' => $user->avatar_url,
-            'gender' => (int)$user->gender === 1 ? 'male' : ((int)$user->gender === 2 ? 'female' : ''),
+            'gender' => $user->gender === 'male' ? 'male' : ($user->gender === 'female' ? 'female' : ''),
             'birthday' => $user->birthday ?: '',
             'bio' => '',
             'love_declaration' => $user->love_declaration ?: '',

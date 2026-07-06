@@ -18,7 +18,7 @@
         <text class="vip-text">{{ user.membership?.name || 'VIP' }}</text>
       </view>
       <view class="level-badge" v-if="user?.current_level">
-        <FontAwesome :name="user.current_level.icon || 'star'" size="16px" color="#ffd700" />
+        <FontAwesome :name="user.current_level.icon || 'crown'" size="16px" color="#ffd700" />
         <text class="level-text">{{ user.current_level.name }}</text>
       </view>
       <view class="points-info">
@@ -306,7 +306,7 @@ page {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60rpx 0 40rpx;
+  padding: 80rpx 0 40rpx;
   position: relative;
 }
 
@@ -528,19 +528,21 @@ page {
   width: calc(100% - 48rpx);
   margin: 0 24rpx 20rpx;
   height: 88rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
   border-radius: 44rpx;
-  border: 2rpx solid rgba(255, 255, 255, 0.5);
+  border: none;
   color: #fff;
   font-size: 30rpx;
   line-height: 88rpx;
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 157, 0.4);
   
   &::after {
     border: none;
   }
   
   &:active {
-    background: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #e55a87 0%, #a83d5a 100%);
+    transform: scale(0.98);
   }
 }
 
